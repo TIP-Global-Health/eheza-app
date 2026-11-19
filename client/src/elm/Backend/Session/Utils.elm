@@ -1,15 +1,17 @@
-module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed)
+module Backend.Session.Utils exposing (childActivitySaveRequest, emptyMotherMeasurementData, getChild, getChildActivityMeasurementData, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherActivityMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed, isSaveAllowed, motherActivitySaveRequest, saveRequestOf)
 
-import AssocList as Dict
+import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, Model, OfflineSession, Session)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)
-import RemoteData exposing (RemoteData(..))
+import Maybe.Extra exposing (isJust)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 {-| Given a mother's id, get all her children from the offline session.
@@ -73,7 +75,7 @@ getChildMeasurementData childId session =
             , previous =
                 Dict.get childId measurements.previous.children
                     |> Maybe.withDefault emptyChildMeasurements
-            , update = session.update
+            , update = NotAsked
             }
         )
         session.offlineSession.measurements
@@ -107,7 +109,7 @@ getMotherMeasurementData motherId session =
             , previous =
                 Dict.get motherId measurements.previous.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
-            , update = session.update
+            , update = NotAsked
             }
         )
         session.offlineSession.measurements
@@ -129,11 +131,11 @@ getMotherMeasurementData2 motherId session =
         session.measurements
 
 
-emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements
-emptyMotherMeasurementData session =
+emptyMotherMeasurementData : MeasurementData MotherMeasurements
+emptyMotherMeasurementData =
     { current = emptyMotherMeasurements
     , previous = emptyMotherMeasurements
-    , update = session.update
+    , update = NotAsked
     }
 
 
@@ -159,3 +161,108 @@ getSession sessionId db =
     Dict.get sessionId db.sessions
         |> Maybe.withDefault NotAsked
         |> RemoteData.toMaybe
+
+
+{-| The state of the latest save of a child's activity.
+-}
+childActivitySaveRequest : ChildActivity -> PersonId -> Model -> WebData ()
+childActivitySaveRequest activity personId model =
+    let
+        requests =
+            case activity of
+                ChildFbf ->
+                    model.saveFbfRequest
+
+                ChildPicture ->
+                    model.savePhotoRequest
+
+                ContributingFactors ->
+                    model.saveContributingFactorsRequest
+
+                FollowUp ->
+                    model.saveFollowUpRequest
+
+                Activity.Model.HealthEducation ->
+                    model.saveHealthEducationRequest
+
+                Height ->
+                    model.saveHeightRequest
+
+                Muac ->
+                    model.saveMuacRequest
+
+                NCDA ->
+                    model.saveNCDARequest
+
+                NutritionSigns ->
+                    model.saveNutritionRequest
+
+                Activity.Model.SendToHC ->
+                    model.saveSendToHCRequest
+
+                Weight ->
+                    model.saveWeightRequest
+    in
+    saveRequestOf personId requests
+
+
+{-| The state of the latest save of a mother's activity.
+-}
+motherActivitySaveRequest : MotherActivity -> PersonId -> Model -> WebData ()
+motherActivitySaveRequest activity personId model =
+    let
+        requests =
+            case activity of
+                FamilyPlanning ->
+                    model.saveFamilyPlanningRequest
+
+                Lactation ->
+                    model.saveLactationRequest
+
+                MotherFbf ->
+                    model.saveFbfRequest
+
+                ParticipantConsent ->
+                    model.saveParticipantConsentRequest
+    in
+    saveRequestOf personId requests
+
+
+{-| The state of the latest save for a person, in one of the request trackers.
+-}
+saveRequestOf : PersonId -> Dict PersonId (WebData ()) -> WebData ()
+saveRequestOf personId requests =
+    Dict.get personId requests
+        |> Maybe.withDefault NotAsked
+
+
+{-| Whether a Save may go ahead. The saved record's ID arrives shortly after a
+first save succeeds, and a tap in between would create a second record.
+-}
+isSaveAllowed : Maybe valueId -> WebData () -> Bool
+isSaveAllowed valueId request =
+    case request of
+        Loading ->
+            False
+
+        Success _ ->
+            isJust valueId
+
+        _ ->
+            True
+
+
+{-| Measurement data for one activity's form, carrying that activity's save state.
+-}
+getChildActivityMeasurementData : ChildActivity -> PersonId -> EditableSession -> LocalData (MeasurementData ChildMeasurements)
+getChildActivityMeasurementData activity childId session =
+    getChildMeasurementData childId session
+        |> LocalData.map (\data -> { data | update = childActivitySaveRequest activity childId session.saveRequests })
+
+
+{-| Measurement data for one activity's form, carrying that activity's save state.
+-}
+getMotherActivityMeasurementData : MotherActivity -> PersonId -> EditableSession -> LocalData (MeasurementData MotherMeasurements)
+getMotherActivityMeasurementData activity motherId session =
+    getMotherMeasurementData motherId session
+        |> LocalData.map (\data -> { data | update = motherActivitySaveRequest activity motherId session.saveRequests })

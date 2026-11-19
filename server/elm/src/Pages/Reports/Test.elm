@@ -11,6 +11,8 @@ import Backend.Reports.Model
         , Gender(..)
         , NutritionData
         , NutritionEncounterData
+        , NutritionMetricsResults
+        , NutritionRate
         , PatientData
         , PregnancyOutcome(..)
         , PrenatalEncounterData
@@ -22,9 +24,9 @@ import Backend.Reports.Model
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import EverySet
-import Expect exposing (FloatingPointTolerance(..))
+import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionReportData, PregnancyTrimester(..), emptyNutritionMetrics)
 import Pages.Reports.Utils
     exposing
         ( calculateNutritionReportData
@@ -284,26 +286,28 @@ bandsTest =
         ]
 
 
-expectPercentage : Float -> Float -> Expect.Expectation
-expectPercentage expected =
-    Expect.within (Absolute 0.001) expected
+{-| Expects a rate of `count` children out of `total`.
+-}
+expectRate : Int -> Int -> NutritionRate -> Expect.Expectation
+expectRate count total =
+    Expect.equal { count = count, total = total }
 
 
 prevalenceTest : Test
 prevalenceTest =
     describe "generatePrevalenceNutritionMetricsResults counts each child once"
-        [ test "child 1 moderate twice and child 2 normal is 50%" <|
+        [ test "child 1 moderate twice and child 2 normal is 1 of 2" <|
             \_ ->
                 { emptyNutritionMetrics | stuntingModerate = [ 1, 1 ], stuntingNormal = [ 2 ] }
                     |> generatePrevalenceNutritionMetricsResults
                     |> .stuntingModerate
-                    |> expectPercentage 50
-        , test "a child moderate at one visit and normal at another is 100% moderate" <|
+                    |> expectRate 1 2
+        , test "a child moderate at one visit and normal at another is 1 of 1 moderate" <|
             \_ ->
                 { emptyNutritionMetrics | stuntingModerate = [ 1 ], stuntingNormal = [ 1 ] }
                     |> generatePrevalenceNutritionMetricsResults
                     |> .stuntingModerate
-                    |> expectPercentage 100
+                    |> expectRate 1 1
         , test "MAM and SAM share the MUAC denominator" <|
             \_ ->
                 let
@@ -312,15 +316,15 @@ prevalenceTest =
                             |> generatePrevalenceNutritionMetricsResults
                 in
                 Expect.all
-                    [ \_ -> expectPercentage 25 results.acuteMalnutritionMam
-                    , \_ -> expectPercentage 25 results.acuteMalnutritionSam
+                    [ \_ -> expectRate 1 4 results.acuteMalnutritionMam
+                    , \_ -> expectRate 1 4 results.acuteMalnutritionSam
                     ]
                     ()
-        , test "no measured children is 0%" <|
+        , test "no measured children is 0 of 0" <|
             \_ ->
                 generatePrevalenceNutritionMetricsResults emptyNutritionMetrics
                     |> .stuntingModerate
-                    |> expectPercentage 0
+                    |> expectRate 0 0
         ]
 
 
@@ -339,37 +343,37 @@ incidenceTest =
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingModerate = [ 1 ] } { emptyNutritionMetrics | stuntingNormal = [ 1 ] }
                     |> .stuntingModerate
-                    |> expectPercentage 100
+                    |> expectRate 1 1
         , test "moderate before, moderate now, does not count" <|
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingModerate = [ 1 ] } { emptyNutritionMetrics | stuntingModerate = [ 1 ] }
                     |> .stuntingModerate
-                    |> expectPercentage 0
+                    |> expectRate 0 1
         , test "severe before, moderate now, does not count" <|
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingModerate = [ 1 ] } { emptyNutritionMetrics | stuntingSevere = [ 1 ] }
                     |> .stuntingModerate
-                    |> expectPercentage 0
+                    |> expectRate 0 1
         , test "moderate before, severe now, counts" <|
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingSevere = [ 1 ] } { emptyNutritionMetrics | stuntingModerate = [ 1 ] }
                     |> .stuntingSevere
-                    |> expectPercentage 100
+                    |> expectRate 1 1
         , test "a child not tested before does not count" <|
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingModerate = [ 1 ] } { emptyNutritionMetrics | stuntingNormal = [ 2 ] }
                     |> .stuntingModerate
-                    |> expectPercentage 0
+                    |> expectRate 0 1
         , test "the denominator is the children tested before, each once" <|
             \_ ->
                 incidence { emptyNutritionMetrics | stuntingModerate = [ 1 ] } { emptyNutritionMetrics | stuntingNormal = [ 1, 2, 2, 3, 4 ] }
                     |> .stuntingModerate
-                    |> expectPercentage 25
+                    |> expectRate 1 4
         , test "MUAC: normal before, MAM now, counts" <|
             \_ ->
                 incidence { emptyNutritionMetrics | acuteMalnutritionMam = [ 1 ] } { emptyNutritionMetrics | acuteMalnutritionNormal = [ 1, 2 ] }
                     |> .acuteMalnutritionMam
-                    |> expectPercentage 50
+                    |> expectRate 1 2
         ]
 
 

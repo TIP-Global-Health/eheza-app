@@ -38,6 +38,18 @@ if [ "$branch" != "develop" ]; then
   exit 0
 fi
 
+# Mid-merge, "git add" marks conflicted files resolved, markers and all, and
+# the commit finishes the merge. Leave it to whoever started it.
+op=""
+for marker in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply; do
+  [ -e "$(git rev-parse --git-path "$marker")" ] && op="$marker" && break
+done
+conflicted=$(git diff --name-only --diff-filter=U 2>/dev/null)
+if [ -n "$op" ] || [ -n "$conflicted" ]; then
+  emit "⚠ $count bookkeeping file(s) under .claude/ are uncommitted, but a merge, rebase or cherry-pick is in progress (${op:-unmerged files}). Finish or abort it; the next turn commits them."
+  exit 0
+fi
+
 # Name the items whose entries changed, so the message says what it recorded.
 items=$(printf '%s\n' "$dirty" | sed -n 's#.* \.claude/backlog/items/\([A-Za-z0-9-]*\)\.md#\1#p' | sort -u | tr '\n' ' ')
 [ -n "$items" ] && subject="Backlog: record ${items% }" || subject="Backlog: record the current state"

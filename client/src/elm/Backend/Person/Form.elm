@@ -27,7 +27,7 @@ import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import GeoLocation.Utils exposing (getGeoInfo, getGeoLocation)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (isNothing, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -242,20 +242,47 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                             form_
                     )
 
-        applyDefaultLocation fieldName maybeDefault form_ =
-            case maybeDefault of
-                Just defaultId ->
-                    if formFieldEmpty fieldName form_ then
-                        Form.update
-                            validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (String.fromInt <| fromEntityId defaultId)))
-                            form_
+        applyDefaultAddress form_ =
+            [ ( province, defaultProvinceId )
+            , ( district, defaultDistrictId )
+            , ( sector, defaultSectorId )
+            , ( cell, defaultCellId )
+            , ( village, defaultVillageId )
+            ]
+                |> List.foldl
+                    (\( fieldName, defaultId ) ( levelAboveChanged, accum ) ->
+                        let
+                            storedId =
+                                Maybe.map (fromEntityId >> String.fromInt) defaultId
 
-                    else
-                        form_
+                            setLevel value =
+                                Form.update validation (Form.Input fieldName Form.Select (Form.Field.String value)) accum
+                        in
+                        case (Form.getFieldAsString fieldName accum).value of
+                            Nothing ->
+                                if levelAboveChanged then
+                                    -- The related person's place sits under the old level
+                                    -- above, so it is cleared and must be picked. With no
+                                    -- related person, nothing is cleared before Save.
+                                    ( True
+                                    , if isJust maybeRelatedPerson then
+                                        setLevel ""
 
-                Nothing ->
-                    form_
+                                      else
+                                        accum
+                                    )
+
+                                else
+                                    ( False, unwrap accum setLevel storedId )
+
+                            Just picked ->
+                                ( levelAboveChanged
+                                    || (not isChw && picked /= "" && Just picked /= storedId)
+                                , accum
+                                )
+                    )
+                    ( False, form_ )
+                |> Tuple.second
     in
     case operation of
         CreatePerson _ ->
@@ -273,11 +300,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
             in
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
-                |> applyDefaultLocation province defaultProvinceId
-                |> applyDefaultLocation district defaultDistrictId
-                |> applyDefaultLocation sector defaultSectorId
-                |> applyDefaultLocation cell defaultCellId
-                |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultAddress
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
                 |> applyDefaultBirthDate
 
@@ -352,11 +375,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery modeOfDeliveryToString
                 |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl String.fromInt
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
-                |> applyDefaultLocation province defaultProvinceId
-                |> applyDefaultLocation district defaultDistrictId
-                |> applyDefaultLocation sector defaultSectorId
-                |> applyDefaultLocation cell defaultCellId
-                |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultAddress
                 |> applyDefaultTextInput phoneNumber defaultTelephoneNumber identity
                 |> applyDefaultTextInput spouseName defaultSpouseName identity
                 |> applyDefaultTextInput spousePhoneNumber defaultSpousePhoneNumber identity
@@ -416,14 +435,18 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                                                 ExpectAdultOrChild
                                    )
 
+                -- Burundi and Somalia take any text as the ID. It is saved without
+                -- the spaces around it, since the ID search matches from its start.
+                freeTextNationalId =
+                    nullable trimmedString
+
                 nationalIdNumberValidator =
                     case site of
                         SiteBurundi ->
-                            nullable string
+                            freeTextNationalId
 
-                        -- @todo - needs validation?
                         SiteSomalia ->
-                            nullable string
+                            freeTextNationalId
 
                         _ ->
                             validateNationalIdNumber
@@ -510,15 +533,19 @@ validateContact site =
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
 
+{-| A text value without the spaces around it. Text of spaces only gives an
+empty string, so use it under `nullable`, which turns that into no value.
+-}
+trimmedString : Validation e String
+trimmedString =
+    Form.Validate.map String.trim string
+
+
 validateNationalIdNumber : Validation ValidationError (Maybe String)
 validateNationalIdNumber =
-    string
+    trimmedString
         |> andThen
-            (\s ->
-                let
-                    trimmed =
-                        String.trim s
-                in
+            (\trimmed ->
                 if String.length trimmed /= 16 then
                     fail <| customError (LengthError 16)
 
@@ -553,13 +580,21 @@ validateHmisNumber =
 
 
 withDefault : Maybe a -> Validation ValidationError (Maybe a) -> Validation ValidationError (Maybe a)
-withDefault related =
+withDefault related validation =
     case related of
         Just _ ->
-            defaultValue related
+            \validationField ->
+                -- A field never set keeps the related person's stored value, such
+                -- as a place missing from the address list. A cleared field holds
+                -- "" and is validated as given.
+                if isNothing (Form.Field.asString validationField) then
+                    defaultValue related validation validationField
+
+                else
+                    validation validationField
 
         Nothing ->
-            identity
+            validation
 
 
 validateProvince : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)

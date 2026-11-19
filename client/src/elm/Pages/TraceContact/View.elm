@@ -33,12 +33,13 @@ import Pages.Utils
         , viewTasksCount
         )
 import RemoteData
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
 
 
-view : Language -> NominalDate -> AcuteIllnessTraceContactId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> Site -> AcuteIllnessTraceContactId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id db model =
     let
         traceContact =
             Dict.get id db.traceContacts
@@ -54,7 +55,7 @@ view language currentDate id db model =
                 traceContact
 
         personDetails =
-            Maybe.map (viewPersonDetailsExtended language currentDate)
+            Maybe.map (viewPersonDetailsExtended language currentDate site)
                 tracePerson
                 |> Maybe.withDefault (viewContactDetails language traceContact)
 

@@ -8,7 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
-import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
+import Backend.Session.Utils exposing (getChild, getChildActivityMeasurementData, getChildren, getMother, getMotherActivityMeasurementData, getMyMother)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -199,7 +199,7 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                             form =
                                 getChildForm site childId pages session
                         in
-                        getChildMeasurementData childId session
+                        getChildActivityMeasurementData activity childId session
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
@@ -375,7 +375,7 @@ viewFoundMother language currentDate zscores site features isChw ( motherId, mot
                         form =
                             getMotherForm motherId pages session
                     in
-                    getMotherMeasurementData motherId session
+                    getMotherActivityMeasurementData activity motherId session
                         |> LocalData.unwrap
                             []
                             (\measurements ->

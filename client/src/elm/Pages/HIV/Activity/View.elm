@@ -52,6 +52,7 @@ import Pages.Utils
         , viewTasksCount
         )
 import RemoteData
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -60,24 +61,25 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
+    -> Site
     -> HIVEncounterId
     -> HIVActivity
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate id activity db model =
+view language currentDate site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> HIVEncounterId -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> HIVEncounterId -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id activity db model assembled =
     div [ class "page-activity hiv" ]
         [ viewHeader language id activity
-        , viewContent language currentDate activity db model assembled
+        , viewContent language currentDate site activity db model assembled
         ]
 
 
@@ -96,10 +98,10 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity db model assembled =
     div [ class "ui unstackable items" ]
-        ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+        ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate activity assembled db model
         )
 

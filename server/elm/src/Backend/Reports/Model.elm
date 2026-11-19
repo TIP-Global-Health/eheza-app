@@ -1,4 +1,4 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, TuberculosisEncounterData, WellChildEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionMetricsResults, NutritionRate, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site, SiteFeature)
 import AssocList exposing (Dict)
@@ -280,14 +280,30 @@ type alias TuberculosisEncounterData =
 type alias BackendGeneratedNutritionReportTableDate =
     { tableType : NutritionReportTableType
     , captions : List String
-    , stuntingModerate : List String
-    , stuntingSevere : List String
-    , wastingModerate : List String
-    , wastingSevere : List String
-    , underweightModerate : List String
-    , underweightSevere : List String
-    , acuteMalnutritionMam : List String
-    , acuteMalnutritionSam : List String
+    , results : List NutritionMetricsResults
+    }
+
+
+{-| One column of a Nutrition report table: a rate per indicator.
+-}
+type alias NutritionMetricsResults =
+    { stuntingModerate : NutritionRate
+    , stuntingSevere : NutritionRate
+    , wastingModerate : NutritionRate
+    , wastingSevere : NutritionRate
+    , underweightModerate : NutritionRate
+    , underweightSevere : NutritionRate
+    , acuteMalnutritionMam : NutritionRate
+    , acuteMalnutritionSam : NutritionRate
+    }
+
+
+{-| A rate as the two counts it is built from. Example: 85 children
+with the condition out of 496 measured is { count = 85, total = 496 }.
+-}
+type alias NutritionRate =
+    { count : Int
+    , total : Int
     }
 
 

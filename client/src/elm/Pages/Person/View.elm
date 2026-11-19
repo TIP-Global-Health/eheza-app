@@ -25,6 +25,7 @@ import Backend.Person.Model
 import Backend.Person.Utils
     exposing
         ( defaultIconForPerson
+        , earliestChildBirthDate
         , educationLevelToInt
         , expectedAgeByPerson
         , generateFullName
@@ -32,6 +33,7 @@ import Backend.Person.Utils
         , hivStatusToString
         , isAdult
         , isPersonAnAdult
+        , latestAdultBirthDate
         , maritalStatusToString
         , maxChildrenAtFamilyEncounter
         , modeOfDeliveryToString
@@ -61,7 +63,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewPhotoThumb)
+import Pages.Utils exposing (viewConfirmationDialog, viewPhotoThumb, viewVillageLine)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
@@ -73,8 +75,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate isChw initiator id db =
+view : Language -> NominalDate -> Site -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate site isChw initiator id db =
     let
         person =
             Dict.get id db.people
@@ -90,7 +92,7 @@ view language currentDate isChw initiator id db =
         [ viewHeader initiator headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate site isChw initiator db id) identity person
             ]
         ]
 
@@ -130,8 +132,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate isChw initiator db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Site -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate site isChw initiator db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -197,7 +199,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator db id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate site isChw initiator db id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -282,7 +284,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator id person ]
+            [ viewPerson language currentDate site initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -293,8 +295,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator id person =
+viewPerson : Language -> NominalDate -> Site -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate site initiator id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -331,10 +333,7 @@ viewPerson language currentDate initiator id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , action
                 ]
@@ -348,8 +347,8 @@ viewPerson language currentDate initiator id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Site -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate site isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -474,10 +473,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     , groups
                     ]
                 , action
@@ -585,10 +581,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 _ ->
                                     case expectedAge of
                                         ExpectChild ->
-                                            ( Date.add Years -13 currentDate, currentDate )
+                                            ( earliestChildBirthDate currentDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -617,7 +613,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
-                            , birthDateSelectorTo = Date.add Years -13 today
+                            , birthDateSelectorTo = latestAdultBirthDate today
                             , title = Translate.People
                             }
 
@@ -664,7 +660,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -682,7 +678,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -706,25 +702,25 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                     case expectedAge of
                                         ExpectChild ->
                                             let
-                                                defaultMaximalAge =
-                                                    Date.add Years -13 currentDate
+                                                defaultEarliestBirthDate =
+                                                    earliestChildBirthDate currentDate
 
-                                                maximalAge =
+                                                earliestBirthDate =
                                                     getSession sessionId db
                                                         |> Maybe.map
                                                             (\session ->
                                                                 if List.member session.clinicType [ Sorwathe, Achi ] then
-                                                                    defaultMaximalAge
+                                                                    defaultEarliestBirthDate
 
                                                                 else
                                                                     Date.add Months (-1 * graduatingAgeInMonth) currentDate
                                                             )
-                                                        |> Maybe.withDefault defaultMaximalAge
+                                                        |> Maybe.withDefault defaultEarliestBirthDate
                                             in
-                                            ( maximalAge, currentDate )
+                                            ( earliestBirthDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -768,7 +764,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
                                 , expectedAge = ExpectChild
                                 , expectedGender = ExpectMaleOrFemale
-                                , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                                , birthDateSelectorFrom = earliestChildBirthDate today
                                 , birthDateSelectorTo = today
                                 , title = Translate.People
                                 }
@@ -779,7 +775,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , expectedAge = ExpectAdult
                                 , expectedGender = ExpectFemale
                                 , birthDateSelectorFrom = Date.add Years -120 today
-                                , birthDateSelectorTo = Date.add Years -13 today
+                                , birthDateSelectorTo = latestAdultBirthDate today
                                 , title = Translate.People
                                 }
 

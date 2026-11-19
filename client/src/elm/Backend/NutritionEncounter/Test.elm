@@ -1,28 +1,34 @@
 module Backend.NutritionEncounter.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Entities exposing (PersonId)
+import Backend.Entities exposing (IndividualEncounterParticipantId, NutritionEncounterId, PersonId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( ChildNutritionSign(..)
         , MuacInCm(..)
         , NutritionAssessment(..)
+        , NutritionMeasurements
+        , WeightInKg(..)
         )
 import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..), emptyNutritionEncounter)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateNutritionAssessment
+        , resolveAllWeightMeasurementsForChild
         , resolveLatestValue
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
 import Backend.Person.Model exposing (Person)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantWithDuplicates)
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testChild)
 import Time
@@ -292,6 +298,139 @@ resolveLatestValueTest =
         ]
 
 
+
+-- DUPLICATE PARTICIPANTS
+--
+-- A child should have one nutrition participant, but some have two. Each one
+-- holds part of the history, so readers must take encounters from both.
+
+
+participantA : IndividualEncounterParticipantId
+participantA =
+    toEntityUuid "participant-a"
+
+
+participantB : IndividualEncounterParticipantId
+participantB =
+    toEntityUuid "participant-b"
+
+
+{-| What each participant holds: its start date, its one encounter, and the
+date and kilograms of the weight taken there.
+-}
+participantData : IndividualEncounterParticipantId -> { startDate : NominalDate, encounterId : NutritionEncounterId, weighedOn : NominalDate, kilograms : Float }
+participantData id =
+    if id == participantA then
+        { startDate = Date.fromCalendarDate 2020 Time.Jan 1
+        , encounterId = toEntityUuid "encounter-a"
+        , weighedOn = Date.fromCalendarDate 2020 Time.Mar 1
+        , kilograms = 6
+        }
+
+    else
+        { startDate = Date.fromCalendarDate 2020 Time.Feb 1
+        , encounterId = toEntityUuid "encounter-b"
+        , weighedOn = Date.fromCalendarDate 2020 Time.May 1
+        , kilograms = 7
+        }
+
+
+{-| A child with nutrition participants A (older, 6 kg on 2020-03-01) and B
+(newer, 7 kg on 2020-05-01). The list order is their order in the cache.
+-}
+dbWithParticipants : List IndividualEncounterParticipantId -> ModelIndexedDb
+dbWithParticipants participantsIds =
+    let
+        participant id =
+            emptyIndividualEncounterParticipant (participantData id).startDate childId NutritionEncounter (toEntityUuid "health-center")
+
+        forEach toEntry =
+            Dict.fromList (List.map toEntry participantsIds)
+    in
+    { emptyModelIndexedDb
+        | individualParticipantsByPerson =
+            Dict.singleton childId (Success <| forEach (\id -> ( id, participant id )))
+        , individualParticipants =
+            forEach (\id -> ( id, Success <| participant id ))
+        , nutritionEncountersByParticipant =
+            forEach
+                (\id ->
+                    ( id
+                    , Success <|
+                        Dict.singleton (participantData id).encounterId
+                            (emptyNutritionEncounter id (participantData id).weighedOn NutritionEncounterNurse Nothing)
+                    )
+                )
+        , nutritionMeasurements =
+            forEach (\id -> ( (participantData id).encounterId, Success <| measurementsWithWeight id ))
+    }
+
+
+measurementsWithWeight : IndividualEncounterParticipantId -> NutritionMeasurements
+measurementsWithWeight id =
+    let
+        data =
+            participantData id
+    in
+    { muac = Nothing
+    , height = Nothing
+    , nutrition = Nothing
+    , photo = Nothing
+    , weight =
+        Just
+            ( toEntityUuid ("weight-" ++ fromEntityUuid id)
+            , { dateMeasured = data.weighedOn
+              , nurse = Nothing
+              , healthCenter = Nothing
+              , participantId = childId
+              , deleted = False
+              , encounterId = Just data.encounterId
+              , value = WeightInKg data.kilograms
+              }
+            )
+    , sendToHC = Nothing
+    , healthEducation = Nothing
+    , contributingFactors = Nothing
+    , followUp = Nothing
+    , ncda = Nothing
+    }
+
+
+duplicateParticipantsTest : Test
+duplicateParticipantsTest =
+    describe "A child with two nutrition participants"
+        [ test "the weight history holds the weights of both participants" <|
+            \_ ->
+                resolveAllWeightMeasurementsForChild childId (dbWithParticipants [ participantA, participantB ])
+                    |> Expect.equal
+                        [ ( Date.fromCalendarDate 2020 Time.May 1, 7 )
+                        , ( Date.fromCalendarDate 2020 Time.Mar 1, 6 )
+                        ]
+        , test "the weight history does not depend on the order of the participants" <|
+            \_ ->
+                resolveAllWeightMeasurementsForChild childId (dbWithParticipants [ participantB, participantA ])
+                    |> Expect.equal
+                        [ ( Date.fromCalendarDate 2020 Time.May 1, 7 )
+                        , ( Date.fromCalendarDate 2020 Time.Mar 1, 6 )
+                        ]
+        , test "new encounters go on the oldest participant, whatever the order" <|
+            \_ ->
+                [ dbWithParticipants [ participantA, participantB ]
+                , dbWithParticipants [ participantB, participantA ]
+                ]
+                    |> List.map (resolveIndividualParticipantForPerson childId NutritionEncounter)
+                    |> Expect.equal [ Just participantA, Just participantA ]
+        , test "a participant's duplicates are the other participants of the same type" <|
+            \_ ->
+                resolveIndividualParticipantWithDuplicates participantB (dbWithParticipants [ participantA, participantB ])
+                    |> Expect.equal [ participantB, participantA ]
+        , test "a participant whose person is not loaded stands alone" <|
+            \_ ->
+                resolveIndividualParticipantWithDuplicates participantB emptyModelIndexedDb
+                    |> Expect.equal [ participantB ]
+        ]
+
+
 all : Test
 all =
     describe "Nutrition assessment tests"
@@ -301,4 +440,5 @@ all =
         , generateNutritionAssessmentMuacTest
         , generateNutritionAssessmentSignsTest
         , resolveLatestValueTest
+        , duplicateParticipantsTest
         ]

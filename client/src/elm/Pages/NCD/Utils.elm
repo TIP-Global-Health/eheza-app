@@ -1,4 +1,4 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -7,6 +7,7 @@ import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrine
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -84,7 +85,8 @@ generateAssembledData id db =
 
 generatePreviousEncountersData : Maybe NCDEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List PreviousEncounterData
 generatePreviousEncountersData currentEncounterId participantId db =
-    getNCDEncountersForParticipant db participantId
+    resolveIndividualParticipantWithDuplicates participantId db
+        |> List.concatMap (getNCDEncountersForParticipant db)
         |> List.filterMap
             (\( encounterId, encounter ) ->
                 -- If the ID of current encounter was provided,
@@ -453,14 +455,47 @@ referralFormWithDefault form saved =
             form
             (\value ->
                 let
-                    resolveFromFacilitySignsValue sign =
-                        EverySet.member sign value.referralSigns |> Just
+                    hasSign sign =
+                        EverySet.member sign value.referralSigns
+
+                    -- Both phases share one record. A saved hospital answer says
+                    -- nothing about ANC services, so each question is filled only
+                    -- when the record answered it.
+                    answeredWhen answered sign =
+                        if answered then
+                            Just (hasSign sign)
+
+                        else
+                            Nothing
+
+                    facilityAnswered =
+                        Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons
+
+                    referToHospital =
+                        or form.referToHospital (answeredWhen (facilityAnswered FacilityHospital) ReferToHospital)
+
+                    referToANCServices =
+                        or form.referToANCServices (answeredWhen (facilityAnswered FacilityANCServices) ReferToANCServices)
+
+                    -- Follow-up answers are read from the record only while
+                    -- its "referred" answer still stands on the form.
+                    savedReferralStands referralSign referredOnForm =
+                        hasSign referralSign && referredOnForm == Just True
+
+                    savedANCReferralStands =
+                        savedReferralStands ReferToANCServices referToANCServices
                 in
-                { referToHospital = or form.referToHospital (resolveFromFacilitySignsValue ReferToHospital)
-                , referralFormHospital = or form.referralFormHospital (resolveFromFacilitySignsValue ReferralFormHospital)
-                , referToANCServices = or form.referToANCServices (resolveFromFacilitySignsValue ReferToANCServices)
-                , referralFormANCServices = or form.referralFormANCServices (resolveFromFacilitySignsValue ReferralFormANCServices)
-                , accompanyToANCServices = or form.accompanyToANCServices (resolveFromFacilitySignsValue AccompanyToANCServices)
+                { referToHospital = referToHospital
+                , referralFormHospital =
+                    or form.referralFormHospital
+                        (answeredWhen (savedReferralStands ReferToHospital referToHospital) ReferralFormHospital)
+                , referToANCServices = referToANCServices
+                , referralFormANCServices =
+                    or form.referralFormANCServices
+                        (answeredWhen savedANCReferralStands ReferralFormANCServices)
+                , accompanyToANCServices =
+                    or form.accompanyToANCServices
+                        (answeredWhen savedANCReferralStands AccompanyToANCServices)
                 , nonReferralReasons = or form.nonReferralReasons value.nonReferralReasons
                 }
             )
@@ -828,11 +863,7 @@ resolveReferralInputsAndTasks :
 resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
-            if referForHypertension phase assembled && patientIsPregnant assembled then
-                FacilityANCServices
-
-            else
-                FacilityHospital
+            referralFacility phase assembled
 
         maybeConfig =
             case facility of
@@ -1074,17 +1105,29 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
 
 
-{-| Referal to facility is completed when we mark that facility was referred to,
-or, reason was set for not referring to that facility.
+{-| The Referral task is done when the facility this phase refers to was
+referred to, or a reason was set for not referring there.
 -}
-referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
-referralToFacilityCompleted assembled facility =
+referralTaskCompleted : NCDEncounterPhase -> AssembledData -> Bool
+referralTaskCompleted phase assembled =
     getMeasurementValueFunc assembled.measurements.referral
         |> Maybe.map
             (\value ->
-                Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons facility
+                Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons (referralFacility phase assembled)
             )
         |> Maybe.withDefault False
+
+
+{-| A pregnant woman with hypertension is referred to ANC services; everyone
+else to the hospital.
+-}
+referralFacility : NCDEncounterPhase -> AssembledData -> ReferralFacility
+referralFacility phase assembled =
+    if referForHypertension phase assembled && patientIsPregnant assembled then
+        FacilityANCServices
+
+    else
+        FacilityHospital
 
 
 updateChronicDiagnoses : NominalDate -> EverySet NCDDiagnosis -> AssembledData -> List NCDDiagnosis

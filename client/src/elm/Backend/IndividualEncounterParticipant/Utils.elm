@@ -1,8 +1,10 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, resolveOpenParticipant, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
+module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, resolveMainParticipant, resolveOpenParticipant, resolveTodaysEncounterState, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
 
 import AssocList as Dict exposing (Dict)
-import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
+import Backend.Entities exposing (IndividualEncounterParticipantId)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
 import Backend.PatientRecord.Utils
+import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -78,6 +80,25 @@ isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
 
 
+{-| The encounter open today, if any, and whether an encounter was started
+and completed today, in which case no new one is allowed that day.
+-}
+resolveTodaysEncounterState :
+    NominalDate
+    -> List ( encounterId, { a | startDate : NominalDate, endDate : Maybe NominalDate } )
+    -> ( Maybe encounterId, Bool )
+resolveTodaysEncounterState currentDate encounters =
+    ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) encounters
+        |> List.head
+        |> Maybe.map Tuple.first
+    , List.any
+        (\( _, encounter ) ->
+            encounter.startDate == currentDate && encounter.endDate == Just currentDate
+        )
+        encounters
+    )
+
+
 {-| The participant of given type that has not ended yet. We expect at most
 one, so the first found is used.
 -}
@@ -91,6 +112,24 @@ resolveOpenParticipant encounterType participants =
             (\( _, participant ) ->
                 (participant.encounterType == encounterType)
                     && isNothing participant.endDate
+            )
+        |> List.head
+        |> Maybe.map Tuple.first
+
+
+{-| The participant of given type that new encounters go on: the oldest
+(earliest start date, then lowest uuid), so every device picks the same one.
+-}
+resolveMainParticipant :
+    IndividualEncounterType
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Maybe IndividualEncounterParticipantId
+resolveMainParticipant encounterType participants =
+    Dict.toList participants
+        |> List.filter (Tuple.second >> .encounterType >> (==) encounterType)
+        |> List.sortBy
+            (\( participantId, participant ) ->
+                ( Date.toRataDie participant.startDate, fromEntityUuid participantId )
             )
         |> List.head
         |> Maybe.map Tuple.first

@@ -44,7 +44,7 @@ import Measurement.Utils
 import Measurement.View exposing (measurementOutOfRangePopup, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
-import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInputsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInputsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInputsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInputsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInputsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInputsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInputsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInputsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInputsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
@@ -65,6 +65,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewTasksCount
         , viewTextInput
+        , viewVillageLine
         )
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -854,7 +855,7 @@ viewCoreExamForm : Language -> AcuteIllnessCoreExamForm -> Html Msg
 viewCoreExamForm language form =
     let
         ( inputs, _ ) =
-            coreExamFormInutsAndTasks language form
+            coreExamFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam core-exam" ]
         inputs
@@ -864,7 +865,7 @@ viewAcuteFindingsForm : Language -> AcuteFindingsForm -> Html Msg
 viewAcuteFindingsForm language form =
     let
         ( inputs, _ ) =
-            acuteFindingsFormInutsAndTasks language form
+            acuteFindingsFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam acute-findings" ]
         inputs
@@ -874,7 +875,7 @@ viewNutritionForm : Language -> AcuteIllnessNutritionForm -> Html Msg
 viewNutritionForm language form =
     let
         ( inputs, _ ) =
-            nutritionFormInutsAndTasks language form
+            nutritionFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam nutrition" ]
         inputs
@@ -1132,7 +1133,7 @@ viewTreatmentReviewForm : Language -> TreatmentReviewForm -> Html Msg
 viewTreatmentReviewForm language form =
     let
         ( inputs, _ ) =
-            treatmentReviewFormInutsAndTasks language form
+            treatmentReviewFormInputsAndTasks language form
     in
     div [ class "ui form treatment-review" ]
         inputs
@@ -1419,7 +1420,7 @@ viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe Acut
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
         ( inputs, _ ) =
-            medicationDistributionFormInutsAndTasks language currentDate person diagnosis form
+            medicationDistributionFormInputsAndTasks language currentDate person diagnosis form
     in
     div [ class "ui form medication-distribution" ]
         inputs
@@ -1632,7 +1633,7 @@ viewReviewDangerSignsForm : Language -> ReviewDangerSignsForm -> Html Msg
 viewReviewDangerSignsForm language form =
     let
         ( inputs, _ ) =
-            reviewDangerSignsFormInutsAndTasks language form
+            reviewDangerSignsFormInputsAndTasks language form
     in
     div [ class "ui form danger-signs" ]
         inputs
@@ -1642,7 +1643,7 @@ viewHealthEducationForm : Language -> Maybe AcuteIllnessDiagnosis -> HealthEduca
 viewHealthEducationForm language maybeDiagnosis form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language maybeDiagnosis form
+            healthEducationFormInputsAndTasks language maybeDiagnosis form
     in
     div [ class "ui form health-education" ]
         inputs
@@ -1652,7 +1653,7 @@ viewSymptomsReliefForm : Language -> HealthEducationForm -> Html Msg
 viewSymptomsReliefForm language form =
     let
         ( inputs, _ ) =
-            symptomsReliefFormInutsAndTasks language form
+            symptomsReliefFormInputsAndTasks language form
     in
     div [ class "ui form symptoms-relief" ]
         inputs
@@ -1662,7 +1663,7 @@ viewFollowUpForm : Language -> Bool -> FollowUpForm -> Html Msg
 viewFollowUpForm language isChw form =
     let
         ( inputs, _ ) =
-            followUpFormInutsAndTasks language isChw form
+            followUpFormInputsAndTasks language isChw form
     in
     div [ class "ui form follow-up" ]
         inputs
@@ -1674,7 +1675,7 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate db contactsTracingFinished form.contacts
+                    viewContactsTracingFormSummary language currentDate site db contactsTracingFinished form.contacts
 
                 ContactsTracingFormSearchParticipants data ->
                     let
@@ -1685,7 +1686,7 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
                     viewContactsTracingFormSearchParticipants language currentDate site db recordedContacts data
 
                 ContactsTracingFormRecordContactDetails personId data ->
-                    viewContactsTracingFormRecordContactDetails language currentDate personId db data
+                    viewContactsTracingFormRecordContactDetails language currentDate site personId db data
 
                 ContactsTracingFormRegisterContact data ->
                     viewCreateContactForm language site geoInfo db data
@@ -1694,11 +1695,11 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
+viewContactsTracingFormSummary : Language -> NominalDate -> Site -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate site db contactsTracingFinished contacts =
     let
         contactsForView =
-            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db contactsTracingFinished))
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate site db contactsTracingFinished))
                 contacts
                 |> Maybe.withDefault []
     in
@@ -1729,8 +1730,8 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
     ]
 
 
-viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
-viewTracedContact language currentDate db finished contact =
+viewTracedContact : Language -> NominalDate -> Site -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
+viewTracedContact language currentDate site db finished contact =
     let
         person =
             Dict.get contact.personId db.people
@@ -1776,10 +1777,7 @@ viewTracedContact language currentDate db finished contact =
                                 |> text
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ village |> Maybe.withDefault "" |> text ]
-                        ]
+                    , viewVillageLine language site village
                     , p []
                         [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
                         , span [] [ formatDDMMYYYY contact.contactDate |> text ]
@@ -1848,6 +1846,7 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
         viewSearchedParticipant personId person =
             viewContactTracingParticipant language
                 currentDate
+                site
                 person
                 False
                 (ContactsTracingFormRecordContactDetails personId emptyRecordContactDetailsData)
@@ -1896,8 +1895,8 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
            ]
 
 
-viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
-viewContactsTracingFormRecordContactDetails language currentDate personId db data =
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> Site -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate site personId db data =
     Dict.get personId db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -1960,6 +1959,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                 , div [ class "ui items" ]
                     [ viewContactTracingParticipant language
                         currentDate
+                        site
                         person
                         True
                         (ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.emptyModel)
@@ -1987,8 +1987,8 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
         |> Maybe.withDefault []
 
 
-viewContactTracingParticipant : Language -> NominalDate -> Person -> Bool -> ContactsTracingFormState -> Html Msg
-viewContactTracingParticipant language currentDate person checked newFormState =
+viewContactTracingParticipant : Language -> NominalDate -> Site -> Person -> Bool -> ContactsTracingFormState -> Html Msg
+viewContactTracingParticipant language currentDate site person checked newFormState =
     let
         viewAction =
             let
@@ -2023,10 +2023,7 @@ viewContactTracingParticipant language currentDate person checked newFormState =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , viewAction
                 ]

@@ -62,7 +62,7 @@ viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDR
 viewHeaderAndContent language currentDate site id activity model assembled =
     div [ class "page-activity ncd" ]
         [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity)
-        , viewContent language currentDate activity model assembled
+        , viewContent language currentDate site activity model assembled
         , viewModal <|
             if List.isEmpty model.measurementOutOfRangePopupState then
                 Nothing
@@ -90,9 +90,9 @@ viewHeader language goBackPage labelTransId =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+viewContent : Language -> NominalDate -> Site -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity model assembled =
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewActivity language activity assembled model
     )
         |> div [ class "ui unstackable items" ]

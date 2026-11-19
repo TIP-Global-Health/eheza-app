@@ -16,15 +16,7 @@ class HedleyRestfulVillages extends HedleyRestfulSyncBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $standard_fields_names = [
-      'field_cell',
-      'field_district',
-      'field_province',
-      'field_sector',
-      'field_village',
-    ];
-
-    foreach ($standard_fields_names as $field_name) {
+    foreach (hedley_chw_village_geo_fields() as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
         'property' => $field_name,
@@ -43,14 +35,7 @@ class HedleyRestfulVillages extends HedleyRestfulSyncBase {
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    $field_names = [
-      'field_cell',
-      'field_district',
-      'field_province',
-      'field_sector',
-      'field_village',
-      'field_health_center',
-    ];
+    $field_names = array_merge(hedley_chw_village_geo_fields(), ['field_health_center']);
 
     foreach ($field_names as $field_name) {
       hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);

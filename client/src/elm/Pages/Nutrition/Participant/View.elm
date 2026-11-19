@@ -5,10 +5,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveMainParticipant, resolveTodaysEncounterState)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
-import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, getNutritionEncountersForParticipant)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForPerson, getNutritionEncountersForPerson)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -111,36 +111,15 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
     let
         -- Person nutrition session.
         maybeSessionId =
-            sessions
-                |> Dict.toList
-                |> List.filter
-                    (\( _, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                    )
-                |> List.head
-                |> Maybe.map Tuple.first
+            resolveMainParticipant Backend.IndividualEncounterParticipant.Model.NutritionEncounter sessions
 
         -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            Maybe.map (getNutritionEncountersForParticipant db) maybeSessionId
-                |> Maybe.map
-                    (\list ->
-                        ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
-                            |> List.head
-                            |> Maybe.map Tuple.first
-                        , List.filter
-                            (\( _, encounter ) ->
-                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                            )
-                            list
-                            |> List.isEmpty
-                            |> not
-                        )
-                    )
-                |> Maybe.withDefault ( Nothing, False )
+            getNutritionEncountersForPerson db id
+                |> resolveTodaysEncounterState currentDate
 
         action =
             maybeActiveEncounterId
@@ -220,38 +199,15 @@ viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessio
     let
         -- Person Home Visit session.
         maybeSessionId =
-            sessions
-                |> Dict.toList
-                |> List.filter
-                    (\( _, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
-                    )
-                |> List.head
-                |> Maybe.map Tuple.first
+            resolveMainParticipant Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter sessions
 
         -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            Maybe.map
-                (getHomeVisitEncountersForParticipant db
-                    >> (\list ->
-                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                            , List.filter
-                                (\( _, encounter ) ->
-                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                )
-                                list
-                                |> List.isEmpty
-                                |> not
-                            )
-                       )
-                )
-                maybeSessionId
-                |> Maybe.withDefault ( Nothing, False )
+            getHomeVisitEncountersForPerson db id
+                |> resolveTodaysEncounterState currentDate
 
         action =
             maybeActiveEncounterId

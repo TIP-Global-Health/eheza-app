@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra
 import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, LaboratoryTask(..), VitalsForm)
 import Measurement.Utils
     exposing
@@ -41,6 +42,7 @@ import Measurement.Utils
         , syphilisResultFormWithDefault
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
+        , viewLaboratoryResultNotPerformed
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -51,7 +53,7 @@ import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, LabResultsData, Model, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
-import Pages.Prenatal.RecurrentActivity.Utils exposing (examinationMeasurementTaken, examinationTasksCompletedFromTotal, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (examinationMeasurementTaken, examinationTasksCompletedFromTotal, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, resolvePartnerHIVTestResult)
 import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
@@ -171,6 +173,32 @@ viewLabResultsContent language isLabTech assembled model =
 
         activeTask =
             resolveActiveTask tasks model.labResultsData.activeTask
+
+        -- The lab technician gets their form back, so they can change the
+        -- answer. The nurse sees the answer and reason instead.
+        notPerformedTasks =
+            if isLabTech then
+                Dict.empty
+
+            else
+                List.filterMap
+                    (\task ->
+                        laboratoryResultNotPerformed assembled task
+                            |> Maybe.map (Tuple.pair task)
+                    )
+                    tasks
+                    |> Dict.fromList
+
+        -- A declined test with no result stored has nothing to fill in, and
+        -- so no Save.
+        activeTaskToFillIn =
+            Maybe.Extra.filter
+                (\task ->
+                    Dict.get task notPerformedTasks
+                        |> Maybe.map .holdsResult
+                        |> Maybe.withDefault True
+                )
+                activeTask
 
         viewTask task =
             let
@@ -314,6 +342,28 @@ viewLabResultsContent language isLabTech assembled model =
                 )
                 tasks
                 |> Dict.fromList
+                |> Dict.map
+                    (\task ( form, completed, total ) ->
+                        Dict.get task notPerformedTasks
+                            |> Maybe.map
+                                (\notPerformed ->
+                                    if notPerformed.holdsResult then
+                                        ( div []
+                                            [ viewLaboratoryResultNotPerformed language Nothing notPerformed.reason
+                                            , form
+                                            ]
+                                        , completed
+                                        , total
+                                        )
+
+                                    else
+                                        ( viewLaboratoryResultNotPerformed language (Just ( task, notPerformed.executionDate )) notPerformed.reason
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                            |> Maybe.withDefault ( form, completed, total )
+                    )
 
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
@@ -380,7 +430,7 @@ viewLabResultsContent language isLabTech assembled model =
                         )
                         saveMsg
                 )
-                activeTask
+                activeTaskToFillIn
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]

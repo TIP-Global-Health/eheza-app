@@ -2,7 +2,7 @@ import { Page, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { WAIT, formInput, selectByLabel, setDate } from './common';
+import { WAIT, formInput, selectByLabel, setDate, uploadTestPhoto } from './common';
 
 // ---------------------------------------------------------------------------
 // Participant registration
@@ -523,26 +523,7 @@ export async function completeMuac(
  */
 export async function completePhoto(page: Page) {
   await openActivity(page, 'photo', 'div.ui.full.segment.photo');
-
-  // The photo form uses Dropzone.js with a hidden file input.
-  // Find the file input inside the dropzone and upload a minimal PNG.
-  const dropzone = page.locator('div#dropzone');
-  const fileInput = dropzone.locator('input[type="file"]');
-
-  // Create a minimal 1x1 PNG in memory.
-  const pngBase64 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-  const pngBuffer = Buffer.from(pngBase64, 'base64');
-
-  await fileInput.setInputFiles({
-    name: 'test-photo.png',
-    mimeType: 'image/png',
-    buffer: pngBuffer,
-  });
-
-  // Wait for the dropzone to process the upload.
-  await page.waitForTimeout(WAIT.pageNavigation);
-
+  await uploadTestPhoto(page);
   await saveActivity(page);
 }
 

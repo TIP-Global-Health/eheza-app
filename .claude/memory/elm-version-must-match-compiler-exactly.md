@@ -14,6 +14,8 @@ For Elm **applications**, `elm.json`'s `"elm-version"` must match the installed 
 
 PR #2323 merged 2026-10-11 (user asked to align everything on it). This supersedes the user's 2026-07-26 rule "We should use Elm 0.19.2 … do all the check using 0.19.2". Never verify an Elm change with an older compiler, and never accept a verification someone else ran with one.
 
+**The host-global install is PER STATION.** The laptop still had `elm` 0.19.1 from 2024 until 2026-11-18: a night scout ran 703 tests under it. Check `elm --version` on a station before trusting a host run; the fix is the `npm i -g` line below.
+
 **Aligned 2026-10-11:** host-global `elm` 0.19.3 and `elm-test` 0.19.3-0 (`npm i -g elm@latest-0.19.3 elm-test@0.19.3-0`); DDEV image 0.19.3 / 0.19.3-0; project-local `client/node_modules/.bin/elm-test` 0.19.3-0. Bare `elm make`, `elm-test` and `elm-review` all work without `--compiler`. Full compile: 548 modules.
 
 **The silent-rewrite hazard.** An older `elm` run in a checkout does not always just fail — a 0.19.1 binary once **rewrote `client/elm.json`'s pin** as an uncommitted change (2026-07-26). ⇒ After any elm/elm-test/elm-review run, `grep '"elm-version"' client/elm.json` must still say 0.19.3; check `git diff` for a stray `elm.json` hunk before committing. Sub-agents (`/code-review`) call bare `elm` in their worktree, so this applies to their worktrees too; they also copy `elm-stuff` instead of symlinking it.

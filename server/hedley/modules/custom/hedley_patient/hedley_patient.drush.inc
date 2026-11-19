@@ -21,6 +21,18 @@ const HEDLEY_PATIENT_FAMILY_ENCOUNTER_TYPE_VALUE_MAPPING = [
   'family_nutrition_encounter' => 'nutrition',
 ];
 
+// Programmes that allow one participant per person.
+const HEDLEY_PATIENT_ONE_PARTICIPANT_TYPES = [
+  'child-scoreboard',
+  'home-visit',
+  'ncd',
+  'nutrition',
+  'well-child',
+];
+
+// Revision log prefix marking a participant this command merged.
+const HEDLEY_PATIENT_MERGED_PARTICIPANT_LOG = 'Merged into participant ';
+
 /**
  * Implements hook_drush_command().
  */
@@ -42,6 +54,15 @@ function hedley_patient_drush_command() {
       'duplicate' => 'Node ID of the patient which data is moved to the original patient.',
     ],
     'aliases' => ['cns-ptnts'],
+  ];
+  $items['merge-duplicate-participants'] = [
+    'callback' => 'hedley_patient_merge_duplicate_participants',
+    'description' => 'Merges duplicate individual participants: moves their encounters to the oldest participant of the person, then marks them deleted.',
+    'options' => [
+      'dry-run' => 'Print what would be merged, without saving anything.',
+      'types' => 'Comma separated encounter types, like nutrition,well-child. Defaults to all one-per-person types.',
+    ],
+    'aliases' => ['mrg-dup-prtcp'],
   ];
 
   return $items;
@@ -86,6 +107,268 @@ function hedley_patient_patient_measurements_report() {
 
     drush_print("Patient got $count measurements from $encounter_indicator.");
   }
+}
+
+/**
+ * Command callback for 'drush merge-duplicate-participants'.
+ *
+ * Safe to run again: it also moves encounters that later landed on a merged
+ * participant. Each merge line is the record for undoing it.
+ */
+function hedley_patient_merge_duplicate_participants() {
+  $supported = HEDLEY_PATIENT_ONE_PARTICIPANT_TYPES;
+  $types = $supported;
+  $types_option = drush_get_option('types');
+  if (!empty($types_option)) {
+    $types = array_filter(array_map('trim', explode(',', $types_option)));
+    if (empty($types)) {
+      return drush_set_error('HEDLEY_PATIENT_NO_TYPES', 'No types given. Supported: ' . implode(', ', $supported) . '.');
+    }
+    $unsupported = array_diff($types, $supported);
+    if (!empty($unsupported)) {
+      return drush_set_error('HEDLEY_PATIENT_UNSUPPORTED_TYPES', 'Unsupported types: ' . implode(', ', $unsupported) . '. Supported: ' . implode(', ', $supported) . '.');
+    }
+  }
+
+  $dry_run = (bool) drush_get_option('dry-run', FALSE);
+  if ($dry_run) {
+    drush_print('Dry run: nothing is saved.');
+  }
+
+  _hedley_patient_merge_duplicate_participants($types, $dry_run, 'drush_print');
+}
+
+/**
+ * Merges duplicate participants into the one with the lowest node ID.
+ *
+ * Each merge is reported as it happens, so a failed run still records what
+ * it merged.
+ *
+ * @param array $types
+ *   One-per-person encounter types, like 'nutrition'.
+ * @param bool $dry_run
+ *   When TRUE, nothing is saved.
+ * @param callable $report
+ *   Called with each message.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _hedley_patient_merge_duplicate_participants(array $types, $dry_run, callable $report) {
+  $merged = 0;
+  $moved = 0;
+
+  foreach (_hedley_patient_duplicate_participants($types) as $group) {
+    $survivor = array_shift($group['participants']);
+    foreach ($group['participants'] as $surplus) {
+      $encounters = $dry_run
+        ? hedley_person_load_individual_participant_encounters_ids($surplus)
+        : _hedley_patient_merge_participant_into($surplus, $survivor, HEDLEY_PATIENT_MERGED_PARTICIPANT_LOG . $survivor);
+      $report("Person {$group['person']}, {$group['type']}: participant $surplus merged into $survivor, encounters moved: " . (empty($encounters) ? 'none' : implode(',', $encounters)));
+      $merged++;
+      $moved += count($encounters);
+    }
+
+    // Keep memory flat over thousands of loaded nodes.
+    entity_get_controller('node')->resetCache();
+  }
+
+  $late = _hedley_patient_move_late_encounters($types, $dry_run, $report);
+
+  $report("Done. Participants merged: $merged. Encounters moved with them: $moved. Late encounters moved off merged participants: $late.");
+}
+
+/**
+ * Moves a participant's encounters to another participant, then deletes it.
+ *
+ * Encounters are read right before the delete, which deletes every encounter
+ * the participant still holds.
+ *
+ * @param int $participant
+ *   The participant node ID to delete.
+ * @param int $survivor
+ *   The participant node ID that receives the encounters.
+ * @param string $log
+ *   Optional; the revision log message of the delete.
+ *
+ * @return array
+ *   The moved encounter node IDs.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _hedley_patient_merge_participant_into($participant, $survivor, $log = '') {
+  $encounters = hedley_person_load_individual_participant_encounters_ids($participant);
+  _associate_content_by_field($encounters, 'field_individual_participant', $survivor);
+
+  $node = node_load($participant);
+  $node->log = $log;
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper->field_deleted->set(TRUE);
+  $wrapper->save();
+
+  return $encounters;
+}
+
+/**
+ * Moves live encounters off participants this command merged.
+ *
+ * A device offline during a merge can still upload a new encounter there, or
+ * send an edited one back there.
+ *
+ * @param array $types
+ *   One-per-person encounter types, like 'nutrition'.
+ * @param bool $dry_run
+ *   When TRUE, nothing is saved.
+ * @param callable $report
+ *   Called with each message.
+ *
+ * @return int
+ *   The number of encounters moved.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _hedley_patient_move_late_encounters(array $types, $dry_run, callable $report) {
+  $moved = 0;
+  $survivors = [];
+  foreach (_hedley_patient_encounters_on_merged_participants($types) as $row) {
+    $key = $row->person . ':' . $row->type;
+    if (!isset($survivors[$key])) {
+      $live = _hedley_patient_live_participants($row->person, $row->type);
+      $survivors[$key] = reset($live);
+    }
+
+    if (empty($survivors[$key])) {
+      $report("Encounter {$row->encounter} on merged participant {$row->participant} left: person {$row->person} has no live {$row->type} participant.");
+      continue;
+    }
+
+    if (!$dry_run) {
+      _associate_content_by_field([$row->encounter], 'field_individual_participant', $survivors[$key]);
+    }
+    $report("Encounter {$row->encounter} moved from merged participant {$row->participant} to {$survivors[$key]}.");
+    $moved++;
+
+    if ($moved % 100 == 0) {
+      entity_get_controller('node')->resetCache();
+    }
+  }
+
+  return $moved;
+}
+
+/**
+ * Groups the live participants of persons that hold more than one of a type.
+ *
+ * @param array $types
+ *   One-per-person encounter types, like 'nutrition'.
+ *
+ * @return array
+ *   A list of ['person' => nid, 'type' => type, 'participants' => nids], with
+ *   the participant node IDs in ascending order.
+ */
+function _hedley_patient_duplicate_participants(array $types) {
+  $duplicated = _hedley_patient_live_participants_query($types);
+  $duplicated->addField('p', 'field_person_target_id', 'person');
+  $duplicated->addField('et', 'field_encounter_type_value', 'type');
+  $duplicated->groupBy('p.field_person_target_id');
+  $duplicated->groupBy('et.field_encounter_type_value');
+  $duplicated->having('COUNT(n.nid) > 1');
+
+  $query = _hedley_patient_live_participants_query($types);
+  $query->join($duplicated, 'dup', 'dup.person = p.field_person_target_id AND dup.type = et.field_encounter_type_value');
+  $query->addField('p', 'field_person_target_id', 'person');
+  $query->addField('et', 'field_encounter_type_value', 'type');
+  $query->addField('n', 'nid');
+  $query->orderBy('p.field_person_target_id');
+  $query->orderBy('et.field_encounter_type_value');
+  $query->orderBy('n.nid');
+
+  $groups = [];
+  foreach ($query->execute() as $row) {
+    $key = $row->person . ':' . $row->type;
+    if (!isset($groups[$key])) {
+      $groups[$key] = [
+        'person' => $row->person,
+        'type' => $row->type,
+        'participants' => [],
+      ];
+    }
+    $groups[$key]['participants'][] = $row->nid;
+  }
+
+  return array_values($groups);
+}
+
+/**
+ * The live participants of a person and type, in ascending node ID order.
+ *
+ * @param int $person
+ *   The person node ID.
+ * @param string $type
+ *   The encounter type, like 'nutrition'.
+ *
+ * @return array
+ *   Participant node IDs.
+ */
+function _hedley_patient_live_participants($person, $type) {
+  $query = _hedley_patient_live_participants_query([$type]);
+  $query->condition('p.field_person_target_id', $person);
+  $query->addField('n', 'nid');
+  $query->orderBy('n.nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Selects live participants of given types.
+ *
+ * @param array $types
+ *   Encounter types, like 'nutrition'.
+ *
+ * @return \SelectQuery
+ *   The query, with aliases n (node), p (person) and et (encounter type).
+ */
+function _hedley_patient_live_participants_query(array $types) {
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_person', 'p', "p.entity_id = n.nid AND p.entity_type = 'node'");
+  $query->join('field_data_field_encounter_type', 'et', "et.entity_id = n.nid AND et.entity_type = 'node'");
+  $query->condition('n.type', 'individual_participant');
+  $query->condition('n.status', NODE_PUBLISHED);
+  $query->condition('et.field_encounter_type_value', $types, 'IN');
+
+  return $query;
+}
+
+/**
+ * Finds live encounters on deleted participants this command merged.
+ *
+ * A merged participant carries the merge log on one of its revisions; other
+ * deleted participants are left alone.
+ *
+ * @param array $types
+ *   Encounter types, like 'nutrition'.
+ *
+ * @return array
+ *   Rows with encounter, participant, person and type.
+ */
+function _hedley_patient_encounters_on_merged_participants(array $types) {
+  $query = hedley_general_create_db_select_query_excluding_deleted('e');
+  $query->join('field_data_field_individual_participant', 'ip', "ip.entity_id = e.nid AND ip.entity_type = 'node'");
+  $query->join('field_data_field_deleted', 'pd', "pd.entity_id = ip.field_individual_participant_target_id AND pd.entity_type = 'node'");
+  $query->join('field_data_field_person', 'pp', "pp.entity_id = ip.field_individual_participant_target_id AND pp.entity_type = 'node'");
+  $query->join('field_data_field_encounter_type', 'pt', "pt.entity_id = ip.field_individual_participant_target_id AND pt.entity_type = 'node'");
+  $query->join('node_revision', 'pr', 'pr.nid = ip.field_individual_participant_target_id');
+  $query->condition('e.status', NODE_PUBLISHED);
+  $query->condition('pd.field_deleted_value', 1);
+  $query->condition('pt.field_encounter_type_value', $types, 'IN');
+  $query->condition('pr.log', db_like(HEDLEY_PATIENT_MERGED_PARTICIPANT_LOG) . '%', 'LIKE');
+  $query->addField('e', 'nid', 'encounter');
+  $query->addField('ip', 'field_individual_participant_target_id', 'participant');
+  $query->addField('pp', 'field_person_target_id', 'person');
+  $query->addField('pt', 'field_encounter_type_value', 'type');
+  $query->distinct();
+  $query->orderBy('e.nid');
+
+  return $query->execute()->fetchAll();
 }
 
 /**
@@ -136,21 +419,34 @@ function _consolidate_patients_validate($original, $duplicate) {
     'messages' => [],
   ];
 
-  $wrapper_original = entity_metadata_wrapper('node', $original);
-  $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
+  $wrappers = [];
+  foreach (['Original' => $original, 'Duplicate' => $duplicate] as $label => $nid) {
+    $node = (string) (int) $nid === (string) $nid ? node_load($nid) : FALSE;
+    if (empty($node)) {
+      $return['messages'][] = "ERROR! $label patient ID does not match any content. Please fix and try again.";
+      return $return;
+    }
 
-  if ($wrapper_original->getBundle() !== 'person') {
-    $return['messages'][] = 'ERROR! Original patient node type is not of a person. Please fix and try again.';
+    if ($node->type !== 'person') {
+      $return['messages'][] = "ERROR! $label patient node type is not of a person. Please fix and try again.";
+      return $return;
+    }
+
+    $wrappers[$label] = entity_metadata_wrapper('node', $node);
+    $deleted = $wrappers[$label]->field_deleted->value();
+    if (!empty($deleted)) {
+      $return['messages'][] = "ERROR! $label patient is already deleted. Please fix and try again.";
+      return $return;
+    }
+  }
+
+  if ((int) $original === (int) $duplicate) {
+    $return['messages'][] = 'ERROR! Original and duplicate patient are the same person. Please fix and try again.';
     return $return;
   }
 
-  if ($wrapper_duplicate->getBundle() !== 'person') {
-    $return['messages'][] = 'ERROR! Duplicate patient node type is not of a person. Please fix and try again.';
-    return $return;
-  }
-
-  $health_center_original = $wrapper_original->field_health_center->getIdentifier();
-  $health_center_duplicate = $wrapper_duplicate->field_health_center->getIdentifier();
+  $health_center_original = $wrappers['Original']->field_health_center->getIdentifier();
+  $health_center_duplicate = $wrappers['Duplicate']->field_health_center->getIdentifier();
   // Do not allow consolidation, if patients are assigned to
   // different health centers.
   if ($health_center_original !== $health_center_duplicate) {
@@ -186,7 +482,7 @@ function _consolidate_patients_validate($original, $duplicate) {
     // If consolidation failed, we make no changes, so that a fix could be
     // applied, and command could be executed again.
     if (!$function_result['success']) {
-      $return['messages'] = array_merge($return['messages'], $function_result['message']);
+      $return['messages'] = array_merge($return['messages'], $function_result['messages']);
       return $return;
     }
   }
@@ -837,12 +1133,7 @@ function _consolidate_prenatal_encounter_content_execute(array $measurements, $o
   // encounters with ongoing pregnancy of original patient.
   // Afterwards, mark ongoing pregnancy of duplicate as deleted.
   if ($participant_duplicate_ongoing) {
-    $encounters = hedley_person_load_individual_participant_encounters_ids($participant_duplicate_ongoing);
-    _associate_content_by_field($encounters, 'field_individual_participant', $participant_original_ongoing);
-
-    $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
-    $wrapper_participant->field_deleted->set(TRUE);
-    $wrapper_participant->save();
+    _hedley_patient_merge_participant_into($participant_duplicate_ongoing, $participant_original_ongoing);
   }
 
   // Associate remaining  participants and measurements of duplicate,
@@ -1259,12 +1550,7 @@ function _consolidate_single_participant_content_execute(array $measurements, $o
   // Associate all encounters of the duplicate with participant of
   // original patient. The participants of the duplicate are marked as deleted.
   foreach ($participants_duplicate as $participant) {
-    $encounters = hedley_person_load_individual_participant_encounters_ids($participant);
-    _associate_content_by_field($encounters, 'field_individual_participant', $original_participant);
-
-    $wrapper_participant = entity_metadata_wrapper('node', $participant);
-    $wrapper_participant->field_deleted->set(TRUE);
-    $wrapper_participant->save();
+    _hedley_patient_merge_participant_into($participant, $original_participant);
   }
 
   // Associate all the measurements with the 'original' patient.

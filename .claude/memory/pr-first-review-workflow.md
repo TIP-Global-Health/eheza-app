@@ -1,11 +1,11 @@
 ---
 name: pr-first-review-workflow
-description: "PR goes up FIRST; two medium review rounds — round 1 I fix as I judge, unposted; round 2 posted as inline PR comments, analysis, wait for approval"
+description: "PR goes up FIRST; two medium review rounds, both fixed as I judge (no approval wait since 2026-11-10) — round 1 unposted; round 2 posted as inline PR comments, then fix, then analysis with links"
 metadata: 
   node_type: memory
   type: feedback
   originSessionId: c7019686-e437-4d8b-9f2d-a2a4c507d45d
-  modified: 2026-10-11T12:00:00.000Z
+  modified: 2026-11-10T10:45:46.388Z
 ---
 
 Development process (set 2026-07-27, user's words: *"when starting
@@ -19,8 +19,11 @@ another review (medium), and post the comments on the PR for me to see."*):
 
 - **Round 1 — mine.** Medium review right after the PR is up. Triage and fix as I judge, push.
   Nothing posted to the PR, no approval wait; a short chat list of what was fixed or declined.
-- **Round 2 — the user's.** Medium review on the pushed head. Steps 3–5 below apply to it:
-  post inline, analysis with links, wait for approval, then reply and resolve.
+- **Round 2 — posted, but also mine to decide** (user, 2026-11-10: *"second phase of review fixes
+  is also yours to decide upon"*). Medium review on the pushed head. Steps 3–5 below apply to it:
+  post inline FIRST, then fix or decline as I judge, push, reply and resolve, and present the
+  analysis with links. No approval wait. Still ask first when a fix would change intended
+  behaviour, needs a clinician, or grows the diff beyond the problem (section below).
 - **Then suggest QA** (user, 2026-10-14: *"after second round of review is addressed, suggest if
   it's worth testing the develoment with qa-tester skill"*). Say whether a `qa-tester` run is worth
   it and why; suggest only, the user decides.
@@ -110,8 +113,10 @@ Steps 2–5 below describe round 2 unless they say otherwise.
 
    `html_url` is also returned per comment in the POST response. Every finding, every round,
    declined ones included.
-5. **STOP after round 2. Do not fix its findings until the user approves.** Approval comes *after* the analysis, not before the review. Once approved, run it through: fix,
-   re-verify, push, watch CI to completion — but **ask before any Copilot request** (below).
+5. **Then act on round 2 without waiting** (since 2026-11-10; until then it stopped for approval).
+   Fix what I judge real, decline the rest with a reason, re-verify, push, reply and resolve each
+   thread, watch CI to completion — but **ask before any Copilot request** (below). The analysis
+   reports what was done; it is not a request for approval.
 
 ## ⛔ NEVER request a Copilot review without asking first (2026-08-02)
 

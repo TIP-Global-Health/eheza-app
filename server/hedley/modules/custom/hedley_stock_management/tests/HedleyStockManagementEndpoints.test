@@ -166,6 +166,109 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
     $this->assertTrue($found_without_village, 'Stock update without village_ref found in response.');
 
     $this->checkFeatureFlags();
+    $this->checkVillageGeoFieldsRequired($health_center_id);
+  }
+
+  /**
+   * Village geo-field block, called from testStockUpdateWithVillageRef.
+   *
+   * A blank geo field reaches devices as NULL and fails the whole general
+   * sync batch, so the node form and every programmatic save refuse it.
+   *
+   * @param int $health_center_id
+   *   The health center node ID.
+   */
+  protected function checkVillageGeoFieldsRequired($health_center_id) {
+    $geo_fields = [
+      'field_province',
+      'field_district',
+      'field_sector',
+      'field_cell',
+      'field_village',
+    ];
+
+    // The node form marks each of them required.
+    foreach ($geo_fields as $field_name) {
+      $instance = field_info_instance('node', $field_name, 'village');
+      $this->assertEqual($instance['required'], 1, "$field_name is required on the village form.");
+    }
+
+    // A programmatic save with one of them missing, empty or only spaces is
+    // refused, and nothing is stored.
+    $blank_values = [
+      'missing' => NULL,
+      'empty' => '',
+      'spaces' => '   ',
+    ];
+    foreach ($geo_fields as $blank_field) {
+      foreach ($blank_values as $label => $blank_value) {
+        $title = "Village with $blank_field $label";
+        $values = [
+          'type' => 'village',
+          'title' => $title,
+          'field_health_center' => [
+            LANGUAGE_NONE => [
+              ['target_id' => $health_center_id],
+            ],
+          ],
+        ];
+        foreach ($geo_fields as $field_name) {
+          if ($field_name != $blank_field) {
+            $values[$field_name] = [LANGUAGE_NONE => [['value' => 'Test']]];
+          }
+          elseif ($blank_value !== NULL) {
+            $values[$field_name] = [LANGUAGE_NONE => [['value' => $blank_value]]];
+          }
+        }
+
+        try {
+          $this->drupalCreateNode($values);
+          $this->fail("A village with $blank_field $label was saved.");
+        }
+        catch (Exception $e) {
+          $this->assertEqual($e->getMessage(), "A village must have a value for $blank_field.", "A village with $blank_field $label is refused.");
+        }
+
+        $stored = db_select('node', 'n')
+          ->condition('n.type', 'village')
+          ->condition('n.title', $title)
+          ->countQuery()
+          ->execute()
+          ->fetchField();
+        $this->assertEqual($stored, 0, "No village with $blank_field $label is stored.");
+      }
+    }
+
+    // A village with all five filled still saves and gets its CHW group.
+    $values = [
+      'type' => 'village',
+      'title' => 'Village with every geo field',
+      'field_health_center' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $health_center_id],
+        ],
+      ],
+    ];
+    foreach ($geo_fields as $field_name) {
+      $values[$field_name] = [LANGUAGE_NONE => [['value' => 'Test']]];
+    }
+    $village = $this->drupalCreateNode($values);
+    $this->assertTrue(!empty($village->nid), 'A village with every geo field is saved.');
+
+    $groups = db_select('field_data_field_village_ref', 'v')
+      ->condition('v.bundle', 'clinic')
+      ->condition('v.field_village_ref_target_id', $village->nid)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEqual($groups, 1, 'A village with every geo field gets its CHW group.');
+
+    // Editing it keeps working.
+    $village = node_load($village->nid, NULL, TRUE);
+    $village->title = 'Village with every geo field, edited';
+    node_save($village);
+    $village = node_load($village->nid, NULL, TRUE);
+    $this->assertEqual($village->title, 'Village with every geo field, edited', 'A village with every geo field can be edited.');
   }
 
   /**

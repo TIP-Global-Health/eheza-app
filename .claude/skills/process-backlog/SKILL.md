@@ -113,8 +113,9 @@ On **park**: write `🅿 PARKED` into the entry *and* the tier line with the use
 and the date, before moving on.
 
 ### 4. Build
-Follow `knowledge/runbook.md` exactly — worktree per finding, verification gates per change type,
-issue → PR → review request.
+Follow `knowledge/runbook.md` exactly — worktree per finding, issue with acceptance criteria
+before any code, seam commit and blind tests for logic defects, verification gates per change
+type, PR → review request.
 
 ### 5. Record
 Immediately, before the next item and before anything can be compacted away: entry status, PR
@@ -139,8 +140,15 @@ number, tier line, and any side-findings noticed while building appended as new 
 - ⛔ **Two medium review rounds, run yourself, every time.** Right after opening a PR, invoke
   `Skill({skill: "code-review", args: "medium <branch>"})` and say in the announcement that it is
   running. **Round 1:** fix or decline as you judge, push; post nothing to the PR, ask no approval.
-  **Round 2:** run it on the pushed head; the rules below apply to it. Never self-run `high` or
-  above. Mechanics in `pr-first-review-workflow` in memory.
+  **Round 2:** run it on the pushed head, post its findings (rules below), then fix or decline as
+  you judge, push, and present what you did — no approval wait. Ask first only when a fix would
+  change intended behaviour, needs a clinician, or grows the diff beyond the problem. Never self-run
+  `high` or above. Mechanics in `pr-first-review-workflow` in memory.
+- ⛔ **Criteria before code; blind tests for logic defects.** The issue, with its
+  `## Expected behaviour` block approved by the user, exists before the first line of the fix.
+  For a logic defect the tests come from the `blind-test-author` agent, started from the seam
+  commit with the issue and the criteria only, and must fail there (`fail-first.sh`). The
+  implementer never changes what a blind test asserts. Runbook steps 2a–2b.
 - **After round 2 is addressed, suggest whether a `qa-tester` run is worth it** — one line with the
   reason (visible on screen or in stored data, not covered by e2e). Suggest only; never start it.
   In the same message, ask whether to move the PR to QA; only on approval add the `Ready for QA` label.
@@ -172,7 +180,9 @@ number, tier line, and any side-findings noticed while building appended as new 
   ⚠ Read it before deciding the fix is a revert, too: the code before the offending commit can be
   wrong at a boundary the spec defines, so a revert can ship a second, quieter defect.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
-- CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
+- CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`. Then
+  delete the blind tests' branch too: `git push origin --delete <id>-tests`. Its commits are
+  already in `develop`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery
   seat's job, and duplicating it wastes both.
 - Titles and bodies follow the repo's `CLAUDE.md` rule: the title names the defect from the

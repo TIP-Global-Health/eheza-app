@@ -434,6 +434,7 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .inputs .report.nutrition .table.wide,
+.page-content .inputs .report.nutrition .table-note,
 .page-content .inputs .report.nutrition .section.heading {
   font-size: 24px;
   margin-left: -12%;
@@ -519,4 +520,16 @@ body.admin-menu #page-wrapper #header {
 .page-content .inputs .report.nutrition .table .row .item.row-label {
   text-align: left;
   width: 10%;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.value .counts {
+  font-size: 12px;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.page-content .inputs .report.nutrition .table-note {
+  font-size: 14px;
+  margin-bottom: 40px;
+  margin-top: -10px;
 }

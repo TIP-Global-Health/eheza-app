@@ -14,9 +14,9 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getAcuteIllnessEncountersForParticipant
         , getHIVEncountersForParticipant
-        , getHomeVisitEncountersForParticipant
+        , getHomeVisitEncountersForPerson
         , getTuberculosisEncountersForParticipant
-        , getWellChildEncountersForParticipant
+        , getWellChildEncountersForPerson
         )
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
@@ -155,7 +155,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
             (\sessionId ->
                 unlessEncounterStartedToday currentDate
                     HomeVisitEncounterPage
-                    (getHomeVisitEncountersForParticipant db sessionId)
+                    (getHomeVisitEncountersForPerson db data.personId)
                     [ emptyHomeVisitEncounter sessionId currentDate (Just selectedHealthCenter)
                         |> Backend.Model.PostHomeVisitEncounter
                         |> App.Model.MsgIndexedDb
@@ -193,7 +193,7 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
             (\sessionId ->
                 unlessEncounterStartedToday currentDate
                     WellChildEncounterPage
-                    (getWellChildEncountersForParticipant db sessionId
+                    (getWellChildEncountersForPerson db data.personId
                         -- A nurse encounter is not ours to enter, and does not
                         -- stand in for the CHW visit.
                         |> List.filter (Tuple.second >> .encounterType >> (/=) PediatricCare)

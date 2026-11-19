@@ -1,10 +1,11 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (Model, Msg(..))
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, getLoggedInModel, getSessionPages)
 import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
@@ -62,6 +63,7 @@ import Pages.Prenatal.RecurrentActivity.Fetch
 import Pages.Prenatal.RecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.Session.Model
 import Pages.StockManagement.Fetch
 import Pages.StockManagement.Model
 import Pages.TraceContact.Fetch
@@ -286,14 +288,23 @@ fetch model =
 
             UserPage (SessionPage sessionId sessionPage) ->
                 let
-                    features =
-                        model.syncManager.syncInfoGeneral.features
+                    ( isChw, sessionPages ) =
+                        getLoggedInModel model
+                            |> Maybe.map
+                                (\loggedIn ->
+                                    ( isCommunityHealthWorker (Tuple.second loggedIn.nurse)
+                                    , getSessionPages sessionId loggedIn
+                                    )
+                                )
+                            |> Maybe.withDefault ( False, Pages.Session.Model.emptyModel )
                 in
                 Pages.Session.Fetch.fetch currentDate
                     model.zscores
-                    features
+                    model.syncManager.syncInfoGeneral.features
+                    isChw
                     sessionId
                     sessionPage
+                    sessionPages
                     model.indexedDb
                     |> List.map MsgIndexedDb
 

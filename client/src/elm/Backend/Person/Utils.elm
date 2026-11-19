@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
+module Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, ageInYears, defaultIconForPerson, earliestChildBirthDate, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, latestAdultBirthDate, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, personAgeInMonthsReached, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -27,10 +27,48 @@ ageInYears currentDate person =
         |> Maybe.map (\birthDate -> diffYears birthDate currentDate)
 
 
+{-| Whole months from birth to a date, counting a month as complete on the
+month-end day its date falls on. Born 31 March, on 30 September it's 6 months.
+-}
+ageInMonthsReached : NominalDate -> NominalDate -> Int
+ageInMonthsReached birthDate date =
+    let
+        wholeMonths =
+            Date.diff Date.Months birthDate date
+    in
+    if Date.compare (Date.add Date.Months (wholeMonths + 1) birthDate) date == EQ then
+        wholeMonths + 1
+
+    else
+        wholeMonths
+
+
+personAgeInMonthsReached : NominalDate -> Person -> Maybe Int
+personAgeInMonthsReached currentDate person =
+    Maybe.map (\birthDate -> ageInMonthsReached birthDate currentDate) person.birthDate
+
+
 ageInMonths : NominalDate -> Person -> Maybe Int
 ageInMonths currentDate person =
     person.birthDate
         |> Maybe.map (\birthDate -> diffMonths birthDate currentDate)
+
+
+{-| The earliest birth date a child-only birth-date picker offers: the day after
+the latest adult one.
+-}
+earliestChildBirthDate : NominalDate -> NominalDate
+earliestChildBirthDate currentDate =
+    latestAdultBirthDate currentDate
+        |> Date.add Date.Days 1
+
+
+{-| The latest birth date an adult-only birth-date picker offers. Born exactly
+13 years ago is an adult by `isAdult`.
+-}
+latestAdultBirthDate : NominalDate -> NominalDate
+latestAdultBirthDate currentDate =
+    Date.add Date.Years -13 currentDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool

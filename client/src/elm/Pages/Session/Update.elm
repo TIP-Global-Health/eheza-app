@@ -6,8 +6,6 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
@@ -25,21 +23,17 @@ import Pages.ProgressReport.Model
 import Pages.ProgressReport.Update
 import Pages.Session.Model exposing (Model, Msg(..))
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site, SiteFeature)
-import ZScore.Model
+import SyncManager.Model exposing (Site)
 
 
 update :
-    NominalDate
-    -> ZScore.Model.Model
-    -> Site
-    -> EverySet SiteFeature
+    Site
     -> SessionId
     -> ModelIndexedDb
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate zscores site features sessionId db msg model =
+update site sessionId db msg model =
     let
         sessionData =
             Dict.get sessionId db.editableSessions
@@ -47,7 +41,7 @@ update currentDate zscores site features sessionId db msg model =
     in
     case sessionData of
         Success session ->
-            updateFoundSession currentDate zscores site features sessionId session db msg model
+            updateFoundSession site sessionId session msg model
 
         _ ->
             -- We're handling UI messages here, and the UI should only be shown if
@@ -60,17 +54,13 @@ update currentDate zscores site features sessionId db msg model =
 don't modify it directly ... instead, we return messages to do so.
 -}
 updateFoundSession :
-    NominalDate
-    -> ZScore.Model.Model
-    -> Site
-    -> EverySet SiteFeature
+    Site
     -> SessionId
     -> EditableSession
-    -> ModelIndexedDb
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateFoundSession currentDate zscores site features sessionId session db msg model =
+updateFoundSession site sessionId session msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -102,16 +92,11 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
                     Maybe.map (\childId -> getChildForm site childId model session) maybeChildId
 
                 updateReturns =
-                    Pages.Activity.Update.updateChild currentDate
-                        zscores
-                        features
-                        site
+                    Pages.Activity.Update.updateChild site
                         subMsg
                         activityPage
-                        session
                         activityType
                         childForm
-                        db
 
                 sessionMsgs =
                     maybeChildId
@@ -157,7 +142,7 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
                 measurements =
                     maybeMotherId
                         |> Maybe.andThen (\motherId -> LocalData.toMaybe <| getMotherMeasurementData motherId session)
-                        |> Maybe.withDefault (emptyMotherMeasurementData session)
+                        |> Maybe.withDefault emptyMotherMeasurementData
 
                 updateReturns =
                     Pages.Activity.Update.updateMother subMsg activityPage motherForm measurements

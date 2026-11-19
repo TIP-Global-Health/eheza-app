@@ -1,4 +1,4 @@
-module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
+module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedOrReportedPreviouslyAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, reportedAnyOf, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
@@ -22,7 +22,7 @@ import Measurement.Utils
         , viewReinforceAdherenceQuestion
         )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatementUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatmentUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), HeartburnReliefMethod(..), LegCrampsReliefMethod(..))
 import Pages.Utils
     exposing
@@ -87,13 +87,7 @@ diagnosedPreviously diagnosis assembled =
 
 diagnosedPreviouslyAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosedPreviouslyAnyOf diagnoses assembled =
-    assembled.nursePreviousEncountersData
-        |> List.filter
-            (\data ->
-                List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses) diagnoses
-            )
-        |> List.isEmpty
-        |> not
+    List.any (.diagnoses >> anyDiagnosisOf diagnoses) assembled.nursePreviousEncountersData
 
 
 {-| The encounter knows a diagnosis made at, or reported to, itself or any
@@ -101,15 +95,46 @@ earlier visit of the pregnancy.
 -}
 diagnosisKnownAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosisKnownAnyOf diagnoses assembled =
-    let
-        anyOf set =
-            List.any (\diagnosis -> EverySet.member diagnosis set) diagnoses
+    diagnosedOrReportedAnyOf diagnoses assembled.encounter
+        || diagnosedOrReportedPreviouslyAnyOf diagnoses assembled
 
-        knownTo encounter =
-            anyOf encounter.diagnoses || anyOf encounter.pastDiagnoses
-    in
-    knownTo assembled.encounter
-        || List.any knownTo assembled.nursePreviousEncountersData
+
+{-| Diagnosed at, or reported to, an earlier visit of the pregnancy. A result
+entered from lab history is reported to the visit it was entered at.
+-}
+diagnosedOrReportedPreviouslyAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedOrReportedPreviouslyAnyOf diagnoses assembled =
+    List.any (diagnosedOrReportedAnyOf diagnoses) assembled.nursePreviousEncountersData
+
+
+diagnosedOrReportedAnyOf :
+    List PrenatalDiagnosis
+    -> { a | diagnoses : EverySet PrenatalDiagnosis, pastDiagnoses : EverySet PrenatalDiagnosis }
+    -> Bool
+diagnosedOrReportedAnyOf diagnoses encounter =
+    anyDiagnosisOf diagnoses (diagnosedOrReported encounter)
+
+
+{-| The diagnoses made at a visit, and those reported to it from lab history.
+-}
+diagnosedOrReported :
+    { a | diagnoses : EverySet PrenatalDiagnosis, pastDiagnoses : EverySet PrenatalDiagnosis }
+    -> EverySet PrenatalDiagnosis
+diagnosedOrReported encounter =
+    EverySet.union encounter.diagnoses encounter.pastDiagnoses
+
+
+{-| Reported to the visit under assessment, from a result entered from lab
+history there.
+-}
+reportedAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+reportedAnyOf diagnoses assembled =
+    anyDiagnosisOf diagnoses assembled.encounter.pastDiagnoses
+
+
+anyDiagnosisOf : List PrenatalDiagnosis -> EverySet PrenatalDiagnosis -> Bool
+anyDiagnosisOf diagnoses set =
+    List.any (\diagnosis -> EverySet.member diagnosis set) diagnoses
 
 
 filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
@@ -782,9 +807,9 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         -- Continued care is decided once, at initial phase. Recurrent
                         -- phase keeps that saved decision without showing it again.
                         (phase == PrenatalEncounterPhaseInitial)
-                            && (diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                            && (diagnosedHypertensionPreviously assembled || diagnosedModeratePreeclampsiaPreviously assembled)
                     then
-                        resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
+                        resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks language
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
                             avoidingGuidanceReasonMsg
                             assembled
@@ -1003,7 +1028,7 @@ resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language setRe
                 form
 
         isChronic =
-            diagnosedAnyOf [ DiagnosisChronicHypertensionImmediate, DiagnosisChronicHypertensionAfterRecheck ] assembled
+            diagnosedAnyOf chronicHypertensionDiagnoses assembled
     in
     ( viewCustomLabel language (Translate.HypertensionRecommendedTreatmentHeader isChronic) "." "instructions"
         :: input
@@ -1013,20 +1038,20 @@ resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language setRe
     )
 
 
-resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
+resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks :
     Language
     -> (RecommendedTreatmentSign -> msg)
     -> (AvoidingGuidanceReason -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
+resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks language setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
     let
         diagnosisHeader =
-            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclampsia) "." "label"
 
-        forModeratePreeclamsia =
-            diagnosedModeratePreeclampsiaPrevoiusly assembled
+        forModeratePreeclampsia =
+            diagnosedModeratePreeclampsiaPreviously assembled
 
         currentBPLabel =
             getMeasurementValueFunc assembled.measurements.vitals
@@ -1072,7 +1097,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                                             -- currently BP is normal. Nevertheless, we still recommend starting tratement
                                             -- sinve Hypertension was diagnosed previously.
                                             (currentTreatment == NoTreatmentForHypertension)
-                                                && (recommendationDosageUpdate == TreatementUpdateMaintainCurrentDoasage)
+                                                && (recommendationDosageUpdate == TreatmentUpdateMaintainCurrentDosage)
                                         then
                                             Translate.HypertensionRecommendedTreatmentUpdateStartTreatment
 
@@ -1143,10 +1168,10 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
             , active + derivedActive
             )
         )
-        (hypertensionTreatementUpdateRecommendationByBP assembled)
-        (resolveHypertensionTreatementUpdateMedication assembled)
+        (hypertensionTreatmentUpdateRecommendationByBP assembled)
+        (resolveHypertensionTreatmentUpdateMedication assembled)
         |> -- There's no treatment, and only case when this is possible,
-           -- is when Moderate Preeclamsia was diagnosed at previous encounter,
+           -- is when Moderate Preeclampsia was diagnosed at previous encounter,
            -- and patient was referred to hospital.
            Maybe.withDefault
             ( [ diagnosisHeader
@@ -1195,7 +1220,7 @@ recommendedTreatmentForHypertensionInputAndTask language options setRecommendedT
     )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
@@ -1217,19 +1242,19 @@ viewTreatmentOptionForHypertension language sign =
             viewTreatmentOptionWithDosage language sign
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 updateHypertensionTreatmentWithMedication : AssembledData -> Bool
 updateHypertensionTreatmentWithMedication assembled =
-    resolveHypertensionTreatementUpdateMedication assembled
+    resolveHypertensionTreatmentUpdateMedication assembled
         |> isJust
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-resolveHypertensionTreatementUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
-resolveHypertensionTreatementUpdateMedication assembled =
-    resolveHypertensionTreatementUpdateRecommendation assembled
+resolveHypertensionTreatmentUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
+resolveHypertensionTreatmentUpdateMedication assembled =
+    resolveHypertensionTreatmentUpdateRecommendation assembled
         |> Maybe.andThen
             (\( medication, hospitalizationRequired ) ->
                 if hospitalizationRequired || medication == NoTreatmentForHypertension then
@@ -1240,119 +1265,119 @@ resolveHypertensionTreatementUpdateMedication assembled =
             )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
 updateHypertensionTreatmentWithHospitalization assembled =
-    resolveHypertensionTreatementUpdateRecommendation assembled
-        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
+    resolveHypertensionTreatmentUpdateRecommendation assembled
+        |> Maybe.map ((==) hypertensionTreatmentHospitalizationOption)
         |> Maybe.withDefault False
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
-hypertensionTreatementHospitalizationOption =
+hypertensionTreatmentHospitalizationOption : ( RecommendedTreatmentSign, Bool )
+hypertensionTreatmentHospitalizationOption =
     ( NoTreatmentForHypertension, True )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-resolveHypertensionTreatementUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
-resolveHypertensionTreatementUpdateRecommendation assembled =
+resolveHypertensionTreatmentUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
+resolveHypertensionTreatmentUpdateRecommendation assembled =
     Maybe.map2
-        (\currentTreatment treatementUpdateByBP ->
+        (\currentTreatment treatmentUpdateByBP ->
             let
                 medicationOption medication =
                     ( medication, False )
             in
             case currentTreatment of
                 NoTreatmentForHypertension ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             -- No treatment was given and BP seems normal, however,
                             -- we still recommend taking Methyldopa because Hypertension
                             -- was diagnosed previously.
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa2 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa3 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa4 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentHypertensionAddCarvedilol ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateIncreaseTwoDoses ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseTwoDoses ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentHypertensionAddAmlodipine ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateIncreaseOneDose ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseOneDose ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateIncreaseTwoDoses ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseTwoDoses ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 -- We should never get here, since these are not
                 -- Hypertension options.
@@ -1360,14 +1385,14 @@ resolveHypertensionTreatementUpdateRecommendation assembled =
                     ( NoTreatmentForHypertension, False )
         )
         (getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled)
-        (hypertensionTreatementUpdateRecommendationByBP assembled)
+        (hypertensionTreatmentUpdateRecommendationByBP assembled)
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationByBP assembled =
-    if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
+hypertensionTreatmentUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationByBP assembled =
+    if diagnosedHypertensionPreviously assembled || diagnosedModeratePreeclampsiaPreviously assembled then
         getMeasurementValueFunc assembled.measurements.vitals
             |> Maybe.andThen
                 (\value ->
@@ -1375,12 +1400,12 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
                         (\sys dia ->
                             let
                                 bySys =
-                                    hypertensionTreatementUpdateRecommendationBySys sys
+                                    hypertensionTreatmentUpdateRecommendationBySys sys
 
                                 byDia =
-                                    hypertensionTreatementUpdateRecommendationByDia dia
+                                    hypertensionTreatmentUpdateRecommendationByDia dia
                             in
-                            if hypertensionTreatementUpdateToNumber bySys < hypertensionTreatementUpdateToNumber byDia then
+                            if hypertensionTreatmentUpdateToNumber bySys < hypertensionTreatmentUpdateToNumber byDia then
                                 byDia
 
                             else
@@ -1394,53 +1419,53 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
         Nothing
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationBySys : Float -> HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationBySys value =
+hypertensionTreatmentUpdateRecommendationBySys : Float -> HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationBySys value =
     if value < 140 then
-        TreatementUpdateMaintainCurrentDoasage
+        TreatmentUpdateMaintainCurrentDosage
 
     else if value < 160 then
-        TreatementUpdateIncreaseOneDose
+        TreatmentUpdateIncreaseOneDose
 
     else if value < 180 then
-        TreatementUpdateIncreaseTwoDoses
+        TreatmentUpdateIncreaseTwoDoses
 
     else
-        TreatementUpdateHospitalize
+        TreatmentUpdateHospitalize
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationByDia : Float -> HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationByDia value =
+hypertensionTreatmentUpdateRecommendationByDia : Float -> HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationByDia value =
     if value < 90 then
-        TreatementUpdateMaintainCurrentDoasage
+        TreatmentUpdateMaintainCurrentDosage
 
     else if value < 100 then
-        TreatementUpdateIncreaseOneDose
+        TreatmentUpdateIncreaseOneDose
 
     else if value < 110 then
-        TreatementUpdateIncreaseTwoDoses
+        TreatmentUpdateIncreaseTwoDoses
 
     else
-        TreatementUpdateHospitalize
+        TreatmentUpdateHospitalize
 
 
-hypertensionTreatementUpdateToNumber : HypertensionTreatementUpdateOption -> Int
-hypertensionTreatementUpdateToNumber value =
+hypertensionTreatmentUpdateToNumber : HypertensionTreatmentUpdateOption -> Int
+hypertensionTreatmentUpdateToNumber value =
     case value of
-        TreatementUpdateMaintainCurrentDoasage ->
+        TreatmentUpdateMaintainCurrentDosage ->
             0
 
-        TreatementUpdateIncreaseOneDose ->
+        TreatmentUpdateIncreaseOneDose ->
             1
 
-        TreatementUpdateIncreaseTwoDoses ->
+        TreatmentUpdateIncreaseTwoDoses ->
             2
 
-        TreatementUpdateHospitalize ->
+        TreatmentUpdateHospitalize ->
             3
 
 
@@ -1545,7 +1570,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks :
 resolveRecommendedTreatmentForSyphilisInputsAndTasks language setRecommendedTreatmentSignMsg allowedSigns form =
     let
         -- Since we may have values set for another diagnosis, or from
-        -- inital phase of encounter, we need to filter them out,
+        -- initial phase of encounter, we need to filter them out,
         -- to be able to determine the current value.
         currentValue =
             Maybe.andThen
@@ -1904,6 +1929,7 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                         prescribeMebendazole =
                             (assembled.encounter.encounterType == NurseEncounter)
                                 && showMebendazoleQuestion currentDate assembled
+                                && not (medicationAdministered assembled.measurements.mebendazole)
                                 && (getMeasurementValueFunc assembled.measurements.medication
                                         |> Maybe.andThen .signs
                                         |> Maybe.map (EverySet.member Mebendazole >> not)
@@ -1981,7 +2007,7 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 , vitaminASet
 
                 -- Since there can be only single diagnosis for preeclampsia
-                -- risk (hight or moderarte), it's safe to use
+                -- risk (high or moderate), it's safe to use
                 -- resolvePreeclampsiaRiskSet twice.
                 , resolvePreeclampsiaRiskSet DiagnosisHighRiskOfPreeclampsiaInitialPhase
                 , resolvePreeclampsiaRiskSet DiagnosisModerateRiskOfPreeclampsia
@@ -2013,9 +2039,8 @@ diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
         assembled
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
-Moderate Preeclamsia logic is a higher lavel condition for Hypertension within
-identical treatement, and therefore, we do not differentiate between the 2.
+{-| Despite the name, this includes Moderate Preeclampsia: it is a higher
+level of Hypertension with identical treatment, so the two are not told apart.
 -}
 referToHospitalDueToAdverseEventForHypertensionTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForHypertensionTreatment =
@@ -2106,40 +2131,60 @@ showMebendazoleQuestion currentDate assembled =
                 let
                     egaInWeeks =
                         calculateEGAWeeks currentDate lmpDate
-
-                    dewormingPillNotGiven =
-                        List.filter
-                            (.measurements
-                                >> .medication
-                                >> getMeasurementValueFunc
-                                >> Maybe.andThen .signs
-                                >> Maybe.map (EverySet.member DewormingPill)
-                                >> Maybe.withDefault False
-                            )
-                            assembled.nursePreviousEncountersData
-                            |> List.isEmpty
-
-                    mebenadazoleNotPrescribed =
-                        List.filter
-                            (.measurements
-                                >> .medicationDistribution
-                                >> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
-                                >> Maybe.withDefault False
-                            )
-                            assembled.nursePreviousEncountersData
-                            |> List.isEmpty
                 in
                 -- Starting EGA week 24.
                 (egaInWeeks >= 24)
-                    && -- Previous variation had a question about deworming pill,
-                       -- which is actually Menendazole, or something similar.
-                       -- If somewhere during previous encounters patient stated that
-                       -- deworming pill was given, we do not ask about Mebendazole.
-                       dewormingPillNotGiven
-                    && -- Mebendazole was not prescribed during the current pregnancy.
-                       mebenadazoleNotPrescribed
+                    && not (mebendazoleGivenPreviously assembled)
             )
         |> Maybe.withDefault False
+
+
+{-| At an earlier nurse visit, Mebendazole was handed over through Medication
+or from Next Steps, or the woman said she had received it or a deworming pill.
+-}
+mebendazoleGivenPreviously : AssembledData -> Bool
+mebendazoleGivenPreviously assembled =
+    List.any
+        (\{ measurements } ->
+            medicationAdministered measurements.mebendazole
+                || mebendazoleDistributed measurements
+                || mebendazoleReported measurements
+        )
+        assembled.nursePreviousEncountersData
+
+
+{-| In Treatment Review of that visit, the woman said she had received
+Mebendazole, or a deworming pill.
+-}
+mebendazoleReported : PrenatalMeasurements -> Bool
+mebendazoleReported measurements =
+    getMeasurementValueFunc measurements.medication
+        |> Maybe.andThen .signs
+        |> Maybe.map (\signs -> EverySet.member Mebendazole signs || EverySet.member DewormingPill signs)
+        |> Maybe.withDefault False
+
+
+{-| The Next Steps medication distribution of that visit handed over Mebendazole.
+-}
+mebendazoleDistributed : PrenatalMeasurements -> Bool
+mebendazoleDistributed measurements =
+    measurements.medicationDistribution
+        |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+        |> Maybe.withDefault False
+
+
+{-| The Medication activity record of that visit says the supplement was handed over.
+-}
+medicationAdministered : Maybe ( id, { measurement | value : AdministrationNote } ) -> Bool
+medicationAdministered =
+    getMeasurementValueFunc >> (==) (Just AdministeredToday)
+
+
+{-| The Medication activity handed over the supplement at an earlier nurse visit.
+-}
+medicationAdministeredPreviously : (PrenatalMeasurements -> Maybe ( id, { measurement | value : AdministrationNote } )) -> AssembledData -> Bool
+medicationAdministeredPreviously getMeasurementFunc assembled =
+    List.any (.measurements >> getMeasurementFunc >> medicationAdministered) assembled.nursePreviousEncountersData
 
 
 patientReportedNoMedicineRecievedFromPMTCT : PrenatalMeasurements -> Bool
@@ -2988,7 +3033,7 @@ recommendedTreatmentSignsForHypertensionInitial =
     ]
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertension =
@@ -3010,20 +3055,25 @@ diagnosedHypertension : PrenatalEncounterPhase -> AssembledData -> Bool
 diagnosedHypertension phase =
     case phase of
         PrenatalEncounterPhaseInitial ->
-            diagnosedAnyOf
-                [ DiagnosisChronicHypertensionImmediate
-                , DiagnosisGestationalHypertensionImmediate
-                ]
+            diagnosedAnyOf hypertensionDiagnosesInitialPhase
 
         PrenatalEncounterPhaseRecurrent ->
-            diagnosedAnyOf
-                [ DiagnosisChronicHypertensionAfterRecheck
-                , DiagnosisGestationalHypertensionAfterRecheck
-                ]
+            diagnosedAnyOf hypertensionDiagnosesRecurrentPhase
 
 
-diagnosedHypertensionPrevoiusly : AssembledData -> Bool
-diagnosedHypertensionPrevoiusly assembled =
+{-| Whether a borderline blood pressure at this encounter schedules the
+two-hour recheck. Once Hypertension or Moderate Preeclampsia is diagnosed,
+the first reading is enough. Postpartum encounters have no recheck.
+-}
+vitalsRecheckAllowed : AssembledData -> Bool
+vitalsRecheckAllowed assembled =
+    (assembled.encounter.encounterType == NurseEncounter)
+        && (not <| diagnosedHypertensionPreviously assembled)
+        && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
+
+
+diagnosedHypertensionPreviously : AssembledData -> Bool
+diagnosedHypertensionPreviously assembled =
     diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
 
 
@@ -3047,27 +3097,44 @@ resolvePreviousHypertensionDiagnosis nursePreviousEncountersData =
 
 hypertensionDiagnoses : List PrenatalDiagnosis
 hypertensionDiagnoses =
+    hypertensionDiagnosesInitialPhase ++ hypertensionDiagnosesRecurrentPhase
+
+
+chronicHypertensionDiagnoses : List PrenatalDiagnosis
+chronicHypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    ]
+
+
+hypertensionDiagnosesInitialPhase : List PrenatalDiagnosis
+hypertensionDiagnosesInitialPhase =
     [ DiagnosisChronicHypertensionImmediate
     , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
+    ]
+
+
+hypertensionDiagnosesRecurrentPhase : List PrenatalDiagnosis
+hypertensionDiagnosesRecurrentPhase =
+    [ DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionAfterRecheck
     ]
 
 
-diagnosedModeratePreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedModeratePreeclampsiaPrevoiusly assembled =
+diagnosedModeratePreeclampsiaPreviously : AssembledData -> Bool
+diagnosedModeratePreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf moderatePreeclampsiaDiagnoses assembled
 
 
-diagnosedHighRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled =
+diagnosedHighRiskOfPreeclampsiaPreviously : AssembledData -> Bool
+diagnosedHighRiskOfPreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf highRiskOfPreeclampsiaDiagnoses assembled
 
 
-{-| Hight or moderate risk.
+{-| High or moderate risk.
 -}
-diagnosedRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedRiskOfPreeclampsiaPrevoiusly assembled =
+diagnosedRiskOfPreeclampsiaPreviously : AssembledData -> Bool
+diagnosedRiskOfPreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf riskOfPreeclampsiaDiagnoses assembled
 
 
@@ -3149,16 +3216,11 @@ hypertensionlikeDiagnoses =
         ++ [ DiagnosisEclampsia ]
 
 
-diagnosedDiabetesPrevoiusly : AssembledData -> Bool
-diagnosedDiabetesPrevoiusly assembled =
-    diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
-
-
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
     List.concatMap
         (\data ->
-            EverySet.toList data.diagnoses
+            EverySet.toList (diagnosedOrReported data)
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis diabetesDiagnoses
@@ -3769,7 +3831,7 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.facilityNonReferralReasons
 
 
-{-| Referal to facility is completed when we mark that facility was referred to,
+{-| Referral to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
 -}
 referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
@@ -3833,8 +3895,8 @@ applyHypertensionlikeDiagnosesHierarchy diagnoses =
 applyMalariaWithAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyMalariaWithAnemiaDiagnosesHierarchy =
     let
-        -- When Malaria with Severe Anamia diagnosed, we eliminate
-        -- Malaria and Severe Anamia standalone diagnoses.
+        -- When Malaria with Severe Anemia diagnosed, we eliminate
+        -- Malaria and Severe Anemia standalone diagnoses.
         applyMalariaWithSeverAnemiaLogic diagnoses =
             if
                 List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
@@ -3854,8 +3916,8 @@ applyMalariaWithAnemiaDiagnosesHierarchy =
             else
                 diagnoses
 
-        -- When Malaria with Anamia is diagnosed, we eliminate
-        -- Malaria and Moderate Anamia standalone diagnoses.
+        -- When Malaria with Anemia is diagnosed, we eliminate
+        -- Malaria and Moderate Anemia standalone diagnoses.
         applyMalariaWithAnemiaLogic diagnoses =
             if
                 List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
@@ -3881,8 +3943,8 @@ applyMalariaWithAnemiaDiagnosesHierarchy =
 
 applyAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyAnemiaDiagnosesHierarchy diagnoses =
-    -- When Severe Anamia with compliations is diagnosed, we eliminate
-    -- Severe Anamia standalone diagnosis.
+    -- When Severe Anemia with complications is diagnosed, we eliminate
+    -- Severe Anemia standalone diagnosis.
     if
         List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
             [ DiagnosisSevereAnemiaWithComplicationsInitialPhase, DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ]
@@ -3896,12 +3958,16 @@ applyAnemiaDiagnosesHierarchy diagnoses =
 
 applyPreeclampsiaRiskDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyPreeclampsiaRiskDiagnosesHierarchy diagnoses =
-    -- When Severe Anamia with compliations is diagnosed, we eliminate
-    -- Severe Anamia standalone diagnosis.
-    if
-        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
-            [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
-    then
+    let
+        diagnosedAny =
+            List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+    in
+    if diagnosedAny (DiagnosisEclampsia :: preeclampsiaDiagnoses) then
+        -- Preeclampsia or Eclampsia is diagnosed, so there is no risk of it.
+        EverySet.diff diagnoses (EverySet.fromList riskOfPreeclampsiaDiagnoses)
+
+    else if diagnosedAny highRiskOfPreeclampsiaDiagnoses then
+        -- High risk of Preeclampsia replaces the moderate risk.
         EverySet.remove DiagnosisModerateRiskOfPreeclampsia diagnoses
 
     else

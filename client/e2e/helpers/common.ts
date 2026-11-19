@@ -1213,3 +1213,25 @@ export async function fillChildRegistrationFields(
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }
+
+/**
+ * Upload a minimal test image through the photo form's dropzone.
+ */
+export async function uploadTestPhoto(page: Page) {
+  // Dropzone.js adds its hidden file input to the end of the page body, not
+  // inside the dropzone. It replaces the input after each file.
+  const fileInput = page.locator('input.dz-hidden-input').last();
+
+  // A minimal 1x1 PNG.
+  const pngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+  await fileInput.setInputFiles({
+    name: 'test-photo.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(pngBase64, 'base64'),
+  });
+
+  // Wait for the dropzone to process the upload.
+  await page.waitForTimeout(WAIT.pageNavigation);
+}

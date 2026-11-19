@@ -8,8 +8,10 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , BloodSmearResult(..)
         , HIVTestValue
+        , HemoglobinTestValue
         , HepatitisBTestValue
         , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , LabsResultsValue
         , MalariaTestValue
         , MedicationDistributionSign(..)
@@ -37,10 +39,14 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
-        ( laboratoryResultTaskCompleted
+        ( concludedLabsResultsValue
+        , laboratoryResultNotPerformed
+        , laboratoryResultTaskCompleted
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
+        , resolveLaboratoryResultTasks
         , resolveNextStepsTasks
+        , withCompletedTestsFromMeasurements
         )
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, resolveMedicationDistributionInputsAndTasks, resolveRequiredMedicationsSet)
 import Restful.Endpoint exposing (toEntityUuid)
@@ -509,6 +515,148 @@ laboratoryResultTaskCompletedKnownAsPositiveTest =
         )
 
 
+{-| Tests sent to the lab, as the nurse's Lab Results reads them after the lab
+technician answered.
+-}
+laboratoryResultNotPerformedTest : Test
+laboratoryResultNotPerformedTest =
+    let
+        sentToLab =
+            Just (EverySet.singleton NoTestPrerequisites)
+
+        hemoglobinWith executionNote hemoglobinCount =
+            let
+                value : HemoglobinTestValue
+                value =
+                    { executionNote = executionNote
+                    , executionDate = Just currentDate
+                    , testPrerequisites = sentToLab
+                    , hemoglobinCount = hemoglobinCount
+                    }
+            in
+            { emptyPrenatalMeasurements | hemoglobinTest = TestFixtures.wrapMeasurement currentDate value }
+
+        partnerHIVNotPresent =
+            let
+                value : PartnerHIVTestValue
+                value =
+                    { executionNote = TestNoteNotPresent
+                    , executionDate = Just currentDate
+                    , testPrerequisites = sentToLab
+                    , testResult = Nothing
+                    , hivSigns = Nothing
+                    }
+            in
+            { emptyPrenatalMeasurements | partnerHIVTest = TestFixtures.wrapMeasurement currentDate value }
+
+        -- Saving any HIV answer puts the test on the follow up list, a
+        -- decline included.
+        hivDeclinedOnFollowUpList =
+            let
+                declined =
+                    hivTestValueWith TestNoteLackOfReagents Nothing Nothing
+
+                measurements =
+                    measurementsWith [ TestHIV ] Nothing Nothing
+            in
+            { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
+
+        hivDeclinedHoldingResult =
+            let
+                declined =
+                    hivTestValueWith TestNoteLackOfReagents (Just TestPositive) Nothing
+
+                measurements =
+                    measurementsWith [ TestHIV ] Nothing Nothing
+            in
+            { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
+
+        smearOrderedWithRapidTestResult =
+            let
+                measurements =
+                    measurementsWithMalariaTest TestNoteRunToday BloodSmearPendingInput
+
+                withRapidTestResult value =
+                    { value | testResult = Just TestNegative }
+            in
+            { measurements
+                | malariaTest =
+                    getMeasurementValueFunc measurements.malariaTest
+                        |> Maybe.andThen (withRapidTestResult >> TestFixtures.wrapMeasurement currentDate)
+            }
+
+        resolve task measurements =
+            laboratoryResultNotPerformed (testAssembled measurements) task
+
+        declinedFor reason holdsResult =
+            Just { executionDate = Just currentDate, holdsResult = holdsResult, reason = reason }
+    in
+    describe "a test the lab technician declined"
+        [ test "gives their reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents Nothing)
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents False)
+        , test "gives their reason, and says when a result is stored anyway" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents (Just 11))
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents True)
+        , test "a test the lab technician ran gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunConfirmedByLabTech Nothing)
+                    |> Expect.equal Nothing
+        , test "a test still waiting for the lab gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunToday Nothing)
+                    |> Expect.equal Nothing
+        , test "partner not present is a reason" <|
+            \_ ->
+                resolve TaskPartnerHIVTest partnerHIVNotPresent
+                    |> Expect.equal (declinedFor TestNoteNotPresent False)
+        , test "partner not present completes the nurse's task" <|
+            \_ ->
+                laboratoryResultTaskCompleted False (testAssembled partnerHIVNotPresent) TaskPartnerHIVTest
+                    |> Expect.equal True
+        , test "an HIV test on the follow up list is shown to the nurse" <|
+            \_ ->
+                resolveLaboratoryResultTasks False (testAssembled hivDeclinedOnFollowUpList)
+                    |> List.member TaskHIVTest
+                    |> Expect.equal True
+        , test "an HIV test has no follow up questions" <|
+            \_ ->
+                resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedOnFollowUpList)
+                    |> Expect.equal []
+        , test "an HIV test holding a result is not shown at Lab Results" <|
+            \_ ->
+                resolveLaboratoryResultTasks False (testAssembled hivDeclinedHoldingResult)
+                    |> List.member TaskHIVTest
+                    |> Expect.equal False
+        , test "an HIV test holding a result keeps its follow up questions" <|
+            \_ ->
+                resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedHoldingResult)
+                    |> Expect.equal [ TaskHIVTest ]
+        , test "a blood smear gives their reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNotTaken)
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents False)
+        , test "a blood smear still waiting for the lab gives no reason, though the rapid test has one" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearPendingInput)
+                    |> Expect.equal Nothing
+        , test "a blood smear still waiting for the lab is not complete, though a rapid test result is stored" <|
+            \_ ->
+                laboratoryResultTaskCompleted False (testAssembled smearOrderedWithRapidTestResult) TaskMalariaTest
+                    |> Expect.equal False
+        , test "a blood smear the lab technician read gives no reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteRunConfirmedByLabTech BloodSmearNegative)
+                    |> Expect.equal Nothing
+        , test "a blood smear the nurse read gives no reason, though the rapid test has one" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNegative)
+                    |> Expect.equal Nothing
+        ]
+
+
 {-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a
 day. Today's BP is normal, so the recommendation is to keep that dose; the
 nurse chose 3x a day and gave no reason.
@@ -590,14 +738,161 @@ resolveMedicationDistributionContinuedHypertensionTest =
         ]
 
 
+
+-- The labs entry is written from the device's copy. That copy can be behind
+-- the device's test measurements, so completed tests are read from the
+-- measurements too, and never dropped.
+
+
+{-| Measurements holding an HIV test and a Hemoglobin test with the given
+execution notes and results.
+-}
+measurementsWithTests : ( TestExecutionNote, Maybe TestResult ) -> ( TestExecutionNote, Maybe Float ) -> PrenatalMeasurements
+measurementsWithTests ( hivNote, hivResult ) ( hemoglobinNote, hemoglobinCount ) =
+    let
+        hemoglobinValue : HemoglobinTestValue
+        hemoglobinValue =
+            { executionNote = hemoglobinNote
+            , executionDate = Just currentDate
+            , testPrerequisites = Nothing
+            , hemoglobinCount = hemoglobinCount
+            }
+    in
+    { emptyPrenatalMeasurements
+        | hivTest = TestFixtures.wrapMeasurement currentDate (hivTestValueWith hivNote hivResult Nothing)
+        , hemoglobinTest = TestFixtures.wrapMeasurement currentDate hemoglobinValue
+    }
+
+
+withCompletedTestsFromMeasurementsTest : Test
+withCompletedTestsFromMeasurementsTest =
+    let
+        withMeasurements measurements entry =
+            withCompletedTestsFromMeasurements (testAssembled measurements) entry
+
+        completedTests measurements entry =
+            withMeasurements measurements entry
+                |> .completedTests
+    in
+    describe "withCompletedTestsFromMeasurements"
+        [ test "a test whose measurement holds a result is completed" <|
+            \_ ->
+                completedTests
+                    (measurementsWithTests ( TestNoteRunToday, Just TestPositive ) ( TestNoteRunToday, Nothing ))
+                    (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin ] [])
+                    |> Expect.equal (EverySet.fromList [ TestHIV ])
+        , test "a test the lab did not run is completed" <|
+            \_ ->
+                completedTests
+                    (measurementsWithTests ( TestNoteLackOfReagents, Nothing ) ( TestNoteRunToday, Just 11 ))
+                    (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin ] [])
+                    |> Expect.equal (EverySet.fromList [ TestHIV, TestHemoglobin ])
+        , test "a test completed on the entry stays completed without a result on its measurement" <|
+            \_ ->
+                completedTests
+                    (measurementsWithTests ( TestNoteRunToday, Nothing ) ( TestNoteRunToday, Nothing ))
+                    (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin ] [ TestHIV ])
+                    |> Expect.equal (EverySet.fromList [ TestHIV ])
+        , test "a test run with a result is performed and completed, though the entry does not list it" <|
+            \_ ->
+                withMeasurements
+                    (measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Just 11 ))
+                    (TestFixtures.labsEntry currentDate [ TestHemoglobin ] [])
+                    |> (\value -> ( value.performedTests, value.completedTests ))
+                    |> Expect.equal
+                        ( EverySet.fromList [ TestHIV, TestHemoglobin ]
+                        , EverySet.fromList [ TestHIV, TestHemoglobin ]
+                        )
+        , test "a test not run is not added when the entry does not list it" <|
+            \_ ->
+                withMeasurements
+                    (measurementsWithTests ( TestNoteLackOfReagents, Nothing ) ( TestNoteRunToday, Just 11 ))
+                    (TestFixtures.labsEntry currentDate [ TestHemoglobin ] [])
+                    |> (\value -> ( value.performedTests, value.completedTests ))
+                    |> Expect.equal
+                        ( EverySet.fromList [ TestHemoglobin ]
+                        , EverySet.fromList [ TestHemoglobin ]
+                        )
+        , test "a vitals recheck is completed once the repeated reading is taken" <|
+            \_ ->
+                let
+                    vitals : VitalsValue
+                    vitals =
+                        { sys = Just 150
+                        , dia = Just 95
+                        , heartRate = Nothing
+                        , respiratoryRate = Nothing
+                        , bodyTemperature = Nothing
+                        , sysRepeated = Just 145
+                        , diaRepeated = Just 92
+                        }
+                in
+                completedTests
+                    { emptyPrenatalMeasurements | vitals = TestFixtures.wrapMeasurement currentDate vitals }
+                    (TestFixtures.labsEntry currentDate [ TestVitalsRecheck ] [])
+                    |> Expect.equal (EverySet.fromList [ TestVitalsRecheck ])
+        ]
+
+
+concludedLabsResultsValueTest : Test
+concludedLabsResultsValueTest =
+    let
+        allResults =
+            measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Just 11 )
+
+        concluded measurements entry =
+            concludedOn currentDate measurements entry
+
+        concludedOn dateMeasured measurements entry =
+            TestFixtures.wrapMeasurement dateMeasured entry
+                |> Maybe.map (Tuple.second >> concludedLabsResultsValue currentDate (testAssembled measurements))
+    in
+    describe "concludedLabsResultsValue"
+        [ test "an entry behind its measurements is closed with every test completed and reviewed" <|
+            \_ ->
+                concluded allResults (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin ] [])
+                    |> Expect.equal
+                        (Just
+                            { performedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , completedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , resolutionDate = currentDate
+                            , patientNotified = False
+                            , reviewState = Just LabsResultsReviewCompleted
+                            , testsWithFollowUp = Nothing
+                            }
+                        )
+        , test "an entry with a test still waiting keeps its review state" <|
+            \_ ->
+                concluded
+                    (measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Nothing ))
+                    (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin ] [])
+                    |> Maybe.map (\value -> ( value.completedTests, value.reviewState, value.resolutionDate ))
+                    |> Expect.equal (Just ( EverySet.fromList [ TestHIV ], Nothing, currentDate ))
+        , test "a vitals recheck from another day stays on the entry, and does not hold back the review" <|
+            \_ ->
+                concludedOn (Date.add Date.Days -2 currentDate) allResults (TestFixtures.labsEntry currentDate [ TestHIV, TestHemoglobin, TestVitalsRecheck ] [])
+                    |> Maybe.map (\value -> ( value.performedTests, value.completedTests, value.reviewState ))
+                    |> Expect.equal
+                        (Just
+                            ( EverySet.fromList [ TestHIV, TestHemoglobin, TestVitalsRecheck ]
+                            , EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , Just LabsResultsReviewCompleted
+                            )
+                        )
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
-        [ laboratoryResultTaskCompletedKnownAsPositiveTest
+        [ concludedLabsResultsValueTest
+        , laboratoryResultTaskCompletedKnownAsPositiveTest
+        , laboratoryResultNotPerformedTest
         , laboratoryResultTaskCompletedMalariaTest
         , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
         , resolveMedicationDistributionContinuedHypertensionTest
         , resolveRequiredMedicationsSetHIVTest
+        , withCompletedTestsFromMeasurementsTest
         ]

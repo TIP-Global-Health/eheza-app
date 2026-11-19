@@ -66,7 +66,7 @@ viewHeader language assembled =
 
 viewContent : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate site assembled model
     )
         |> div [ class "ui unstackable items" ]

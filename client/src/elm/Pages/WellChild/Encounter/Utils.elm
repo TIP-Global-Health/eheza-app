@@ -2,6 +2,7 @@ module Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateA
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Utils exposing (ageInMonthsReached)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -33,7 +34,7 @@ resolvePediatricCareMilestoneOnDate dueDate birthDate =
     else
         let
             ageMonths =
-                Date.diff Months birthDate dueDate
+                ageInMonthsReached birthDate dueDate
         in
         if ageMonths < 6 then
             Just Milestone14Weeks

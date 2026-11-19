@@ -4,9 +4,13 @@
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh next
 #       prints "<pr> <label>" for the PR to run next, or nothing
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh ready
-#       prints what stops a run on this station, or "ready"
+#       fast-forwards the main tree's develop, then prints what stops a run on this
+#       station, or "ready"
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh label <pr> ready|running|approved|followup|blocked
 #       gives the PR that QA label and removes the other QA labels
+#   bash .claude/skills/qa-tester/scripts/qa-watch.sh last-report <pr>
+#       prints "<comment-id> <tested-commit>" for this skill's newest report on the PR,
+#       or nothing when QA has not reported on it yet
 
 set -eu
 
@@ -29,6 +33,11 @@ case ${1:-} in
     [ "$branch" = develop ] || problems+=("the main tree is on '$branch', not develop")
     staged=$(git -C "$main" diff --cached --name-only)
     [ -z "$staged" ] || problems+=("the main tree has staged files: $staged")
+    # The run reads this skill from the main tree, so it must hold origin's latest develop.
+    if [ ${#problems[@]} -eq 0 ]; then
+      git -C "$main" pull -q --ff-only origin develop 2>/dev/null \
+        || problems+=("the main tree's develop cannot fast-forward to origin/develop")
+    fi
     port=$(sed -n 's/.*- \([0-9]*\):3000.*/\1/p' "$main/.ddev/docker-compose.client-http.yaml" 2>/dev/null | head -1)
     code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://localhost:${port:-3000}/Main.js" || true)
     [ "$code" = 200 ] || problems+=("gulp does not serve Main.js on port ${port:-3000} (HTTP $code)")
@@ -57,8 +66,26 @@ case ${1:-} in
     gh api "repos/$repo/issues/$pr/labels" -f "labels[]=$want" --jq '[.[].name] | join(", ")'
     ;;
 
+  last-report)
+    pr=${2:?usage: $0 last-report <pr>}
+    caption='**Manual tests executed using the QA Tester skill**'
+    report=$(gh api --paginate "repos/$repo/issues/$pr/comments" \
+      | jq -s --arg c "$caption" 'add | map(select(.body | startswith($c))) | last // empty')
+    [ -n "$report" ] || exit 0
+    id=$(jq -r .id <<<"$report")
+    sha=$(jq -r .body <<<"$report" | sed -n 's/^Tested at `\([0-9a-f]\{7,40\}\)`.*/\1/p' | head -1)
+    # A report from before the "Tested at" line: the PR's last commit made before its last edit.
+    if [ -z "$sha" ]; then
+      at=$(jq -r .updated_at <<<"$report")
+      sha=$(gh api --paginate "repos/$repo/pulls/$pr/commits" 2>/dev/null \
+        | jq -rs --arg at "$at" 'add | map(select(.commit.committer.date <= $at)) | last | .sha // empty' | cut -c1-9)
+      [ -z "$sha" ] || sha="$sha (inferred)"
+    fi
+    echo "$id $sha"
+    ;;
+
   *)
-    sed -n '3,9p' "$0" >&2
+    sed -n '3,12p' "$0" >&2
     exit 1
     ;;
 esac
