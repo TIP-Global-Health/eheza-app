@@ -1049,3 +1049,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** recorded PR runs showed a 404 for `styles/person-photo/…/<new image>` straight after the sync; unrecorded develop runs did not.
 - **Wrong conclusion:** the PR's server change breaks the photo copy.
 - **Rule:** a recorded run with develop's server files showed the same 404, and the image loaded moments later. Before calling an error the PR's, rerun with only the suspect half swapped back and the same recording settings.
+
+## Expecting no diagnosis before the woman's own follow-up is answered
+
+- **Symptom:** a check "no HIV diagnosis before answering" failed on row 7, the woman's own lab-tech Positive; `hiv-recurrent` was already stored (PR #2559 re-test).
+- **Wrong conclusion:** the PR records a diagnosis from an unanswered question.
+- **Rule:** her own Positive result diagnoses HIV by itself, on develop too; only the partner's result waits for the ARV answer. Take each check's expected value from the issue or develop, not by analogy with a sibling test.
+
+## A redirect after `cd` into the main tree
+
+- **Symptom:** server query output (`> server-labs.txt`) landed in the main tree as an untracked file, where the `Stop` hook could pick it up.
+- **Wrong conclusion:** the scratchpad holds every file the run writes.
+- **Rule:** a relative redirect writes to the current directory. After `cd /var/www/html/ihangane`, give output files their full scratchpad path, and check `git status` before the turn ends.

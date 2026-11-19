@@ -696,11 +696,17 @@ flag simply does not appear.
   develop and the PR alike. With nothing else owed it is concluded that day and leaves ANC Labs; the stale recheck never returns.
 - Encounter page cards: the label is plain text in `.card` (`page.locator('.card').allTextContents()`), counted in the "To Do (n)" tab.
 - After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
-  returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state.
+  returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state;
+  the concluded date stays, so the entry stays listed as REVIEWED until the nurse's own last save closes it.
+- A lab technician who enters only some ordered tests gets no Submit, stays on the Lab Results page, and the entry keeps no review state ("Pending").
 - Every save of a labs entry sets its `date_measured` to the save day.
-- A nurse's save of any prenatal lab test, a re-save of a visit's Laboratory tab included, sets the entry `review_state: completed` and `date_concluded` to today once every performed test is complete,
-  even while `tests_with_follow_up` is still pending. The entry then leaves ANC Labs, and Lab Results Follow Ups can no longer be reached (PR #2559, both builds).
-- The lab technician can enter results while the nurse's visit is still open; the nurse's entry then reads READY FOR REVIEW. A Positive partner or HIV result stores `hiv_signs: [pending-input]`.
+- A nurse's save of any prenatal lab test, a re-save of a visit's Laboratory tab included, sets the entry `review_state: completed` and `date_concluded` to today once every performed test is complete.
+  On develop it does so even while a lab technician's follow-up question is unanswered, so the entry leaves ANC Labs and Follow Ups can no longer be reached.
+  PR #2559 keeps it open then (`requested`, READY FOR REVIEW) until the follow-up is answered; this covers Syphilis symptoms too.
+- The lab technician can enter results while the nurse's visit is still open; the nurse's entry then reads READY FOR REVIEW. A Positive partner or HIV result stores `hiv_signs: [pending-input]`,
+  a Positive Syphilis `illness_symptoms: [pending-input]` (the visit's unchanged Syphilis re-save keeps it, on develop too).
+- Lab Results Follow Ups questions: partner `partner-taking-arv`; the woman's own Positive HIV `hiv-program` ("Does the health center have an ARV services program?");
+  Syphilis a symptoms checkbox list with "None of these". Save stays off until answered.
 - Each save of a labs entry is a server revision: read `field_revision_field_completed_tests`,
   `field_revision_field_review_state` and `field_revision_field_date_concluded` by `revision_id` from `node_revision`.
 - **NCD Labs** lists an encounter while today is before its results record's resolution date
