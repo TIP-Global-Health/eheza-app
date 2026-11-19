@@ -243,6 +243,58 @@ function individual_encounter_age($birth_date, $encounter_date) {
   return hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, new DateTime($encounter_date));
 }
 
+/**
+ * Builds a previous Well Child encounter with Medication answers.
+ *
+ * @param string $date
+ *   The day of the encounter, as Y-m-d.
+ * @param array $notes
+ *   The administration note per medication activity, like
+ *   ['well_child_vitamin_a' => 'administered-today'] when it was given, or a
+ *   reason it was not, like 'lack-of-stock'.
+ */
+function medication_encounter($date, array $notes) {
+  $measurements = [];
+  foreach ($notes as $activity => $note) {
+    $measurement = new stdClass();
+    $measurement->field_administration_note[LANGUAGE_NONE][0]['value'] = $note;
+    $measurements[$activity] = $measurement;
+  }
+
+  return [
+    'encounter_type' => 'pediatric-care',
+    'measurements_by_type' => $measurements,
+    'start_date' => $date,
+    'start_date_obj' => new DateTime($date),
+  ];
+}
+
+/**
+ * Tells whether a Well Child visit expects a medication activity.
+ */
+function medication_expected($activity, $birth_date, $visit_date, array $previous_encounters) {
+  $encounter_data = well_child_encounter($birth_date, $visit_date, $previous_encounters);
+  $expected = [];
+  hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
+  return in_array($activity, $expected, TRUE);
+}
+
+/**
+ * Checks that a medication given on a day is expected again from a due day.
+ *
+ * The visit the day before the due day does not expect it, and the visit on
+ * the due day does.
+ */
+function assert_medication_due_on($activity, $birth_date, $given_date, $due_date, $case, &$passed, &$failed) {
+  $previous = [medication_encounter($given_date, [$activity => 'administered-today'])];
+  $day_before = (new DateTime($due_date))->modify('-1 day')->format('Y-m-d');
+  $result = [
+    medication_expected($activity, $birth_date, $day_before, $previous),
+    medication_expected($activity, $birth_date, $due_date, $previous),
+  ];
+  assert_same($result, [FALSE, TRUE], $case, $passed, $failed);
+}
+
 set_site('rwanda');
 
 // Criterion 1: a child born 31 March, seen at a Well Child visit on
@@ -471,5 +523,76 @@ assert_same(individual_encounter_age('2025-03-31', '2025-09-30'), 5, 'The Nutrit
 assert_same(individual_encounter_age('2024-02-29', '2027-02-28'), 35, 'The Nutrition and Acute Illness rows are unchanged: born 29 February 2024, seen on 28 February 2027, 35 months', $passed, $failed);
 assert_same(individual_encounter_age('2025-03-15', '2025-09-14'), 5, 'The Nutrition and Acute Illness rows are unchanged: born 15 March, seen on 14 September, 5 months', $passed, $failed);
 assert_same(individual_encounter_age('2025-03-15', '2025-09-15'), 6, 'The Nutrition and Acute Illness rows are unchanged: born 15 March, seen on 15 September, 6 months', $passed, $failed);
+
+// Medications given on the 29th to the 31st. The app adds 6 months and stops
+// on the last day of a shorter month: given on 31 August 2025, the next dose
+// is offered from 28 February 2026. The report must expect it from the same
+// day, or a skipped dose in the days between is not counted as missing.
+// Children are born mid-month, far from any age limit, so the age-based list
+// of medications is the same on every visit day of a case.
+set_site('rwanda');
+$born_2023 = '2023-01-15';
+$born_2022 = '2022-01-15';
+$born_2018 = '2018-01-15';
+
+// Criterion: Vitamin A given on 2025-08-31 is expected again on 2026-02-28,
+// and not on 2026-02-27.
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-31', '2026-02-28', 'Vitamin A given at a Well Child visit on 2025-08-31: a visit on 2026-02-28 expects it again. A visit on 2026-02-27 does not.', $passed, $failed);
+
+// Criterion: Albendazole or Mebendazole, the same. Mebendazole is Rwanda's
+// from 1 to 6 years; Albendazole is Rwanda's from 6 years and Burundi's from
+// 6 months.
+assert_medication_due_on('well_child_mebendezole', $born_2023, '2025-08-31', '2026-02-28', 'Mebendazole given on 2025-08-31: a visit on 2026-02-28 expects it again, a visit on 2026-02-27 does not (Rwanda)', $passed, $failed);
+assert_medication_due_on('well_child_albendazole', $born_2018, '2025-08-31', '2026-02-28', 'Albendazole given on 2025-08-31: a visit on 2026-02-28 expects it again, a visit on 2026-02-27 does not (Rwanda)', $passed, $failed);
+set_site('burundi');
+assert_medication_due_on('well_child_albendazole', $born_2023, '2025-08-31', '2026-02-28', 'Albendazole given on 2025-08-31: a visit on 2026-02-28 expects it again, a visit on 2026-02-27 does not (Burundi)', $passed, $failed);
+// Vitamin A on the other site follows the same rule.
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-31', '2026-02-28', 'Boundary: Vitamin A given on 2025-08-31: a visit on 2026-02-28 expects it again, a visit on 2026-02-27 does not (Burundi)', $passed, $failed);
+set_site('rwanda');
+
+// Criterion: Vitamin A given on 2023-08-31 is expected again on 2024-02-29,
+// the last day of February in a leap year, and not on 2024-02-28.
+assert_medication_due_on('well_child_vitamin_a', $born_2022, '2023-08-31', '2024-02-29', 'Vitamin A given on 2023-08-31: a visit on 2024-02-29 expects it again', $passed, $failed);
+
+// Boundary: between the app's day and the day the report used to wait for,
+// the medication stays expected.
+$vitamin_a_on_31_august = [medication_encounter('2025-08-31', ['well_child_vitamin_a' => 'administered-today'])];
+assert_same(medication_expected('well_child_vitamin_a', $born_2023, '2026-03-02', $vitamin_a_on_31_august), TRUE, 'Boundary: Vitamin A given on 2025-08-31 is still expected on 2026-03-02', $passed, $failed);
+assert_same(medication_expected('well_child_vitamin_a', $born_2023, '2026-03-03', $vitamin_a_on_31_august), TRUE, 'guard: Vitamin A given on 2025-08-31 is still expected on 2026-03-03', $passed, $failed);
+
+// Boundary: the 29th and 30th also run past the end of February 2026.
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-30', '2026-02-28', 'Boundary: Vitamin A given on 2025-08-30 is expected again from 2026-02-28', $passed, $failed);
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-29', '2026-02-28', 'Boundary: Vitamin A given on 2025-08-29 is expected again from 2026-02-28', $passed, $failed);
+// In a leap year 29 February exists, so the 29th keeps its day.
+assert_medication_due_on('well_child_vitamin_a', $born_2022, '2023-08-29', '2024-02-29', 'Boundary: Vitamin A given on 2023-08-29 is expected again from 2024-02-29, not 2024-02-28', $passed, $failed);
+// A 30-day month that is not February, and a year boundary.
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-03-31', '2025-09-30', 'Boundary: Vitamin A given on 2025-03-31 is expected again from 2025-09-30', $passed, $failed);
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-12-31', '2026-06-30', 'Boundary: Vitamin A given on 2025-12-31 is expected again from 2026-06-30', $passed, $failed);
+
+// Boundary: the latest dose given decides, not an earlier one, and a later
+// visit where it was not given does not count as a dose.
+$vitamin_a_history = [
+  medication_encounter('2025-02-15', ['well_child_vitamin_a' => 'administered-today']),
+  medication_encounter('2025-08-31', ['well_child_vitamin_a' => 'administered-today']),
+  medication_encounter('2025-10-15', ['well_child_vitamin_a' => 'lack-of-stock']),
+];
+assert_same([
+  medication_expected('well_child_vitamin_a', $born_2023, '2026-02-27', $vitamin_a_history),
+  medication_expected('well_child_vitamin_a', $born_2023, '2026-02-28', $vitamin_a_history),
+], [FALSE, TRUE], 'Boundary: the latest Vitamin A given, on 2025-08-31, makes it due from 2026-02-28, whatever came before or after', $passed, $failed);
+// Boundary: one medication given on the 31st does not move another one.
+assert_same(medication_expected('well_child_mebendezole', $born_2023, '2026-02-27', $vitamin_a_on_31_august), TRUE, 'guard: Vitamin A given on 2025-08-31 leaves Mebendazole, never given, expected', $passed, $failed);
+
+// Guards: a first encounter, and a medication never given, expect it.
+assert_same(medication_expected('well_child_vitamin_a', $born_2023, '2026-02-27', []), TRUE, 'guard: Vitamin A at a first encounter is expected', $passed, $failed);
+assert_same(medication_expected('well_child_vitamin_a', $born_2023, '2026-02-27', [
+  medication_encounter('2025-08-31', ['well_child_vitamin_a' => 'patient-declined']),
+]), TRUE, 'guard: Vitamin A declined on 2025-08-31 is expected at the next visit', $passed, $failed);
+
+// Criterion: a dose given on the 1st to the 28th is due on the same day of
+// the month as before.
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-15', '2026-02-15', 'A dose given on the 1st to the 28th is due on the same day of the month as before: Vitamin A given on 2025-08-15 is due on 2026-02-15', $passed, $failed);
+assert_medication_due_on('well_child_mebendezole', $born_2023, '2025-08-28', '2026-02-28', 'guard: Mebendazole given on 2025-08-28 is due on 2026-02-28', $passed, $failed);
+assert_medication_due_on('well_child_vitamin_a', $born_2023, '2025-08-01', '2026-02-01', 'guard: Vitamin A given on 2025-08-01 is due on 2026-02-01', $passed, $failed);
 
 report_results('Well Child age', $passed, $failed);
