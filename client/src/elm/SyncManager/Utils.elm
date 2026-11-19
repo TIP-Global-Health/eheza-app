@@ -161,11 +161,12 @@ determineSyncStatus activePage model =
             noChange =
                 ( syncStatus, syncInfoAuthorities )
 
-            -- On a photo page, records and the WhatsApp reports that may refer
-            -- to them wait for the next cycle, after the photos.
-            skippedOnPhotoPage nextStatus =
+            -- On a photo page, sync rests instead of starting the record upload,
+            -- the WhatsApp reports or the downloads. They run in the next cycle,
+            -- after the photos.
+            restOnPhotoPage nextStatus =
                 if photoPage then
-                    SyncDownloadGeneral RemoteData.NotAsked
+                    SyncIdle
 
                 else
                     nextStatus
@@ -275,7 +276,7 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( skippedOnPhotoPage (SyncUploadAuthority emptyUploadRec), syncInfoAuthorities )
+                            ( restOnPhotoPage (SyncUploadAuthority emptyUploadRec), syncInfoAuthorities )
 
                         else
                             noChange
@@ -284,7 +285,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( skippedOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
+                                ( restOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                 , syncInfoAuthorities
                                 )
 
@@ -302,7 +303,7 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( skippedOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
+                                        ( restOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                         , Just (Zipper.first zipper)
                                         )
 
@@ -317,7 +318,7 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked
+                            ( restOnPhotoPage (SyncDownloadGeneral RemoteData.NotAsked)
                             , syncInfoAuthorities
                             )
 
