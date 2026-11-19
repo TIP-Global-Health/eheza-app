@@ -13,6 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Measurement.Utils
     exposing
         ( syphilisResultFormWithDefault
+        , testResultUpdatePartnerHIVTest
         , toBloodGpRsResultValueWithDefault
         , toHIVPCRResultValueWithDefault
         , toHIVResultValueWithDefault
@@ -906,11 +907,8 @@ update id isLabTech db msg model =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    model.labResultsData.partnerHIVTestForm
-
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) model.labResultsData.partnerHIVTestForm
 
                 updatedData =
                     model.labResultsData
@@ -1774,11 +1772,8 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    data.partnerHIVTestForm
-
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) data.partnerHIVTestForm
             in
             ( { data | partnerHIVTestForm = updatedForm }
             , Cmd.none

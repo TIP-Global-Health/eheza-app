@@ -50,6 +50,7 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
         , syphilisTestFormWithDefault
+        , testResultUpdatePartnerHIVTest
         , toAdministrationNoteWithDefault
         , toBloodGpRsTestValueWithDefault
         , toCorePhysicalExamValueWithDefault
@@ -3052,17 +3053,8 @@ update currentDate site id db msg model =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    model.laboratoryData.partnerHIVTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) model.laboratoryData.partnerHIVTestForm
 
                 updatedData =
                     model.laboratoryData
