@@ -5835,8 +5835,7 @@ function hedley_reports_resolve_expected_immunisations(array $possible_immunisat
     $last_dose_date = $performed[$last_dose];
     $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
     $last_dose_date_obj = new DateTime($last_dose_date);
-    $next_dose_date_obj = clone $last_dose_date_obj;
-    $next_dose_date_obj->modify($interval_between_dosed);
+    $next_dose_date_obj = hedley_reports_add_interval($last_dose_date_obj, $interval_between_dosed);
     if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
       $six_weeks_old_date_obj = clone $birth_date_obj;
       $six_weeks_old_date_obj->modify('+6 weeks');
@@ -6040,8 +6039,7 @@ function hedley_reports_well_child_add_medication_activities(array $encounter_da
       $expected[] = $expected_activity;
     }
     else {
-      // The date belongs to the encounter it came from, so add to a copy.
-      $next_administration_date_obj = (clone $last_administration_date_obj)->add(new DateInterval('P6M'));
+      $next_administration_date_obj = hedley_reports_add_interval($last_administration_date_obj, '+6 months');
       if ($start_date_obj >= $next_administration_date_obj) {
         // Medication was administered previously more than 6 months
         // ago - add it as expected.
@@ -8155,8 +8153,7 @@ function hedley_reports_prenatal_add_immunisation_activities(array $encounter_da
 
   $last_dose_date = $performed[$last_dose];
   $last_dose_date_obj = new DateTime($last_dose_date);
-  $next_dose_date_obj = clone $last_dose_date_obj;
-  $next_dose_date_obj->modify($interval_between_dosed);
+  $next_dose_date_obj = hedley_reports_add_interval($last_dose_date_obj, $interval_between_dosed);
 
   // If encounter started after the date when immunisation was supposed
   // to be administered, adding it as expected.
@@ -10790,6 +10787,33 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
   $next_anniversary = $next_month_start->format('Y-m-') . sprintf('%02d', min($birth_day, (int) $next_month_start->format('t')));
 
   return $next_anniversary === $date_obj->format('Y-m-d') ? $whole_months + 1 : $whole_months;
+}
+
+/**
+ * Moves a copy of a date by an interval, such as '+6 months' or '+4 weeks'.
+ *
+ * Months stop on the last day of a shorter month, as the app does: 2025-08-31
+ * plus 6 months is 2026-02-28.
+ *
+ * @param DateTime $date_obj
+ *   The date to start from. It is not changed.
+ * @param string $interval
+ *   A relative format accepted by DateTime::modify().
+ *
+ * @return DateTime
+ *   The moved date.
+ */
+function hedley_reports_add_interval(DateTime $date_obj, $interval) {
+  $result = clone $date_obj;
+  if (!preg_match('/^\+(\d+) months?$/', $interval, $matches)) {
+    return $result->modify($interval);
+  }
+
+  $day = (int) $date_obj->format('j');
+  $result->modify('first day of this month')->modify('+' . $matches[1] . ' months');
+  $result->setDate((int) $result->format('Y'), (int) $result->format('n'), min($day, (int) $result->format('t')));
+
+  return $result;
 }
 
 /**
