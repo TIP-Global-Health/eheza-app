@@ -109,9 +109,9 @@ determineSyncStatus activePage model =
         syncCycleOn =
             model.syncCycle == SyncManager.Model.SyncCycleOn
 
-        -- Determine if we're on session page where it's possible to
-        -- take a photo. If so, we'll halt sync, since it may
-        -- create problems with Dropzone binding / file saving at local cache.
+        -- Session pages where photos are taken. Sync is held there, except
+        -- for the steps `holdOnPhotoPage` lets finish, to protect Dropzone
+        -- binding and file saving at local cache.
         photoPage =
             case activePage of
                 -- Activity page where pictures are taken in bulk.
@@ -125,19 +125,22 @@ determineSyncStatus activePage model =
                 _ ->
                     False
 
-        -- Uploads after photos are not held there. Held before the record
-        -- upload, leaving the page would send records whose photos have not
-        -- gone up yet.
+        -- Uploads after photos, and an incident report, are not held there.
+        -- Held before the record upload, leaving the page would send records
+        -- whose photos have not gone up yet.
         holdOnPhotoPage =
             photoPage
                 && (case model.syncStatus of
-                        SyncUploadScreenshot _ _ ->
+                        SyncReportIncident _ ->
+                            False
+
+                        SyncUploadAuthority _ ->
                             False
 
                         SyncUploadGeneral _ ->
                             False
 
-                        SyncUploadAuthority _ ->
+                        SyncUploadScreenshot _ _ ->
                             False
 
                         SyncUploadWhatsApp _ ->
