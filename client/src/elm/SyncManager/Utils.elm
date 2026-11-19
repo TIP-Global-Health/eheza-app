@@ -124,8 +124,30 @@ determineSyncStatus activePage model =
 
                 _ ->
                     False
+
+        -- Uploads after photos are not held there. Held before the record
+        -- upload, leaving the page would send records whose photos have not
+        -- gone up yet.
+        holdOnPhotoPage =
+            photoPage
+                && (case model.syncStatus of
+                        SyncUploadScreenshot _ _ ->
+                            False
+
+                        SyncUploadGeneral _ ->
+                            False
+
+                        SyncUploadAuthority _ ->
+                            False
+
+                        SyncUploadWhatsApp _ ->
+                            False
+
+                        _ ->
+                            True
+                   )
     in
-    if syncCycleOn && not photoPage then
+    if syncCycleOn && not holdOnPhotoPage then
         let
             syncStatus =
                 model.syncStatus
@@ -135,6 +157,15 @@ determineSyncStatus activePage model =
 
             noChange =
                 ( syncStatus, syncInfoAuthorities )
+
+            -- On a photo page, records and the WhatsApp reports that may refer
+            -- to them wait for the next cycle, after the photos.
+            skippedOnPhotoPage nextStatus =
+                if photoPage then
+                    SyncDownloadGeneral RemoteData.NotAsked
+
+                else
+                    nextStatus
 
             ( syncStatusUpdated, syncInfoAuthoritiesUpdated ) =
                 -- Cases are ordered by the cycle order.
@@ -241,7 +272,7 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
+                            ( skippedOnPhotoPage (SyncUploadAuthority emptyUploadRec), syncInfoAuthorities )
 
                         else
                             noChange
@@ -250,7 +281,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( SyncUploadWhatsApp emptyUploadRec
+                                ( skippedOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                 , syncInfoAuthorities
                                 )
 
@@ -268,7 +299,7 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( SyncUploadWhatsApp emptyUploadRec
+                                        ( skippedOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                         , Just (Zipper.first zipper)
                                         )
 

@@ -603,6 +603,7 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     );
 
     $this->checkPersonPatchKeepsPhoto();
+    $this->checkEmptyPhotoMeasurementKeepsPersonPhoto();
     $this->checkDuplicateParticipantsMerge();
   }
 
@@ -840,6 +841,68 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     hedley_patient_consolidate_patients_validate($form, $form_state);
     $this->assertEqual($form_state['storage']['original'], (string) $live, 'The ID is stored without its spaces.');
     $this->assertEqual($form_state['storage']['step'], 'confirmation', 'IDs with spaces reach the confirmation step.');
+  }
+
+  /**
+   * A photo measurement saved without a photo keeps the person's photo.
+   *
+   * Called from testContentIsTransferredOnMerge, as each test method
+   * reinstalls the site.
+   */
+  protected function checkEmptyPhotoMeasurementKeepsPersonPhoto() {
+    $file = $this->createPhotoFile();
+    $person = $this->createPerson('PhotoKept');
+    $wrapper = entity_metadata_wrapper('node', node_load($person, NULL, TRUE));
+    $wrapper->field_photo->set(['fid' => $file->fid]);
+    $wrapper->save();
+
+    $participant = $this->createIndividualParticipant($person, REQUEST_TIME, 'nutrition')->nid;
+    $encounter = $this->createEncounter('nutrition_encounter', $participant);
+
+    $empty = $this->createPhotoMeasurement($person, $encounter, NULL);
+    hedley_restful_copy_photo_to_person($empty);
+    $this->assertEqual(
+      $file->fid,
+      $this->photoFid(node_load($person, NULL, TRUE)),
+      'A photo measurement without a photo keeps the person photo.'
+    );
+
+    $replacement = $this->createPhotoFile();
+    $taken = $this->createPhotoMeasurement($person, $encounter, $replacement->fid);
+    hedley_restful_copy_photo_to_person($taken);
+    $this->assertEqual(
+      $replacement->fid,
+      $this->photoFid(node_load($person, NULL, TRUE)),
+      'A photo measurement with a photo becomes the person photo.'
+    );
+  }
+
+  /**
+   * Creates a Nutrition photo measurement.
+   *
+   * @param int $person
+   *   The person node ID.
+   * @param int $encounter
+   *   The Nutrition encounter node ID.
+   * @param int|null $fid
+   *   The photo file ID, or NULL for a measurement without a photo.
+   *
+   * @return int
+   *   The measurement node ID.
+   */
+  protected function createPhotoMeasurement($person, $encounter, $fid) {
+    // The person is set at create, because the device shard hook reads it on
+    // the first save.
+    $values = [
+      'type' => 'nutrition_photo',
+      'field_person' => [LANGUAGE_NONE => [['target_id' => $person]]],
+      'field_nutrition_encounter' => [LANGUAGE_NONE => [['target_id' => $encounter]]],
+    ];
+    if (!empty($fid)) {
+      $values['field_photo'] = [LANGUAGE_NONE => [['fid' => $fid]]];
+    }
+
+    return $this->drupalCreateNode($values)->nid;
   }
 
   /**
