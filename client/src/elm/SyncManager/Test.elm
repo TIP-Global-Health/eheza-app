@@ -1,14 +1,17 @@
 module SyncManager.Test exposing (all)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Device.Model exposing (Device)
 import EverySet
 import Expect
 import Http
 import Json.Encode
 import List.Zipper as Zipper exposing (Zipper)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Encoder
 import SyncManager.Model
     exposing
@@ -21,14 +24,17 @@ import SyncManager.Model
         , Msg(..)
         , Site(..)
         , SyncCycle(..)
+        , SyncIncidentType(..)
         , SyncInfoAuthority
         , SyncInfoStatus(..)
         , SyncStatus(..)
         , UploadMethod(..)
+        , UploadRec
         , emptySyncInfoAuthority
+        , emptyUploadRec
         )
 import SyncManager.Update
-import SyncManager.Utils exposing (determineDownloadPhotosStatus, pageAllowsBackgroundRefresh)
+import SyncManager.Utils exposing (determineDownloadPhotosStatus, determineSyncStatus, pageAllowsBackgroundRefresh)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testPerson, testSyncManagerModel)
 import Time
@@ -196,6 +202,223 @@ statuses model =
     model.syncInfoAuthorities
         |> Maybe.map (Zipper.toList >> List.map (\authority -> ( authority.uuid, authority.status )))
         |> Maybe.withDefault []
+
+
+{-| A page of the group session.
+-}
+groupSessionPage : SessionPage -> Page
+groupSessionPage =
+    UserPage << SessionPage (toEntityUuid "session-uuid")
+
+
+{-| The group session's child page, where a child's photo is taken among
+their other activities.
+-}
+childPage : Page
+childPage =
+    groupSessionPage (ChildPage (toEntityUuid "child-uuid"))
+
+
+{-| The group session's bulk Photo page, where every child's photo is taken.
+-}
+bulkPhotoPage : Page
+bulkPhotoPage =
+    groupSessionPage (ActivityPage (ChildActivity ChildPicture))
+
+
+{-| Both pages on which sync was paused for photos.
+-}
+photoPages : List ( String, Page )
+photoPages =
+    [ ( "child page", childPage ), ( "bulk Photo page", bulkPhotoPage ) ]
+
+
+{-| Pages that are neither of the two above, including pages of the same group
+session and the individual encounters' own photo activity.
+-}
+otherPages : List ( String, Page )
+otherPages =
+    [ ( "clinical page", UserPage ClinicalPage )
+    , ( "PIN page", PinCodePage )
+    , ( "group session activities", groupSessionPage ActivitiesPage )
+    , ( "group session attendance", groupSessionPage AttendancePage )
+    , ( "group session Height activity", groupSessionPage (ActivityPage (ChildActivity Height)) )
+    , ( "group session participants", groupSessionPage ParticipantsPage )
+    , ( "group session mother page", groupSessionPage (MotherPage (toEntityUuid "mother-uuid")) )
+    , ( "group session progress report", groupSessionPage (ProgressReportPage (toEntityUuid "child-uuid")) )
+    , ( "Well Child photo activity", UserPage (WellChildActivityPage (toEntityUuid "encounter-uuid") WellChildPhoto) )
+    ]
+
+
+{-| A model with the sync cycle on, at `status`, holding the device's health
+centres with the first one current.
+-}
+atStage : SyncStatus -> List String -> Model
+atStage status healthCenters =
+    { testSyncManagerModel
+        | syncStatus = status
+        , syncCycle = SyncCycleOn
+        , syncInfoAuthorities =
+            case healthCenters of
+                [] ->
+                    Nothing
+
+                first :: rest ->
+                    Just (authorities first rest)
+    }
+
+
+{-| An upload lane whose IndexedDB query found nothing left to send.
+-}
+uploadDone : UploadRec a
+uploadDone =
+    { emptyUploadRec | indexDbRemoteData = RemoteData.Success Nothing }
+
+
+{-| A model at the same stage once that stage has sent or fetched everything
+it had: the shape each stage is left in when nothing remains.
+-}
+finishStage : Model -> Model
+finishStage model =
+    let
+        finished =
+            case model.syncStatus of
+                SyncDownloadAuthority _ ->
+                    SyncDownloadAuthority (RemoteData.Success (authorityResponse []))
+
+                SyncDownloadAuthorityDashboardStats _ ->
+                    SyncDownloadAuthorityDashboardStats (RemoteData.Success (authorityResponse []))
+
+                SyncDownloadGeneral _ ->
+                    SyncDownloadGeneral (RemoteData.Success emptyGeneralResponse)
+
+                SyncIdle ->
+                    SyncIdle
+
+                SyncReportIncident incident ->
+                    SyncReportIncident incident
+
+                SyncUploadAuthority _ ->
+                    SyncUploadAuthority uploadDone
+
+                SyncUploadGeneral _ ->
+                    SyncUploadGeneral uploadDone
+
+                SyncUploadPhoto _ _ ->
+                    SyncUploadPhoto 0 (RemoteData.Success Nothing)
+
+                SyncUploadScreenshot _ _ ->
+                    SyncUploadScreenshot 0 (RemoteData.Success Nothing)
+
+                SyncUploadWhatsApp _ ->
+                    SyncUploadWhatsApp uploadDone
+    in
+    { model | syncStatus = finished }
+
+
+{-| A readable name for the stage a model is at, with the current health
+centre for the stages that go through them one by one.
+-}
+stageName : Model -> String
+stageName model =
+    let
+        healthCenter =
+            model.syncInfoAuthorities
+                |> Maybe.map (\zipper -> " " ++ (Zipper.current zipper).uuid)
+                |> Maybe.withDefault ""
+    in
+    case model.syncStatus of
+        SyncDownloadAuthority _ ->
+            "download authority" ++ healthCenter
+
+        SyncDownloadAuthorityDashboardStats _ ->
+            "download statistics" ++ healthCenter
+
+        SyncDownloadGeneral _ ->
+            "download general"
+
+        SyncIdle ->
+            "idle"
+
+        SyncReportIncident _ ->
+            "report incident"
+
+        SyncUploadAuthority _ ->
+            "upload authority" ++ healthCenter
+
+        SyncUploadGeneral _ ->
+            "upload general"
+
+        SyncUploadPhoto _ _ ->
+            "upload photo"
+
+        SyncUploadScreenshot _ _ ->
+            "upload screenshot"
+
+        SyncUploadWhatsApp _ ->
+            "upload whatsapp"
+
+
+{-| The stages sync goes through on `page` over `ticks` ticks, each stage
+finishing its work before the next tick, and the model it ends with.
+-}
+runSync : Page -> Int -> Model -> ( List String, Model )
+runSync page ticks model =
+    List.foldl
+        (\_ ( visited, current ) ->
+            let
+                next =
+                    determineSyncStatus page (finishStage current)
+            in
+            ( visited ++ [ stageName next ], next )
+        )
+        ( [], model )
+        (List.range 1 ticks)
+
+
+{-| Whether a stage uploads photos or records that can carry them. The
+WhatsApp lane sends report records only.
+-}
+uploadsPhotosOrRecords : String -> Bool
+uploadsPhotosOrRecords name =
+    String.startsWith "upload" name && name /= "upload whatsapp"
+
+
+{-| The parts of the model `determineSyncStatus` moves.
+-}
+syncPosition : Model -> ( SyncStatus, Maybe (Zipper SyncInfoAuthority) )
+syncPosition model =
+    ( model.syncStatus, model.syncInfoAuthorities )
+
+
+{-| Whether the photo pages leave a model exactly where it was, as they did
+for every stage before. Reports the pages that moved it.
+-}
+photoPagesLeaveUnchanged : Model -> Expect.Expectation
+photoPagesLeaveUnchanged model =
+    photoPages
+        |> List.filter (\( _, page ) -> syncPosition (determineSyncStatus page model) /= syncPosition model)
+        |> List.map Tuple.first
+        |> Expect.equal []
+
+
+{-| A full cycle from idle on a device with two health centres, stage by stage.
+-}
+fullCycle : List String
+fullCycle =
+    [ "upload photo"
+    , "upload screenshot"
+    , "upload general"
+    , "upload authority hc-A"
+    , "upload authority hc-B"
+    , "upload whatsapp"
+    , "download general"
+    , "download authority hc-A"
+    , "download authority hc-B"
+    , "download statistics hc-A"
+    , "download statistics hc-B"
+    , "idle"
+    ]
 
 
 all : Test
@@ -656,4 +879,179 @@ all =
                 encodedPersonEdit [ ( 7, "/cache-upload/images/photo.jpg" ) ]
                     |> String.contains "\"photo\":100"
                     |> Expect.equal True
+
+        -- A group session's child page and its bulk Photo page used to hold
+        -- sync at whatever stage it was in when they opened. Opened while
+        -- records were uploading, the app kept uploading records for the
+        -- whole visit, and every photo taken there went up without its image.
+        -- These tests run determineSyncStatus with each stage already done,
+        -- which is the shape the update leaves it in once nothing is left.
+        , describe "Sync on the group session photo pages"
+            [ describe "Opened while records upload, sync moves on once the waiting records are sent"
+                [ test "on a group session's child page, sync moves on once the waiting records are sent" <|
+                    \() ->
+                        atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                            |> determineSyncStatus childPage
+                            |> stageName
+                            |> Expect.notEqual "upload authority hc-A"
+                , test "on the bulk Photo page, sync moves on once the waiting records are sent" <|
+                    \() ->
+                        atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                            |> determineSyncStatus bulkPhotoPage
+                            |> stageName
+                            |> Expect.notEqual "upload authority hc-A"
+
+                -- The general and WhatsApp lanes upload records too.
+                , test "on the photo pages, sync moves on from general records once they are sent" <|
+                    \() ->
+                        photoPages
+                            |> List.filter (\( _, page ) -> stageName (determineSyncStatus page (atStage (SyncUploadGeneral uploadDone) [ "hc-A" ])) == "upload general")
+                            |> List.map Tuple.first
+                            |> Expect.equal []
+                , test "on the photo pages, sync moves on from WhatsApp records once they are sent" <|
+                    \() ->
+                        photoPages
+                            |> List.filter (\( _, page ) -> stageName (determineSyncStatus page (atStage (SyncUploadWhatsApp uploadDone) [ "hc-A" ])) == "upload whatsapp")
+                            |> List.map Tuple.first
+                            |> Expect.equal []
+
+                -- Records are uploaded one health centre at a time. The
+                -- records waiting for the next health centre are waiting
+                -- records too, so they are sent before sync moves on.
+                , test "on the photo pages, records waiting for the next health centre are sent before sync moves on" <|
+                    \() ->
+                        photoPages
+                            |> List.map (\( name, page ) -> ( name, stageName (determineSyncStatus page (atStage (SyncUploadAuthority uploadDone) [ "hc-A", "hc-B" ])) ))
+                            |> Expect.equal [ ( "child page", "upload authority hc-B" ), ( "bulk Photo page", "upload authority hc-B" ) ]
+
+                -- Until the IndexedDB query comes back empty there are still
+                -- records to send, so the lane stays where it is.
+                , test "on the photo pages, a record lane that still has records to send stays where it is" <|
+                    \() ->
+                        [ atStage (SyncUploadAuthority { emptyUploadRec | indexDbRemoteData = RemoteData.Success (Just { entities = [], remaining = 3, uploadPhotos = Dict.empty }) }) [ "hc-A" ]
+                        , atStage (SyncUploadAuthority { emptyUploadRec | indexDbRemoteData = RemoteData.Loading }) [ "hc-A" ]
+                        , atStage (SyncUploadGeneral emptyUploadRec) [ "hc-A" ]
+                        , atStage (SyncUploadWhatsApp { emptyUploadRec | indexDbRemoteData = RemoteData.Loading }) [ "hc-A" ]
+                        ]
+                            |> List.map photoPagesLeaveUnchanged
+                            |> List.map (\expectation -> \() -> expectation)
+                            |> (\checks -> Expect.all checks ())
+                ]
+            , describe "Photos taken on those pages stay on the device until the nurse leaves, then go up first"
+                [ test "on a group session's child page, no photo or record is uploaded after the waiting records are sent, until the nurse leaves" <|
+                    \() ->
+                        atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                            |> runSync childPage 30
+                            |> Tuple.first
+                            |> List.filter uploadsPhotosOrRecords
+                            |> Expect.equal []
+                , test "on the bulk Photo page, no photo or record is uploaded after the waiting records are sent, until the nurse leaves" <|
+                    \() ->
+                        atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                            |> runSync bulkPhotoPage 30
+                            |> Tuple.first
+                            |> List.filter uploadsPhotosOrRecords
+                            |> Expect.equal []
+
+                -- The same visit, followed by the nurse moving to the
+                -- clinical page: the next upload sync makes is the photos.
+                , test "once the nurse leaves a photo page opened while records uploaded, the next cycle uploads photos first" <|
+                    \() ->
+                        photoPages
+                            |> List.map
+                                (\( name, page ) ->
+                                    atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                                        |> runSync page 30
+                                        |> Tuple.second
+                                        |> runSync (UserPage ClinicalPage) 30
+                                        |> Tuple.first
+                                        |> List.filter (String.startsWith "upload")
+                                        |> List.head
+                                        |> Tuple.pair name
+                                )
+                            |> Expect.equal [ ( "child page", Just "upload photo" ), ( "bulk Photo page", Just "upload photo" ) ]
+                , test "on a photo page opened while sync is idle, nothing is uploaded during the visit" <|
+                    \() ->
+                        photoPages
+                            |> List.concatMap (\( _, page ) -> atStage SyncIdle [ "hc-A" ] |> runSync page 30 |> Tuple.first)
+                            |> List.filter ((/=) "idle")
+                            |> Expect.equal []
+                , test "once the nurse leaves a photo page opened while sync was idle, the next cycle starts with photos" <|
+                    \() ->
+                        atStage SyncIdle [ "hc-A" ]
+                            |> runSync childPage 5
+                            |> Tuple.second
+                            |> determineSyncStatus (UserPage ClinicalPage)
+                            |> stageName
+                            |> Expect.equal "upload photo"
+                ]
+
+            -- Before, the photo pages left every stage as it was.
+            , describe "Opened while sync is in any other stage, those pages behave as before"
+                [ test "opened while sync is idle, the photo pages keep it idle" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage SyncIdle [ "hc-A" ])
+                , test "opened while photos upload, the photo pages leave the photo lane where it is" <|
+                    \() ->
+                        Expect.all
+                            [ \() -> photoPagesLeaveUnchanged (atStage (SyncUploadPhoto 0 RemoteData.Loading) [ "hc-A" ])
+                            , \() -> photoPagesLeaveUnchanged (atStage (SyncUploadPhoto 0 (RemoteData.Success Nothing)) [ "hc-A" ])
+                            ]
+                            ()
+                , test "opened while screenshots upload, the photo pages leave the screenshot lane where it is" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage (SyncUploadScreenshot 0 (RemoteData.Success Nothing)) [ "hc-A" ])
+                , test "opened while general data downloads, the photo pages leave the download where it is" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage (SyncDownloadGeneral (RemoteData.Success emptyGeneralResponse)) [ "hc-A" ])
+                , test "opened while health centre data downloads, the photo pages leave the download where it is" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage (SyncDownloadAuthority (RemoteData.Success (authorityResponse []))) [ "hc-A", "hc-B" ])
+                , test "opened while statistics download, the photo pages leave the download where it is" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage (SyncDownloadAuthorityDashboardStats (RemoteData.Success (authorityResponse []))) [ "hc-A", "hc-B" ])
+                , test "opened while an incident is reported, the photo pages leave the report where it is" <|
+                    \() ->
+                        photoPagesLeaveUnchanged (atStage (SyncReportIncident (FileUploadIncident "/cache-upload/images/photo.jpg")) [ "hc-A" ])
+
+                -- A sync cycle paused or held on its stage from the device
+                -- page stays so on the photo pages, records sent or not.
+                , test "with the sync cycle paused or held on its stage, the photo pages leave sent records where they are" <|
+                    \() ->
+                        let
+                            model =
+                                atStage (SyncUploadAuthority uploadDone) [ "hc-A" ]
+                        in
+                        Expect.all
+                            [ \() -> photoPagesLeaveUnchanged { model | syncCycle = SyncCyclePause }
+                            , \() -> photoPagesLeaveUnchanged { model | syncCycle = SyncCycleStayOnCurrentSyncStatus }
+                            ]
+                            ()
+                ]
+            , describe "Upload order and every other page's sync behaviour are unchanged"
+                [ test "on every other page, a full cycle uploads photos, screenshots, general and health centre records, WhatsApp, then downloads" <|
+                    \() ->
+                        otherPages
+                            |> List.filter (\( _, page ) -> Tuple.first (runSync page 12 (atStage SyncIdle [ "hc-A", "hc-B" ])) /= fullCycle)
+                            |> List.map Tuple.first
+                            |> Expect.equal []
+                , test "on every other page, sync moves on from sent health centre records to WhatsApp" <|
+                    \() ->
+                        otherPages
+                            |> List.filter (\( _, page ) -> stageName (determineSyncStatus page (atStage (SyncUploadAuthority uploadDone) [ "hc-A" ])) /= "upload whatsapp")
+                            |> List.map Tuple.first
+                            |> Expect.equal []
+
+                -- Moving on from general records on a photo page keeps the
+                -- usual order: each health centre's records, then WhatsApp.
+                , test "on the photo pages, sync moves on through the record uploads in their usual order" <|
+                    \() ->
+                        photoPages
+                            |> List.map (\( name, page ) -> ( name, Tuple.first (runSync page 3 (atStage (SyncUploadGeneral uploadDone) [ "hc-A", "hc-B" ])) ))
+                            |> Expect.equal
+                                [ ( "child page", [ "upload authority hc-A", "upload authority hc-B", "upload whatsapp" ] )
+                                , ( "bulk Photo page", [ "upload authority hc-A", "upload authority hc-B", "upload whatsapp" ] )
+                                ]
+                ]
+            ]
         ]
