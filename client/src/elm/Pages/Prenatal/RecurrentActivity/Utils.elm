@@ -270,7 +270,7 @@ concludedLabsResultsValue currentDate assembled results =
 
 {-| The labs entry after a test's result is saved. A lab technician's result
 asks the nurse for review; a nurse's save closes the entry once every performed
-test is completed.
+test is completed and every follow up question answered.
 -}
 labsResultsValueOnResultSaved : NominalDate -> Bool -> AssembledData -> PrenatalLabsResults -> LaboratoryTest -> LabsResultsValue
 labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
@@ -302,13 +302,17 @@ labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
             else
                 value.testsWithFollowUp
 
+        followUpsAnswered =
+            laboratoryResultFollowUpsCompleted assembled
+
         -- The entry stays open while the nurse still has a lab technician's
         -- follow up questions to answer.
         closedByNurse =
-            not isLabTech && allCompleted && laboratoryResultFollowUpsCompleted assembled
+            not isLabTech && allCompleted && followUpsAnswered
 
+        -- Unanswered follow up questions reach the nurse through Review & Accept.
         reviewState =
-            if isLabTech && isNothing value.reviewState && allCompleted then
+            if isNothing value.reviewState && allCompleted && (isLabTech || not followUpsAnswered) then
                 Just LabsResultsReviewRequested
 
             else if closedByNurse then

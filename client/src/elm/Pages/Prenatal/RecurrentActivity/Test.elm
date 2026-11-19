@@ -2150,6 +2150,29 @@ labsEntryResultSavedGuardTest =
         ]
 
 
+labsEntryLastResultByNurseTest : Test
+labsEntryLastResultByNurseTest =
+    describe "the nurse enters the entry's last result while a lab technician's follow up question is unanswered"
+        [ test "the entry asks the nurse for review, so Review & Accept leads to the question" <|
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen partnerPositiveByLabTech
+                    |> Maybe.map
+                        (\partnerTest ->
+                            emptyPrenatalMeasurements
+                                |> withHIVTestValue womanHIVNegative
+                                |> withPartnerHIVTestValue partnerTest
+                                |> withLabsEntry
+                                    (TestFixtures.labsEntry currentDate [ TestHemoglobin, TestPartnerHIV ] [ TestPartnerHIV ]
+                                        |> (\entry -> { entry | reviewState = Nothing, testsWithFollowUp = Just (EverySet.singleton TestPartnerHIV) })
+                                    )
+                        )
+                    |> Maybe.andThen (nurseResave resaveDate TestHemoglobin)
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
@@ -2172,4 +2195,5 @@ all =
         , partnerTaskResavedLabsEntryTest
         , hivTaskResavedLabsEntryTest
         , labsEntryResultSavedGuardTest
+        , labsEntryLastResultByNurseTest
         ]
