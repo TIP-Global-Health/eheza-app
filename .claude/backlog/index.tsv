@@ -619,6 +619,7 @@ B-618	4	READY	LOW			B-584	Completion report (NCD): a recurrent test due 6 or 12 
 B-619	4	READY	LOW			B-584	Completion report (Prenatal): a tetanus dose the app offers at once because the last dose was before this pregnancy is n
 B-620	4	READY	LOW			B-610	Photo measurements: a late-synced or edited OLDER photo measurement replaces the person's newer profile photo
 B-621	4	READY	LOW			B-610	Group-session photo pages: a sync stage held there keeps sending its request every tick (a finished general download, a 
+B-622	1	READY	LOW			59	Prenatal lab history: a second result saved for the same earlier visit stores diabetes and the preeclampsia risk on that
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
