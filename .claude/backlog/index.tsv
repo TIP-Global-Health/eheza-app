@@ -629,6 +629,7 @@ B-628	3	READY	MED			62	Statistical Queries › Postnatal Care: the "up to date w
 B-629	4	READY	LOW			62	Statistical Queries › ANC Contacts: the adequate-weight-gain row is labelled "Number of encounters" and counts pregnanci
 B-630	4	READY	LOW			62	Person registration: after the app restarts on a group-session child page, the address lists stay empty until the next s
 B-631	4	READY	LOW			62	Person edit / add family member: a stored address level under a place missing from the location list is looked up among 
+B-632	4	READY	LOW			63	Statistical Queries › nutrition report: a weighing with no weight-for-age z-score loses its weight-for-length z-score to
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
