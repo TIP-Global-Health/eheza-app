@@ -623,6 +623,8 @@ B-622	1	READY	LOW			59	Prenatal lab history: a second result saved for the same 
 B-623	3	READY	MED-LOW			60	Translate: copied-neighbour label batch, second pass — six labels carry another entry's translation (Somali ×3, Kirundi 
 B-624	4	READY	LOW			60	Prenatal Outside Care medication list: Coartem dosage says 7 days and folic acid says 3x a day, against every other text
 B-625	4	READY	LOW			60	Dashboard statistics: the device records the new statistics hash before the statistics are saved, so a failed save leave
+B-626	4	READY	LOW			61	Demo data: the Burundi demo villages are not in the Burundi location list, so a demo CHW cannot register a new adult; th
+B-627	4	READY	LOW			61	Village import script: running the same file again creates every village a second time, each with its own CHW group and 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
