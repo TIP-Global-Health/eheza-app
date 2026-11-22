@@ -34,8 +34,6 @@ import Backend.Measurement.Model
         ( BloodSmearResult(..)
         , ChildMeasurements
         , HistoricalMeasurements
-        , LaboratoryTest(..)
-        , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
         , WellChildSymptom(..)
@@ -97,7 +95,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
 import Measurement.Utils exposing (bloodSmearResultSet)
 import Pages.AcuteIllness.Activity.Model
@@ -117,7 +115,6 @@ import Pages.ChildScoreboard.Activity.Utils
 import Pages.ChildScoreboard.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
-import Pages.GlobalCaseManagement.Utils
 import Pages.NCD.RecurrentActivity.Utils
 import Pages.NCD.Utils
 import Pages.NextSteps.Model
@@ -9085,68 +9082,11 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        let
-                            ( performedTests, completedTests ) =
-                                Pages.Prenatal.RecurrentActivity.Utils.labsResultsTests currentDate assembled results
-
-                            updatedValue =
-                                (\value ->
-                                    let
-                                        -- Since lab results can be entered right away (at poit of care),
-                                        -- or at latter stage (after test was ordered at lab), we
-                                        -- update both performed and completed tests.
-                                        -- Since data structure is EverySet, it will not create duplicacies.
-                                        updatedPerformedTests =
-                                            EverySet.insert test performedTests
-
-                                        updatedCompletedTests =
-                                            EverySet.insert test completedTests
-
-                                        allLabsCompleted =
-                                            Pages.GlobalCaseManagement.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
-
-                                        updatedTestsWithFollowUp =
-                                            -- Mark tests which results were entered by Lab Tech, and got
-                                            -- follow up questions that will have to be completed by nurse.
-                                            if isLabTech && List.member test [ TestHIV, TestSyphilis, TestPartnerHIV ] then
-                                                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
-                                                    |> Maybe.withDefault (Just <| EverySet.singleton test)
-
-                                            else
-                                                value.testsWithFollowUp
-
-                                        reviewState =
-                                            if isLabTech && isNothing value.reviewState && allLabsCompleted then
-                                                -- For lab technician, request review if all labs were
-                                                -- completed, and review state was not set previously.
-                                                Just LabsResultsReviewRequested
-
-                                            else if not isLabTech && allLabsCompleted then
-                                                -- For nurse, set review state to completed,
-                                                -- if all labs were completed.
-                                                Just LabsResultsReviewCompleted
-
-                                            else
-                                                value.reviewState
-
-                                        resolutionDate =
-                                            if not isLabTech && allLabsCompleted then
-                                                currentDate
-
-                                            else
-                                                value.resolutionDate
-                                    in
-                                    { value
-                                        | performedTests = updatedPerformedTests
-                                        , completedTests = updatedCompletedTests
-                                        , testsWithFollowUp = updatedTestsWithFollowUp
-                                        , reviewState = reviewState
-                                        , resolutionDate = resolutionDate
-                                    }
-                                )
-                                    results.value
-                        in
-                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        [ savePrenatalLabsResultsMsg id
+                            assembled.participant.person
+                            (Just resultsId)
+                            (Pages.Prenatal.RecurrentActivity.Utils.labsResultsValueOnResultSaved currentDate isLabTech assembled results test)
+                        ]
                     )
                     assembled.measurements.labsResults
             )

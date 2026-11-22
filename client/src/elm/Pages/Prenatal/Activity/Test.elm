@@ -79,8 +79,8 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (div)
-import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm, emptyVaccinationForm)
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm, emptyPartnerHIVTestForm, emptyVaccinationForm)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, partnerHIVTestFormWithDefault, testResultUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
@@ -3070,6 +3070,7 @@ all =
         , vaginalDischargeContinuedTest
         , historyBeforeEncounterTest
         , repeatedTapOnSavedTest
+        , labTechPendingSignsTest
         , diagnosisKnownAnyOfTest
         , obstetricHistoryFirstPregnancyTest
         , nextVisitTaskTest
@@ -3319,6 +3320,47 @@ measurementOutOfRangeTest =
             \_ ->
                 preSaveObstetrical (Just False) (Just 120)
                     |> Expect.equal ( Nothing, True )
+        ]
+
+
+{-| A lab technician leaves the partner's ARV questions pending for the nurse.
+Saving the visit's task keeps them pending only while the result is unchanged.
+-}
+labTechPendingSignsTest : Test
+labTechPendingSignsTest =
+    let
+        pending =
+            Just (EverySet.singleton PrenatalHIVSignPendingInput)
+
+        savedByLabTech =
+            { executionNote = TestNoteRunConfirmedByLabTech
+            , executionDate = Just dummyDate
+            , testPrerequisites = deferredResultPrerequisites
+            , testResult = Just TestPositive
+            , hivSigns = pending
+            }
+
+        savedSigns form =
+            toPartnerHIVTestValueWithDefault (Just savedByLabTech) form
+                |> Maybe.andThen .hivSigns
+    in
+    describe "partner HIV test saved again after a lab technician's result"
+        [ test "unchanged, the questions stay pending" <|
+            \_ ->
+                savedSigns emptyPartnerHIVTestForm
+                    |> Expect.equal pending
+        , test "changed to Negative, no questions are left pending" <|
+            \_ ->
+                emptyPartnerHIVTestForm
+                    |> testResultUpdatePartnerHIVTest (Just TestNegative)
+                    |> savedSigns
+                    |> Expect.equal (Just (EverySet.singleton NoPrenatalHIVSign))
+        , test "a known positive partner saved without signs is asked about ARVs" <|
+            \_ ->
+                Just { savedByLabTech | executionNote = TestNoteKnownAsPositive, testResult = Nothing, hivSigns = Nothing }
+                    |> partnerHIVTestFormWithDefault emptyPartnerHIVTestForm
+                    |> .partnerTakingARV
+                    |> Expect.equal Nothing
         ]
 
 
