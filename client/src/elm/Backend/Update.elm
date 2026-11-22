@@ -9118,7 +9118,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                             }
                         )
                             assembled_.encounter
@@ -9168,7 +9168,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                                 }
                             )
                                 assembled_.encounter

@@ -3040,6 +3040,43 @@ generatePrenatalDiagnosesForNurseBloodSmearTest =
         ]
 
 
+reportedBloodSugarNotPerformedTest : Test
+reportedBloodSugarNotPerformedTest =
+    let
+        urineGlucosePlus2 measurements =
+            withUrineDipstickAt ( 14, 0 ) (Just Protein0) measurements
+                |> (\withDipstick ->
+                        { withDipstick
+                            | urineDipstickTest =
+                                Maybe.map (Tuple.mapSecond (\m -> { m | value = (\v -> { v | glucose = Just GlucosePlus2 }) m.value }))
+                                    withDipstick.urineDipstickTest
+                        }
+                   )
+
+        bloodSugarNotPerformedFromLabHistory measurements =
+            withBloodSugarAt ( 14, 0 ) (Just laterVisitId) Nothing measurements
+                |> (\withSugar ->
+                        { withSugar
+                            | randomBloodSugarTest =
+                                Maybe.map (Tuple.mapSecond (\m -> { m | value = (\v -> { v | executionNote = TestNoteLackOfReagents }) m.value }))
+                                    withSugar.randomBloodSugarTest
+                        }
+                   )
+    in
+    describe "a blood sugar reported from lab history as not performed"
+        [ test "leaves urine glucose to decide diabetes on the earlier visit" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bloodSugarNotPerformedFromLabHistory
+                    |> urineGlucosePlus2
+                    |> nurseVisitAt ( 14, 0 ) [] []
+                    |> generatePrenatalDiagnosesFromOwnResults
+                    |> EverySet.toList
+                    |> List.any (\diagnosis -> List.member diagnosis diabetesDiagnoses)
+                    |> Expect.equal True
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
@@ -3118,6 +3155,7 @@ all =
         , reportedDiabetesKnownAtLaterVisitTest
         , reportedDiabetesKnownAtReportingVisitTest
         , secondLabHistoryResultTest
+        , reportedBloodSugarNotPerformedTest
         ]
 
 

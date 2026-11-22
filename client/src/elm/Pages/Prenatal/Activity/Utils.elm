@@ -1993,9 +1993,15 @@ generatePrenatalDiagnosesFromOwnResults assembled =
             assembled.measurements
 
         -- A result reported to another visit is diagnosed there, so it is left
-        -- out here. For example, lab history's blood sugar for an earlier visit.
+        -- out here. A test reported as not performed stays, as urine glucose
+        -- then decides diabetes.
         ownResult measurement =
-            Maybe.Extra.filter (Tuple.second >> .value >> .originatingEncounter >> isNothing) measurement
+            Maybe.Extra.filter
+                (Tuple.second
+                    >> .value
+                    >> (\value -> isNothing value.originatingEncounter || not (testPerformedByExecutionNote value.executionNote))
+                )
+                measurement
     in
     generatePrenatalDiagnosesForNurse
         { assembled
