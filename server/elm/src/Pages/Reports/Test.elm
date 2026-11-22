@@ -689,7 +689,7 @@ dosesTo6Weeks birthDate =
 
 postnatalCare : List PatientData -> List (List String)
 postnatalCare =
-    generatePostnatalCareReportData English SiteRwanda toDate >> rowValues
+    (\records -> generatePostnatalCareReportData English SiteRwanda toDate records records) >> rowValues
 
 
 postnatalCareTest : Test

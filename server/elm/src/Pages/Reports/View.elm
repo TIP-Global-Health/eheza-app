@@ -161,7 +161,7 @@ viewReportsData language currentDate themePath data model =
                                             viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPostnatalCare ->
-                                            viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
+                                            viewPostnatalCareReport language data.site limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPrenatal ->
                                             viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
@@ -2883,11 +2883,11 @@ fbfDistributionCategoryCssClass category =
             "fbf-mother"
 
 
-viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> Html Msg
-viewPostnatalCareReport language site limitDate scopeLabel records =
+viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
+viewPostnatalCareReport language site limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePostnatalCareReportData language site limitDate records
+            generatePostnatalCareReportData language site limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2916,8 +2916,9 @@ generatePostnatalCareReportData :
     -> Site
     -> NominalDate
     -> List PatientData
+    -> List PatientData
     -> MetricsResultsTableData
-generatePostnatalCareReportData language site limitDate records =
+generatePostnatalCareReportData language site limitDate _ records =
     let
         totalEncountersWithin24HoursOfBirth =
             List.filterMap

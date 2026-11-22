@@ -20419,8 +20419,8 @@ var $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel = {$: 'Up
 var $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel = {$: 'UpToDateWithImmunization10To19MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
-var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
-	function (language, site, limitDate, records) {
+var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F5(
+	function (language, site, limitDate, _v0, records) {
 		var birthDatesOfUpToDateWithImmunizationPatients = A2(
 			$elm$core$List$filterMap,
 			function (patientData) {
@@ -20430,7 +20430,7 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 						var vaccinationProgressDict = A2(
 							$pzp1997$assoc_list$AssocList$map,
 							F2(
-								function (_v1, value) {
+								function (_v2, value) {
 									return $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(value);
 								}),
 							A3(
@@ -20530,9 +20530,9 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
 			A2(
 				$elm$core$List$filter,
-				function (_v0) {
-					var birthDate = _v0.a;
-					var encounter = _v0.b;
+				function (_v1) {
+					var birthDate = _v1.a;
+					var encounter = _v1.b;
 					return _Utils_eq(
 						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
 						$elm$core$Basics$EQ) || _Utils_eq(
@@ -20591,11 +20591,11 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$viewPostnatalCareReport = F5(
-	function (language, site, limitDate, scopeLabel, records) {
+var $author$project$Pages$Reports$View$viewPostnatalCareReport = F6(
+	function (language, site, limitDate, scopeLabel, scopeRecords, recordsTillLimitDate) {
 		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var data = A4($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, records);
+		var data = A5($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, scopeRecords, recordsTillLimitDate);
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
@@ -21651,7 +21651,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 											case 'ReportPeripartum':
 												return A6($author$project$Pages$Reports$View$viewPeripartumReport, language, startDate, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPostnatalCare':
-												return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
+												return A6($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPrenatal':
 												return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 											case 'ReportPrenatalContacts':
