@@ -3063,8 +3063,26 @@ reportedBloodSugarNotPerformedTest =
                         }
                    )
     in
-    describe "a blood sugar reported from lab history as not performed"
-        [ test "leaves urine glucose to decide diabetes on the earlier visit" <|
+    describe "a test reported from lab history as not performed"
+        [ test "a blood group test holding a rhesus negative value gives no rhesus negative on the earlier visit" <|
+            \_ ->
+                { emptyPrenatalMeasurements
+                    | bloodGpRsTest =
+                        TestFixtures.wrapMeasurement (dayAtEga ( 14, 0 ))
+                            { executionNote = TestNoteLackOfReagents
+                            , executionDate = Nothing
+                            , testPrerequisites = Nothing
+                            , bloodGroup = Nothing
+                            , rhesus = Just RhesusNegative
+                            , originatingEncounter = Just laterVisitId
+                            }
+                }
+                    |> nurseVisitAt ( 14, 0 ) [] []
+                    |> generatePrenatalDiagnosesFromOwnResults
+                    |> EverySet.toList
+                    |> List.any (\diagnosis -> List.member diagnosis [ DiagnosisRhesusNegativeInitialPhase, DiagnosisRhesusNegativeRecurrentPhase ])
+                    |> Expect.equal False
+        , test "a blood sugar leaves urine glucose to decide diabetes on the earlier visit" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bloodSugarNotPerformedFromLabHistory

@@ -1983,8 +1983,9 @@ encounterEGAWeeks assembled =
     Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
 
 
-{-| The nurse diagnoses stored on the visit when one of its results is saved
-with no other visit to report to.
+{-| The visit's own nurse diagnoses, leaving out results reported to another
+visit. Stored when a result has no visit to report to; also decides phase
+completion.
 -}
 generatePrenatalDiagnosesFromOwnResults : AssembledData -> EverySet PrenatalDiagnosis
 generatePrenatalDiagnosesFromOwnResults assembled =
@@ -1993,15 +1994,19 @@ generatePrenatalDiagnosesFromOwnResults assembled =
             assembled.measurements
 
         -- A result reported to another visit is diagnosed there, so it is left
-        -- out here. A test reported as not performed stays, as urine glucose
-        -- then decides diabetes.
+        -- out here.
         ownResult measurement =
+            Maybe.Extra.filter (Tuple.second >> .value >> .originatingEncounter >> isNothing) measurement
+
+        -- A blood sugar reported as not performed stays, as urine glucose then
+        -- decides diabetes.
+        ownBloodSugar =
             Maybe.Extra.filter
                 (Tuple.second
                     >> .value
                     >> (\value -> isNothing value.originatingEncounter || not (testPerformedByExecutionNote value.executionNote))
                 )
-                measurement
+                measurements.randomBloodSugarTest
     in
     generatePrenatalDiagnosesForNurse
         { assembled
@@ -2009,7 +2014,7 @@ generatePrenatalDiagnosesFromOwnResults assembled =
                 { measurements
                     | bloodGpRsTest = ownResult measurements.bloodGpRsTest
                     , hepatitisBTest = ownResult measurements.hepatitisBTest
-                    , randomBloodSugarTest = ownResult measurements.randomBloodSugarTest
+                    , randomBloodSugarTest = ownBloodSugar
                     , syphilisTest = ownResult measurements.syphilisTest
                 }
         }
