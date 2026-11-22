@@ -20420,113 +20420,7 @@ var $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel = {$: 'U
 var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
 var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F5(
-	function (language, site, limitDate, _v0, records) {
-		var birthDatesOfUpToDateWithImmunizationPatients = A2(
-			$elm$core$List$filterMap,
-			function (patientData) {
-				return A2(
-					$elm$core$Maybe$andThen,
-					function (wellChildData) {
-						var vaccinationProgressDict = A2(
-							$pzp1997$assoc_list$AssocList$map,
-							F2(
-								function (_v2, value) {
-									return $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(value);
-								}),
-							A3(
-								$elm$core$List$foldl,
-								F2(
-									function (immunisationsDict, accumDict) {
-										return A6(
-											$pzp1997$assoc_list$AssocList$merge,
-											F2(
-												function (key, value) {
-													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
-												}),
-											F3(
-												function (key, value1, value2) {
-													return A2(
-														$pzp1997$assoc_list$AssocList$insert,
-														key,
-														A2($Gizra$elm_all_set$EverySet$union, value1, value2));
-												}),
-											F2(
-												function (key, value) {
-													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
-												}),
-											immunisationsDict,
-											accumDict,
-											$pzp1997$assoc_list$AssocList$empty);
-									}),
-								$pzp1997$assoc_list$AssocList$empty,
-								$elm_community$maybe_extra$Maybe$Extra$values(
-									A2(
-										$elm$core$List$map,
-										function ($) {
-											return $.immunisationData;
-										},
-										$elm$core$List$concat(wellChildData)))));
-						var futureVaccinations = A4(
-							$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
-							site,
-							patientData.birthDate,
-							vaccinationProgressDict,
-							$author$project$Pages$Reports$Utils$allVaccineTypes(site));
-						var closestDateForVaccination = $elm$core$List$head(
-							A2(
-								$elm$core$List$sortWith,
-								$justinmimbs$date$Date$compare,
-								A2(
-									$elm$core$List$filterMap,
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$Tuple$second,
-										$elm$core$Maybe$map($elm$core$Tuple$second)),
-									futureVaccinations)));
-						return $elm_community$maybe_extra$Maybe$Extra$isNothing(closestDateForVaccination) ? $elm$core$Maybe$Just(patientData.birthDate) : A2(
-							$elm$core$Maybe$andThen,
-							function (closestDate) {
-								return _Utils_eq(
-									A2($justinmimbs$date$Date$compare, closestDate, limitDate),
-									$elm$core$Basics$GT) ? $elm$core$Maybe$Just(patientData.birthDate) : $elm$core$Maybe$Nothing;
-							},
-							closestDateForVaccination);
-					},
-					patientData.wellChildData);
-			},
-			records);
-		var totalUpToDateWithImmunizationInRange = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (birthDate, accum) {
-					var diffInWeeks = A2($author$project$Gizra$NominalDate$diffWeeks, birthDate, limitDate);
-					if ((diffInWeeks >= 7) && (diffInWeeks < 11)) {
-						return _Utils_update(
-							accum,
-							{inRange7To11Weeks: accum.inRange7To11Weeks + 1});
-					} else {
-						if ((diffInWeeks >= 11) && (diffInWeeks < 15)) {
-							return _Utils_update(
-								accum,
-								{inRange11To15Weeks: accum.inRange11To15Weeks + 1});
-						} else {
-							if (diffInWeeks >= 15) {
-								var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
-								return (diffInMonths < 10) ? _Utils_update(
-									accum,
-									{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : ((diffInMonths < 19) ? _Utils_update(
-									accum,
-									{inRange10To19Months: accum.inRange10To19Months + 1}) : ((diffInMonths < 24) ? _Utils_update(
-									accum,
-									{inRange19To24Months: accum.inRange19To24Months + 1}) : accum));
-							} else {
-								return accum;
-							}
-						}
-					}
-				}),
-			{inRange7To11Weeks: 0, inRange11To15Weeks: 0, inRange10To19Months: 0, inRange19To24Months: 0, inRange15WeeksTo10Months: 0},
-			birthDatesOfUpToDateWithImmunizationPatients);
+	function (language, site, limitDate, scopeRecords, records) {
 		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
 			A2(
 				$elm$core$List$filter,
@@ -20565,6 +20459,147 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F5(
 							patientData.wellChildData);
 					},
 					records)));
+		var wellChildVisitsTillLimitDate = $pzp1997$assoc_list$AssocList$fromList(
+			A2(
+				$elm$core$List$filterMap,
+				function (patientData) {
+					return A2(
+						$elm$core$Maybe$map,
+						function (wellChildData) {
+							return _Utils_Tuple2(
+								patientData.id,
+								A2(
+									$elm$core$List$filter,
+									function (encounter) {
+										return !_Utils_eq(
+											A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+											$elm$core$Basics$GT);
+									},
+									$elm$core$List$concat(wellChildData)));
+						},
+						patientData.wellChildData);
+				},
+				scopeRecords));
+		var childrenVisitedInRange = A2(
+			$elm$core$List$filter,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.wellChildData;
+				},
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$Maybe$map(
+						$elm$core$List$any(
+							A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty))),
+					$elm$core$Maybe$withDefault(false))),
+			records);
+		var birthDatesOfUpToDateWithImmunizationPatients = A2(
+			$elm$core$List$filterMap,
+			function (patientData) {
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (visits) {
+						var vaccinationProgressDict = A2(
+							$pzp1997$assoc_list$AssocList$map,
+							F2(
+								function (_v0, value) {
+									return $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(value);
+								}),
+							A3(
+								$elm$core$List$foldl,
+								F2(
+									function (immunisationsDict, accumDict) {
+										return A6(
+											$pzp1997$assoc_list$AssocList$merge,
+											F2(
+												function (key, value) {
+													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
+												}),
+											F3(
+												function (key, value1, value2) {
+													return A2(
+														$pzp1997$assoc_list$AssocList$insert,
+														key,
+														A2($Gizra$elm_all_set$EverySet$union, value1, value2));
+												}),
+											F2(
+												function (key, value) {
+													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
+												}),
+											immunisationsDict,
+											accumDict,
+											$pzp1997$assoc_list$AssocList$empty);
+									}),
+								$pzp1997$assoc_list$AssocList$empty,
+								$elm_community$maybe_extra$Maybe$Extra$values(
+									A2(
+										$elm$core$List$map,
+										function ($) {
+											return $.immunisationData;
+										},
+										visits))));
+						var futureVaccinations = A4(
+							$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
+							site,
+							patientData.birthDate,
+							vaccinationProgressDict,
+							$author$project$Pages$Reports$Utils$allVaccineTypes(site));
+						var closestDateForVaccination = $elm$core$List$head(
+							A2(
+								$elm$core$List$sortWith,
+								$justinmimbs$date$Date$compare,
+								A2(
+									$elm$core$List$filterMap,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Tuple$second,
+										$elm$core$Maybe$map($elm$core$Tuple$second)),
+									futureVaccinations)));
+						return $elm_community$maybe_extra$Maybe$Extra$isNothing(closestDateForVaccination) ? $elm$core$Maybe$Just(patientData.birthDate) : A2(
+							$elm$core$Maybe$andThen,
+							function (closestDate) {
+								return _Utils_eq(
+									A2($justinmimbs$date$Date$compare, closestDate, limitDate),
+									$elm$core$Basics$GT) ? $elm$core$Maybe$Just(patientData.birthDate) : $elm$core$Maybe$Nothing;
+							},
+							closestDateForVaccination);
+					},
+					A2($pzp1997$assoc_list$AssocList$get, patientData.id, wellChildVisitsTillLimitDate));
+			},
+			childrenVisitedInRange);
+		var totalUpToDateWithImmunizationInRange = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (birthDate, accum) {
+					var diffInWeeks = A2($author$project$Gizra$NominalDate$diffWeeks, birthDate, limitDate);
+					if ((diffInWeeks >= 7) && (diffInWeeks < 11)) {
+						return _Utils_update(
+							accum,
+							{inRange7To11Weeks: accum.inRange7To11Weeks + 1});
+					} else {
+						if ((diffInWeeks >= 11) && (diffInWeeks < 15)) {
+							return _Utils_update(
+								accum,
+								{inRange11To15Weeks: accum.inRange11To15Weeks + 1});
+						} else {
+							if (diffInWeeks >= 15) {
+								var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
+								return (diffInMonths < 10) ? _Utils_update(
+									accum,
+									{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : ((diffInMonths < 19) ? _Utils_update(
+									accum,
+									{inRange10To19Months: accum.inRange10To19Months + 1}) : ((diffInMonths < 24) ? _Utils_update(
+									accum,
+									{inRange19To24Months: accum.inRange19To24Months + 1}) : accum));
+							} else {
+								return accum;
+							}
+						}
+					}
+				}),
+			{inRange7To11Weeks: 0, inRange11To15Weeks: 0, inRange10To19Months: 0, inRange19To24Months: 0, inRange15WeeksTo10Months: 0},
+			birthDatesOfUpToDateWithImmunizationPatients);
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(

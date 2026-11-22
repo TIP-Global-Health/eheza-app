@@ -2918,7 +2918,7 @@ generatePostnatalCareReportData :
     -> List PatientData
     -> List PatientData
     -> MetricsResultsTableData
-generatePostnatalCareReportData language site limitDate _ records =
+generatePostnatalCareReportData language site limitDate scopeRecords records =
     let
         totalEncountersWithin24HoursOfBirth =
             List.filterMap
@@ -2949,14 +2949,38 @@ generatePostnatalCareReportData language site limitDate _ records =
                     )
                 |> List.length
 
+        -- Each child's visits up to TO, so doses given before FROM count too.
+        wellChildVisitsTillLimitDate =
+            List.filterMap
+                (\patientData ->
+                    Maybe.map
+                        (\wellChildData ->
+                            ( patientData.id
+                            , List.concat wellChildData
+                                |> List.filter (\encounter -> Date.compare encounter.startDate limitDate /= GT)
+                            )
+                        )
+                        patientData.wellChildData
+                )
+                scopeRecords
+                |> Dict.fromList
+
+        childrenVisitedInRange =
+            List.filter
+                (.wellChildData
+                    >> Maybe.map (List.any (not << List.isEmpty))
+                    >> Maybe.withDefault False
+                )
+                records
+
         birthDatesOfUpToDateWithImmunizationPatients =
             List.filterMap
                 (\patientData ->
                     Maybe.andThen
-                        (\wellChildData ->
+                        (\visits ->
                             let
                                 vaccinationProgressDict =
-                                    List.concat wellChildData
+                                    visits
                                         |> List.map .immunisationData
                                         |> Maybe.Extra.values
                                         |> List.foldl
@@ -2998,9 +3022,9 @@ generatePostnatalCareReportData language site limitDate _ records =
                                     )
                                     closestDateForVaccination
                         )
-                        patientData.wellChildData
+                        (Dict.get patientData.id wellChildVisitsTillLimitDate)
                 )
-                records
+                childrenVisitedInRange
 
         totalUpToDateWithImmunizationInRange =
             List.foldl
