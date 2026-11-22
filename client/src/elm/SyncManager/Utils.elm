@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString, updateGeoInfo)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -32,6 +32,7 @@ import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Http
 import Json.Decode
 import Json.Encode exposing (Value, object)
@@ -2916,3 +2917,14 @@ isStorageFullError name =
     -- Browsers report a full quota as `QuotaExceededError`; older Firefox used
     -- `NS_ERROR_DOM_QUOTA_REACHED`. Match the substring to cover both casings.
     String.contains "Quota" name || String.contains "QUOTA" name
+
+
+{-| Builds the location lists of the device's site, used by the person form.
+-}
+updateGeoInfo : Model -> Model
+updateGeoInfo model =
+    let
+        geoInfo =
+            getGeoInfo model.syncInfoGeneral.site
+    in
+    { model | geoInfo = geoInfo, reverseGeoInfo = getReverseGeoInfo geoInfo }

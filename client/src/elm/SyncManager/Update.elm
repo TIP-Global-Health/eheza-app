@@ -10,7 +10,6 @@ import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
-import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Http exposing (Error)
 import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
@@ -899,20 +898,15 @@ update currentTime activePage dbVersion device msg model =
                                        )
 
                             modelWithSyncStatus =
-                                let
-                                    -- At general sync we get site param,
-                                    -- Theoretically, it may change, and therefore,
-                                    -- we recalculate geo info data.
-                                    geoInfo =
-                                        getGeoInfo syncInfoGeneral.site
-                                in
+                                -- General sync brings the site, which may change,
+                                -- so the location lists are rebuilt.
                                 SyncManager.Utils.determineSyncStatus activePage
-                                    { model
-                                        | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
-                                        , syncInfoGeneral = syncInfoGeneral
-                                        , geoInfo = geoInfo
-                                        , reverseGeoInfo = getReverseGeoInfo geoInfo
-                                    }
+                                    (SyncManager.Utils.updateGeoInfo
+                                        { model
+                                            | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
+                                            , syncInfoGeneral = syncInfoGeneral
+                                        }
+                                    )
                         in
                         SubModelReturn
                             modelWithSyncStatus
@@ -1208,24 +1202,13 @@ update currentTime activePage dbVersion device msg model =
                         noChange
 
                     else
-                        let
-                            -- This is first step of sync.
-                            -- When device is offline, we may not get any further,
-                            -- therefore, we need to generate and store geo info data here.
-                            geoInfo =
-                                getGeoInfo model.syncInfoGeneral.site
-                        in
                         update
                             currentTime
                             activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhoto)
-                            { model
-                                | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading
-                                , geoInfo = geoInfo
-                                , reverseGeoInfo = getReverseGeoInfo geoInfo
-                            }
+                            { model | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading }
 
                 _ ->
                     noChange

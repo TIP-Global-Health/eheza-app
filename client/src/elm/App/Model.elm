@@ -226,7 +226,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
+    , syncManager = SyncManager.Utils.updateGeoInfo (SyncManager.Model.emptyModel syncManagerFlags)
     , errors = []
     , coordinates = Nothing
     }
