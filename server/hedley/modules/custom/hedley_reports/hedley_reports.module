@@ -1397,22 +1397,14 @@ function hedley_reports_pregnancy_outcome_mapping() {
  *
  * @return array
  *   The z-scores by encounter, with 'w' (weight-for-age) and 'u'
- *   (weight-for-length) of this encounter set from the measurement.
+ *   (weight-for-length) of this encounter set from the measurement, each
+ *   only when the measurement has it.
  */
 function hedley_reports_add_weight_zscores(array $zscores_by_encounter, $encounter_id, $measurement) {
-  $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
-    ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
-    : NULL;
-  $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
-    ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
-    : NULL;
-  if (!empty($zscore_age)) {
-    if (empty($zscores_by_encounter[$encounter_id])) {
-      $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-    }
-    else {
-      $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-      $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+  // Each z-score is stored when present, whether or not the other one is.
+  foreach (['w' => 'field_zscore_age', 'u' => 'field_zscore_length'] as $key => $field) {
+    if (!empty($measurement->{$field}[LANGUAGE_NONE][0]['value'])) {
+      $zscores_by_encounter[$encounter_id][$key] = $measurement->{$field}[LANGUAGE_NONE][0]['value'];
     }
   }
 
