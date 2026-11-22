@@ -143,7 +143,9 @@ flag simply does not appear.
   its record carries `"photo": <fid>`; a record sent before its file has no `photo` key.
 - A cycle's last request is the statistics GET (`stats_cache_hash=`); acting just after it lands between two cycles.
 - Group photo pages (a child's page, the bulk Photo page): sync is held there. Opened while sync is idle, nothing is sent during the visit;
-  leaving starts a cycle with the photos first. Opened while a health-centre download is in flight, the download is re-sent about 20 times a second (B-621).
+  leaving does not start a cycle, the next idle tick does (photos first). Opened while a health-centre download is in flight, the download is re-sent about 20 times a second (B-621).
+- A reload on a session child page or the bulk Photo page comes back on that page, nurse and CHW alike, with no PIN. Its start-up sync is refused there,
+  so nothing syncs until the idle tick (10 min by default), even after leaving the page.
 - A server edit of a measurement (`entity_metadata_wrapper` save) reached an open encounter page
   about 7 s later with that sync speed.
 - **Relationships load slowly after a fresh pairing.** A person page can show "Family
@@ -198,6 +200,8 @@ flag simply does not appear.
   and Registering Health Center; the CHW's form has no address section.
 - Fields depend on the date of birth: "Mode of delivery" appears for a child, "Level of
   Education" / "Marital Status" for an adult. Set the date first.
+- The local Rwanda Province list is the blank option plus Amajyaruguru, Iburasirazuba, Umujyi wa kigali; Amajyaruguru's districts are Gakenke and Rulindo.
+  The address lists come from the site the device stores; since #2571 they are built at app start, and rebuilt when a general sync brings another site.
 - Address values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809 → Akanduga
   2810. Nyange HC is nid 4, uuid `725a9a6f-ded6-5e94-b914-94a221d2ba93` (Muhondo nid 5, `b6b0a893-…`); a
   record's `shard` on the device holds that uuid.
@@ -326,6 +330,8 @@ flag simply does not appear.
 - Acute Illness COVID test "Why not?": the first option is Administered Previously (`administered-previously`), which `completeLaboratory(… covidTestPerformed: false)` ticks.
   Nurse adult, Fever + Cough + Nasal Congestion, 38.5 °C, malaria Negative, COVID not performed: "COVID-19 with signs of Pneumonia", Next Steps Contact Tracing, Medication
   Distribution, Follow Up. Changing COVID to performed Negative re-diagnoses Fever of Unknown Origin, with Next Steps Refer to Hospital only (the nurse's hospital referral form).
+- Contact Tracing (that COVID-19 fixture's first Next Steps tab, `.ui.form.contacts-tracing`): ADD CONTACT → `input.search-input` → after any text,
+  "Register a new contact" opens a contact form with its own Province → Village selects. Nothing is stored until the form's Save.
 - CHW follow-up after a Coartem first visit, condition not improving + Respiratory Distress, no malaria test: Treatment Review (`.icon-task-ongoing-treatment`), then Next Steps
   Send to Health Center, Health Education, Follow Up. A page keeps a form's dirty flags after its save, so reload before reopening a saved form to see what a later visit sees.
 - A saved activity is reopened from the encounter's Completed tab (`#completed-tab`), then

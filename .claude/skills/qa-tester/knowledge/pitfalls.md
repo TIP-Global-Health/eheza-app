@@ -1073,3 +1073,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a lab-history row that stopped after Laboratory passed its checks on visit A's stored diagnoses, but no frame showed them (PR #2570, row 3).
 - **Wrong conclusion:** device and server reads stand in for the video.
 - **Rule:** a later visit's progress report lists each earlier visit's own diagnoses ("Malaria on 08/11/2026 - no treatment recorded"). Record that report, or the patient record's, as the row's last step.
+
+## Writing an expected count from a guess
+
+- **Symptom:** the first develop check "province list full" expected 6 options and failed on 4 (PR #2571).
+- **Wrong conclusion:** none; the run stopped on its own check.
+- **Rule:** the local Rwanda province list is the blank option plus three. Read a list's real contents on develop first, then check against that reading.
+
+## Leaving a group page by `.wrap-cards`
+
+- **Symptom:** a loop pressing back "until the main menu" stopped on the session's Activities page, and the next click waited 10 s for Participant Directory (PR #2571).
+- **Wrong conclusion:** the back arrow does not reach the menu.
+- **Rule:** the Activities page also draws `.wrap-cards`. Stop on `.icon-task-participant-directory` being visible.
+
+## A name regex on a Participant Directory row (met again)
+
+- **Symptom:** `(?!\d|[A-Z])` after "Qa2571PN" matched nothing: the row runs on as "Qa2571PNDOB:" (PR #2571, after-repair video re-recorded).
+- **Wrong conclusion:** the person did not download.
+- **Rule:** match the row by its name element's exact text, `filter({ has: page.getByText('E2ETest ' + who, { exact: true }) })`.
