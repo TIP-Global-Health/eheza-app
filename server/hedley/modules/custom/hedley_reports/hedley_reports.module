@@ -9415,7 +9415,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
     }
   }
   // Second option - patient reported not getting any medicine from PMTCT.
-  $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+  $medication_measurement = $encounter_data['measurements_by_type']['medication'] ?? NULL;
   if (!empty($medication_measurement)) {
     $treatments = $medication_measurement->field_hiv_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
@@ -9450,7 +9450,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
     ['anemia', 'anemia-initial']
   );
   if ($moderate_anemia_diagnosed) {
-    $treatments = $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
+    $treatments = empty($medication_measurement->field_anemia_treatment[LANGUAGE_NONE]) ? [] : $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
       $referred = FALSE;
       foreach ($treatments as $treatment) {
@@ -9484,22 +9484,11 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
         !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
         !hedley_reports_prenatal_mebendazole_administered($encounter_data['measurements_by_type'])
       ) {
-        // Required, unless at this visit the patient reported receiving it.
-        $received = FALSE;
-        $medication_measurement = $encounter_data['measurements_by_type']['medication'];
-        if (!empty($medication_measurement)) {
-          $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-          if (!empty($medications)) {
-            foreach ($medications as $sign) {
-              if ($sign['value'] == 'mebendezole') {
-                $received = TRUE;
-                break;
-              }
-            }
-          }
-        }
-
-        if (!$received) {
+        // Required only when this visit's Treatment Review answer exists and
+        // does not include Mebendazole.
+        $signs = empty($medication_measurement->field_medication[LANGUAGE_NONE]) ? [] : $medication_measurement->field_medication[LANGUAGE_NONE];
+        $medications = array_column($signs, 'value');
+        if (!empty($medications) && !in_array('mebendezole', $medications)) {
           return TRUE;
         }
       }
@@ -9520,7 +9509,6 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
 
   // Vitamin A medication set.
   if ($encounter_type == 'nurse-postpartum') {
-    $medication_measurement = $encounter_data['measurements_by_type']['medication'];
     if (!empty($medication_measurement)) {
       $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
       if (!empty($medications)) {

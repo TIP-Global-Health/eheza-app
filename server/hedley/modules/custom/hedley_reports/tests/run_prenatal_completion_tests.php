@@ -704,4 +704,371 @@ assert_tetanus_due_on(['dose-1' => '2025-01-31'], '2025-02-28', 'guard: tetanus 
 assert_same(tetanus_expected('2025-02-28', []), TRUE, 'guard: tetanus with no dose given is expected', $passed, $failed);
 assert_same(tetanus_expected('2040-01-01', $three_tetanus_doses + ['dose-4' => '2025-02-28', 'dose-5' => '2026-02-28']), FALSE, 'guard: five tetanus doses complete the course', $passed, $failed);
 
+/**
+ * Builds the data of a CHW visit on 2026-06-01, at the given EGA in weeks.
+ *
+ * The measurements are filled in like a nurse visit's, so that a Treatment
+ * Review answer handed in can only be ignored because of the encounter type.
+ */
+function chw_visit($type, $ega_weeks, array $measurements = []) {
+  $encounter_data = nurse_follow_up_visit($ega_weeks, [earlier_nurse_visit(4, [])], $measurements);
+  $encounter_data['encounter_type'] = $type;
+  return $encounter_data;
+}
+
+/**
+ * Returns the visit data with the given diagnoses made at it.
+ */
+function with_diagnoses(array $encounter_data, array $diagnoses) {
+  $encounter_data['diagnoses'] = $diagnoses;
+  return $encounter_data;
+}
+
+/**
+ * Builds the HIV test record with the given follow up answers.
+ *
+ * 'hiv-program-hc' says there is an HIV program at the health center; any
+ * other answer, such as 'none', says there is not.
+ */
+function hiv_test(array $signs) {
+  $measurement = new stdClass();
+  $measurement->field_hiv_signs[LANGUAGE_NONE] = array_map(function ($sign) {
+    return ['value' => $sign];
+  }, $signs);
+  return $measurement;
+}
+
+// NEXT STEPS MEBENDAZOLE AND TREATMENT REVIEW
+//
+// Next Steps offers Mebendazole at a nurse visit from 24 weeks only once
+// Treatment Review was answered and does not say Mebendazole was received.
+// Treatment Review is held at follow-up nurse visits only, so a first nurse
+// visit is never offered Mebendazole there. The Completion report must not
+// count such a visit as missing Next Steps' medication distribution, while
+// other medicines keep making the distribution expected at a first visit.
+//
+// A first nurse visit is a nurse visit with no earlier nurse visits: CHW
+// visits before it are not part of previous_nurse_encounters_data.
+//
+// Treatment Review saved without an answer to the prenatal medication
+// questions: only the HIV treatment part was filled in. In Drupal an empty
+// field loads as an empty array, without the language key.
+$treatment_review_without_medication_answer = treatment_review([]);
+$treatment_review_without_medication_answer->field_medication = [];
+$treatment_review_without_medication_answer->field_hiv_treatment[LANGUAGE_NONE] = [['value' => 'medicine-pmtct']];
+$medication_question_not_answered = ['medication' => $treatment_review_without_medication_answer];
+$said_received_mebendazole_and_iron = ['medication' => treatment_review(['iron-and-folic-acid-supplement', 'mebendezole'])];
+
+// Criterion 1.
+$criterion = 'A first nurse visit at 24 weeks or later is not charged with a Next Steps medication handout for Mebendazole';
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [])),
+  FALSE,
+  "$criterion: first visit at 30 weeks, Mebendazole not given in Medication",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(24, [])),
+  FALSE,
+  "$criterion: first visit at exactly 24 weeks",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [], $mebendazole_out_of_stock)),
+  FALSE,
+  "$criterion: first visit at 30 weeks, Mebendazole out of stock in Medication",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [], $mebendazole_declined)),
+  FALSE,
+  "$criterion: first visit at 30 weeks, Mebendazole declined in Medication",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [], $mebendazole_given)),
+  FALSE,
+  "guard: $criterion: first visit at 30 weeks, Mebendazole given in Medication",
+  $passed,
+  $failed
+);
+
+// Criterion 2.
+$criterion = 'A follow-up nurse visit at 24 weeks or later is charged when Treatment Review says Mebendazole was not received, none was given or reported at an earlier visit, and none was handed over at this visit';
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $said_received_nothing)),
+  TRUE,
+  "guard: $criterion: 30 weeks, she answers No to every medicine",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(24, [earlier_nurse_visit(4, [])], $said_received_nothing)),
+  TRUE,
+  "guard: $criterion: exactly 24 weeks, she answers No to every medicine",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $said_iron_folic_acid)),
+  TRUE,
+  "guard: $criterion: 30 weeks, she received iron / folic acid but not Mebendazole",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [
+    earlier_nurse_visit(8, $said_received_nothing),
+    earlier_nurse_visit(4, $said_received_nothing),
+  ], $said_received_nothing)),
+  TRUE,
+  "guard: $criterion: 30 weeks, she answered No at two earlier visits too",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $mebendazole_declined + $said_received_nothing)),
+  TRUE,
+  "guard: $criterion: 30 weeks, Mebendazole declined in Medication at this visit",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $mebendazole_out_of_stock + $said_received_nothing)),
+  TRUE,
+  "guard: $criterion: 30 weeks, Mebendazole out of stock in Medication at this visit",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $mebendazole_given + $said_received_nothing)),
+  FALSE,
+  "guard: $criterion: 30 weeks, Mebendazole handed over in Medication at this visit: not charged",
+  $passed,
+  $failed
+);
+
+// Criterion 3.
+$criterion = 'The same follow-up visit is not charged when Treatment Review says Mebendazole was received';
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $said_received_mebendazole)),
+  FALSE,
+  "guard: $criterion: she received Mebendazole only",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $said_received_mebendazole_and_iron)),
+  FALSE,
+  "guard: $criterion: she received Mebendazole and iron / folic acid",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $mebendazole_out_of_stock + $said_received_mebendazole)),
+  FALSE,
+  "guard: $criterion: she received Mebendazole, and Medication recorded it out of stock",
+  $passed,
+  $failed
+);
+
+// Criterion 4.
+$criterion = 'A follow-up visit whose Treatment Review is not answered is not charged for Mebendazole';
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])])),
+  FALSE,
+  "$criterion: no Treatment Review record at 30 weeks",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(24, [earlier_nurse_visit(4, [])])),
+  FALSE,
+  "$criterion: no Treatment Review record at exactly 24 weeks",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $medication_question_not_answered)),
+  FALSE,
+  "$criterion: Treatment Review saved without the prenatal medication answer",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, [])], $mebendazole_out_of_stock)),
+  FALSE,
+  "$criterion: no Treatment Review record, Mebendazole out of stock in Medication",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, $said_received_nothing)])),
+  FALSE,
+  "$criterion: no Treatment Review record, she answered No at the earlier visit",
+  $passed,
+  $failed
+);
+
+// Criterion 5.
+$criterion = 'Mebendazole given at an earlier visit, through Medication or Next Steps, or reported at an earlier visit: not charged';
+
+$earlier_routes = [
+  'given through Medication' => $mebendazole_given,
+  'handed out from Next Steps' => $handed_out_from_next_steps,
+  'reported received in Treatment Review' => $said_received_mebendazole,
+  'deworming pill reported received in Treatment Review' => $said_received_deworming_pill,
+];
+foreach ($earlier_routes as $route => $earlier_measurements) {
+  assert_same(
+    distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, $earlier_measurements)], $said_received_nothing)),
+    FALSE,
+    "guard: $criterion: $route at the last visit, she answers No now",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(nurse_follow_up_visit(30, [
+      earlier_nurse_visit(8, $earlier_measurements),
+      earlier_nurse_visit(4, $said_received_nothing),
+    ], $said_received_nothing)),
+    FALSE,
+    "guard: $criterion: $route two visits ago, she answered No at the last visit and now",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(nurse_follow_up_visit(30, [earlier_nurse_visit(4, $earlier_measurements)])),
+    FALSE,
+    "guard: $criterion: $route at the last visit, Treatment Review not answered now",
+    $passed,
+    $failed
+  );
+}
+
+// Criterion 6.
+$criterion = 'Before 24 weeks, and at CHW visits: not charged';
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(23, [])),
+  FALSE,
+  "guard: $criterion: first nurse visit at 23 weeks",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(23, [earlier_nurse_visit(4, [])], $said_received_nothing)),
+  FALSE,
+  "guard: $criterion: follow-up nurse visit at 23 weeks, she answers No",
+  $passed,
+  $failed
+);
+
+assert_same(
+  distribution_expected(nurse_follow_up_visit(23, [earlier_nurse_visit(4, [])])),
+  FALSE,
+  "guard: $criterion: follow-up nurse visit at 23 weeks, Treatment Review not answered",
+  $passed,
+  $failed
+);
+
+foreach (['chw-1', 'chw-2', 'chw-3', 'chw-postpartum'] as $type) {
+  assert_same(
+    distribution_expected(chw_visit($type, 30)),
+    FALSE,
+    "guard: $criterion: $type at 30 weeks",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(chw_visit($type, 30, $said_received_nothing)),
+    FALSE,
+    "guard: $criterion: $type at 30 weeks, with a Treatment Review answer of No",
+    $passed,
+    $failed
+  );
+}
+
+// Criterion 7.
+$criterion = 'Other medicines at a first visit, such as anaemia, HIV and gonorrhea treatment, are charged as before';
+
+// At a first visit there is no Treatment Review record.
+foreach ([30, 20] as $ega_weeks) {
+  assert_same(
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['anemia'])),
+    TRUE,
+    "guard: $criterion: moderate anaemia at a first visit at $ega_weeks weeks",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, [], ['prenatal_hiv_test' => hiv_test(['none'])]), ['hiv'])),
+    TRUE,
+    "guard: $criterion: HIV, no HIV program at the health center, at a first visit at $ega_weeks weeks",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['gonorrhea'])),
+    TRUE,
+    "guard: $criterion: gonorrhea at a first visit at $ega_weeks weeks",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['partner-hiv'])),
+    TRUE,
+    "guard: $criterion: discordant partnership at a first visit at $ega_weeks weeks",
+    $passed,
+    $failed
+  );
+
+  assert_same(
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['trichomonas-or-bv'])),
+    TRUE,
+    "guard: $criterion: trichomonas or bacterial vaginosis at a first visit at $ega_weeks weeks",
+    $passed,
+    $failed
+  );
+}
+
+assert_same(
+  distribution_expected(with_diagnoses(nurse_follow_up_visit(30, [], ['prenatal_hiv_test' => hiv_test(['hiv-program-hc'])]), ['hiv'])),
+  FALSE,
+  "$criterion: HIV with an HIV program at the health center, at a first visit at 30 weeks: no medicine, so not charged",
+  $passed,
+  $failed
+);
+
 report_results('Prenatal completion', $passed, $failed);

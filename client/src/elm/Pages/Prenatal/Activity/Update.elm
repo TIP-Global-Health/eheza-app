@@ -50,6 +50,8 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
         , syphilisTestFormWithDefault
+        , testResultUpdateHIVTest
+        , testResultUpdatePartnerHIVTest
         , toAdministrationNoteWithDefault
         , toBloodGpRsTestValueWithDefault
         , toCorePhysicalExamValueWithDefault
@@ -2207,21 +2209,8 @@ update currentDate site id db msg model =
 
         SetHIVTestResult value ->
             let
-                form =
-                    model.laboratoryData.hivTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , hivProgramHC = Nothing
-                        , hivProgramHCDirty = True
-                        , partnerHIVPositive = Nothing
-                        , partnerHIVPositiveDirty = True
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdateHIVTest (testResultFromString value) model.laboratoryData.hivTestForm
 
                 updatedData =
                     model.laboratoryData
@@ -3052,17 +3041,8 @@ update currentDate site id db msg model =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    model.laboratoryData.partnerHIVTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) model.laboratoryData.partnerHIVTestForm
 
                 updatedData =
                     model.laboratoryData
