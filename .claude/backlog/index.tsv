@@ -633,6 +633,8 @@ B-632	4	IMPLEMENTED	LOW			63	Statistical Queries › nutrition report: a weighin
 B-633	4	READY	LOW		2573	B-628	Statistical Queries › Postnatal Care: row 1 (visit within 24 hours of birth) can count one newborn in two neighbouring r
 B-634	4	READY	LOW			65	Resilience messages: a read / favourite / remind action made while a sync cycle is running is undone when the device dow
 B-635	4	READY	LOW			65	Resilience messages: once read, the Introduction and End-of-month messages are listed on no tab, so they cannot be opene
+B-636	4	READY	LOW			65	Deploy: a `drush` step on Pantheon is retried after ANY failure, so an update hook that fails part-way is run from the s
+B-637	4	READY	LOW			65	Build / station tooling minors: `ddev client-install` cannot fail; the deploy skills leave the main tree off `develop`; 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
