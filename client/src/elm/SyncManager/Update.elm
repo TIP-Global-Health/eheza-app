@@ -897,11 +897,18 @@ update currentTime activePage dbVersion device msg model =
                                             }
                                        )
 
+                            -- The location lists are rebuilt only when general sync
+                            -- brings a different site.
+                            updateGeoInfoOnSiteChange =
+                                if syncInfoGeneral.site /= model.syncInfoGeneral.site then
+                                    SyncManager.Utils.updateGeoInfo
+
+                                else
+                                    identity
+
                             modelWithSyncStatus =
-                                -- General sync brings the site, which may change,
-                                -- so the location lists are rebuilt.
                                 SyncManager.Utils.determineSyncStatus activePage
-                                    (SyncManager.Utils.updateGeoInfo
+                                    (updateGeoInfoOnSiteChange
                                         { model
                                             | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
                                             , syncInfoGeneral = syncInfoGeneral
