@@ -631,6 +631,8 @@ B-630	4	IMPLEMENTED	LOW			62	Person registration: after the app restarts on a gr
 B-631	4	READY	LOW			62	Person edit / add family member: a stored address level under a place missing from the location list is looked up among 
 B-632	4	IMPLEMENTED	LOW			63	Statistical Queries › nutrition report: a weighing with no weight-for-age z-score loses its weight-for-length z-score to
 B-633	4	READY	LOW		2573	B-628	Statistical Queries › Postnatal Care: row 1 (visit within 24 hours of birth) can count one newborn in two neighbouring r
+B-634	4	READY	LOW			65	Resilience messages: a read / favourite / remind action made while a sync cycle is running is undone when the device dow
+B-635	4	READY	LOW			65	Resilience messages: once read, the Introduction and End-of-month messages are listed on no tab, so they cannot be opene
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
