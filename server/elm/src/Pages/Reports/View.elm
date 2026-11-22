@@ -59,6 +59,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
+import Set
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -2949,22 +2950,6 @@ generatePostnatalCareReportData language site limitDate scopeRecords records =
                     )
                 |> List.length
 
-        -- Each child's visits up to TO, so doses given before FROM count too.
-        wellChildVisitsTillLimitDate =
-            List.filterMap
-                (\patientData ->
-                    Maybe.map
-                        (\wellChildData ->
-                            ( patientData.id
-                            , List.concat wellChildData
-                                |> List.filter (\encounter -> Date.compare encounter.startDate limitDate /= GT)
-                            )
-                        )
-                        patientData.wellChildData
-                )
-                scopeRecords
-                |> Dict.fromList
-
         childrenVisitedInRange =
             List.filter
                 (.wellChildData
@@ -2972,17 +2957,21 @@ generatePostnatalCareReportData language site limitDate scopeRecords records =
                     >> Maybe.withDefault False
                 )
                 records
+                |> List.map .id
+                |> Set.fromList
 
         birthDatesOfUpToDateWithImmunizationPatients =
             List.filterMap
                 (\patientData ->
                     Maybe.andThen
-                        (\visits ->
+                        (\wellChildData ->
                             let
                                 vaccinationProgressDict =
-                                    visits
+                                    List.concat wellChildData
                                         |> List.map .immunisationData
                                         |> Maybe.Extra.values
+                                        -- Doses given up to TO, whenever they were recorded.
+                                        |> List.map (Dict.map (\_ -> EverySet.filter (\date -> Date.compare date limitDate /= GT)))
                                         |> List.foldl
                                             (\immunisationsDict accumDict ->
                                                 Dict.merge
@@ -3022,9 +3011,9 @@ generatePostnatalCareReportData language site limitDate scopeRecords records =
                                     )
                                     closestDateForVaccination
                         )
-                        (Dict.get patientData.id wellChildVisitsTillLimitDate)
+                        patientData.wellChildData
                 )
-                childrenVisitedInRange
+                (List.filter (\patientData -> Set.member patientData.id childrenVisitedInRange) scopeRecords)
 
         totalUpToDateWithImmunizationInRange =
             List.foldl

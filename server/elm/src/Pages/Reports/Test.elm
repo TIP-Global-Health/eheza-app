@@ -852,6 +852,22 @@ visitInRange =
     spv (Date.fromCalendarDate 2026 Mar 20) []
 
 
+postnatalCareLaterEntryTest : Test
+postnatalCareLaterEntryTest =
+    describe "generatePostnatalCareReportData with doses entered after TO"
+        [ test "doses given by TO but entered at a visit after TO count" <|
+            \_ ->
+                [ childWithSpvs 1
+                    thirtyWeeksBirthDate
+                    [ spv (Date.fromCalendarDate 2026 Apr 5) (courseUntil toDate (fullCourse thirtyWeeksBirthDate))
+                    , visitInRange
+                    ]
+                ]
+                    |> upToDateRowsFrom fromDate
+                    |> Expect.equal [ [ "0" ], [ "0" ], [ "1" ], [ "0" ], [ "0" ] ]
+        ]
+
+
 postnatalCareRangeTest : Test
 postnatalCareRangeTest =
     describe "generatePostnatalCareReportData with FROM after the earlier doses"
@@ -1561,6 +1577,7 @@ all =
         , incidenceTest
         , peripartumTest
         , periodWindowsTest
+        , postnatalCareLaterEntryTest
         , postnatalCareRangeTest
         , postnatalCareTest
         , prevalenceTest
