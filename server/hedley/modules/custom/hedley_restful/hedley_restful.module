@@ -318,6 +318,45 @@ function hedley_restful_timestamp_only_date($value) {
 }
 
 /**
+ * Makes a photo measurement's photo the person's profile photo.
+ *
+ * A measurement saved without a photo leaves the person's photo as it is.
+ *
+ * @param int $measurement_id
+ *   The node ID of the photo measurement.
+ *
+ * @throws \Exception
+ *   If there was an error saving the person entity.
+ */
+function hedley_restful_copy_photo_to_person($measurement_id) {
+  $wrapper = entity_metadata_wrapper('node', $measurement_id);
+  if (!$wrapper || !is_object($wrapper)) {
+    return;
+  }
+
+  $photo = $wrapper->field_photo->value();
+  if (empty($photo)) {
+    watchdog('hedley_restful', 'Photo measurement @nid was saved without a photo.', ['@nid' => $measurement_id], WATCHDOG_WARNING);
+    return;
+  }
+
+  $person_wrapper = $wrapper->field_person;
+  if (empty($person_wrapper->value())) {
+    return;
+  }
+
+  try {
+    $person_wrapper->field_photo->set($photo);
+    $person_wrapper->save();
+  }
+  catch (Exception $exception) {
+    watchdog('error', $exception->getMessage());
+
+    throw $exception;
+  }
+}
+
+/**
  * Resolve nodes IDs using provided UUIDs.
  *
  * @param array $uuids
