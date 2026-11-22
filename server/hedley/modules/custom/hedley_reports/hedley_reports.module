@@ -1402,11 +1402,20 @@ function hedley_reports_pregnancy_outcome_mapping() {
  */
 function hedley_reports_add_weight_zscores(array $zscores_by_encounter, $encounter_id, $measurement) {
   // Each z-score is stored when present, whether or not the other one is.
+  $zscores = [];
   foreach (['w' => 'field_zscore_age', 'u' => 'field_zscore_length'] as $key => $field) {
     if (!empty($measurement->{$field}[LANGUAGE_NONE][0]['value'])) {
-      $zscores_by_encounter[$encounter_id][$key] = $measurement->{$field}[LANGUAGE_NONE][0]['value'];
+      $zscores[$key] = $measurement->{$field}[LANGUAGE_NONE][0]['value'];
     }
   }
+  if (empty($zscores)) {
+    return $zscores_by_encounter;
+  }
+
+  // Both values come from one weighing, replacing an earlier weighing's pair.
+  $encounter_zscores = $zscores_by_encounter[$encounter_id] ?? [];
+  unset($encounter_zscores['w'], $encounter_zscores['u']);
+  $zscores_by_encounter[$encounter_id] = $encounter_zscores + $zscores;
 
   return $zscores_by_encounter;
 }

@@ -508,7 +508,7 @@ $weight_types = [
 
 foreach ($weight_types as $type => $program) {
   // Criterion: a weighing with both z-scores counts towards both underweight
-  // and wasting, as today. Both a first entry for the encounter and one that
+  // and wasting. Both a first entry for the encounter and one that
   // a height already started.
   assert_same(weight_wire([], weighing($type, '-2.5', '-3.5')), ',-2.5,-3.5,,', "$type: a weighing with both z-scores counts towards both underweight and wasting", $passed, $failed);
   assert_same(weight_wire([10 => ['s' => '-1.2']], weighing($type, '-2.5', '-3.5')), '-1.2,-2.5,-3.5,,', "$type: a weighing with both z-scores counts towards both underweight and wasting, after a height", $passed, $failed);
@@ -612,6 +612,15 @@ $weight_constants = [
 foreach ($weight_constants as $constant) {
   $found = preg_match('/case ' . $constant . ':(.*?)break;/s', $module_source, $matches);
   assert_same($found === 1 && strpos($matches[1], 'hedley_reports_add_weight_zscores(') !== FALSE, TRUE, "$constant weighings go through hedley_reports_add_weight_zscores", $passed, $failed);
+}
+
+// Two weighings in one encounter: the later one's pair replaces the earlier
+// one's, so the report never mixes a value from each.
+foreach (array_keys($weight_types) as $type) {
+  $first = hedley_reports_add_weight_zscores([10 => ['s' => '-1.5']], 10, weighing($type, '-1', '-3.2'));
+  assert_same(weight_wire($first, weighing($type, '-2.4', NULL)), '-1.5,-2.4,,,', "$type: a second weighing with no weight-for-length z-score does not keep the first weighing's", $passed, $failed);
+  assert_same(weight_wire($first, weighing($type, NULL, '-2.1')), '-1.5,,-2.1,,', "$type: a second weighing with no weight-for-age z-score does not keep the first weighing's", $passed, $failed);
+  assert_same(weight_wire($first, weighing($type, NULL, NULL)), '-1.5,-1,-3.2,,', "$type: a second weighing with neither z-score keeps the first weighing's pair", $passed, $failed);
 }
 
 report_results('Nutrition report', $passed, $failed);
