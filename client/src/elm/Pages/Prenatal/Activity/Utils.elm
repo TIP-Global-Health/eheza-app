@@ -1987,8 +1987,26 @@ encounterEGAWeeks assembled =
 with no other visit to report to.
 -}
 generatePrenatalDiagnosesFromOwnResults : AssembledData -> EverySet PrenatalDiagnosis
-generatePrenatalDiagnosesFromOwnResults =
+generatePrenatalDiagnosesFromOwnResults assembled =
+    let
+        measurements =
+            assembled.measurements
+
+        -- A result reported to another visit is diagnosed there, so it is left
+        -- out here. For example, lab history's blood sugar for an earlier visit.
+        ownResult measurement =
+            Maybe.Extra.filter (Tuple.second >> .value >> .originatingEncounter >> isNothing) measurement
+    in
     generatePrenatalDiagnosesForNurse
+        { assembled
+            | measurements =
+                { measurements
+                    | bloodGpRsTest = ownResult measurements.bloodGpRsTest
+                    , hepatitisBTest = ownResult measurements.hepatitisBTest
+                    , randomBloodSugarTest = ownResult measurements.randomBloodSugarTest
+                    , syphilisTest = ownResult measurements.syphilisTest
+                }
+        }
 
 
 {-| EGA is taken on the encounter's start date, so a lab result entered on
