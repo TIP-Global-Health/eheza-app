@@ -352,6 +352,8 @@ flag simply does not appear.
   Blood sugar is not offered at the visit diabetes was reported to, but is offered again at the next visit.
   Since #2551 a diabetic result at a later visit (point of care, or Lab Results the same day) adds no new diabetes and no Referral once diabetes was reported to an earlier visit.
   The same-day Lab Results route then returns to the recurrent page, whose To Do shows a greyed Malaria Prevention on every build.
+- Lab history's "Have you updated all results…?" Yes completes the History task even while entries are still pending. The earlier visit's ANC Labs entry then stays open, and its Lab Results still lists the reported test's tab.
+- A progress report lists the reported diagnosis ("… as a result of entering lab results from past encounter") and each earlier visit's own stored diagnoses ("Diabetes on 01/11/2026 - no treatment recorded"), so it shows what an earlier visit stored.
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.

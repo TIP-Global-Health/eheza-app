@@ -1061,3 +1061,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** server query output (`> server-labs.txt`) landed in the main tree as an untracked file, where the `Stop` hook could pick it up.
 - **Wrong conclusion:** the scratchpad holds every file the run writes.
 - **Rule:** a relative redirect writes to the current directory. After `cd /var/www/html/ihangane`, give output files their full scratchpad path, and check `git status` before the turn ends.
+
+## Running the post script from the scratchpad
+
+- **Symptom:** `post-qa-report.sh 2570 report.md`, run with the scratchpad as the working directory, failed with "not a git repository" (PR #2570).
+- **Wrong conclusion:** the report file or `gh` is broken.
+- **Rule:** the script calls `git`. Run it from `/var/www/html/ihangane`, and pass the draft by its full scratchpad path.
+
+## A row whose evidence is stored on a visit no screen in the video shows
+
+- **Symptom:** a lab-history row that stopped after Laboratory passed its checks on visit A's stored diagnoses, but no frame showed them (PR #2570, row 3).
+- **Wrong conclusion:** device and server reads stand in for the video.
+- **Rule:** a later visit's progress report lists each earlier visit's own diagnoses ("Malaria on 08/11/2026 - no treatment recorded"). Record that report, or the patient record's, as the row's last step.
