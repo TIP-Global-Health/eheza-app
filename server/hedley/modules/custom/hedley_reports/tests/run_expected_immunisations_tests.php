@@ -44,7 +44,17 @@ function day_before($date) {
  *   The day of the encounter, as Y-m-d.
  */
 function is_expected($vaccine, array $dates, $site, $date) {
-  $vaccines = ['bcg', 'opv', 'dtp', 'dtp_sa', 'pcv13', 'rotarix', 'ipv', 'mr'];
+  $vaccines = [
+    'bcg',
+    'opv',
+    'dtp',
+    'dtp_sa',
+    'pcv13',
+    'rotarix',
+    'ipv',
+    'mr',
+    'hpv',
+  ];
   $history = array_fill_keys($vaccines, []);
   foreach (array_values($dates) as $index => $dose_date) {
     $history[$vaccine]['dose-' . ($index + 1)] = $dose_date;
@@ -100,5 +110,42 @@ assert_complete('mr', [$first_mr, weeks_old(75)], 'burundi', 'MR: two doses comp
 
 // A vaccine with no dose given is expected.
 assert_same(is_expected('bcg', [], 'rwanda', BIRTH_DATE), TRUE, 'a vaccine with no dose given is expected', $passed, $failed);
+
+// Doses given on the 29th to the 31st. The app adds the months and stops on
+// the last day of a shorter month: an MR dose given on 31 August 2025 makes
+// the next one due on 28 February 2026, not 3 March. The report must expect
+// it from the same day, or a skipped dose in the days between is not counted
+// as missing.
+// Criterion: an MR or HPV dose given on the 31st makes the next dose expected
+// from the last day of the month 6 months later, or 9 months later for MR in
+// Burundi.
+assert_due_on('mr', ['2025-08-31'], 'rwanda', '2026-02-28', 'An MR dose given on the 31st: the next dose is expected from the last day of the month 6 months later (Rwanda, 2025-08-31 to 2026-02-28)', $passed, $failed);
+assert_due_on('hpv', ['2025-08-31'], 'rwanda', '2026-02-28', 'An HPV dose given on the 31st: the next dose is expected from the last day of the month 6 months later (2025-08-31 to 2026-02-28)', $passed, $failed);
+assert_due_on('mr', ['2025-05-31'], 'burundi', '2026-02-28', 'An MR dose given on the 31st: the next dose is expected from the last day of the month 9 months later for MR in Burundi (2025-05-31 to 2026-02-28)', $passed, $failed);
+
+// Boundaries: a 30-day month that is not February, a leap February, and the
+// 30th, which also runs past the end of February.
+assert_due_on('mr', ['2025-03-31'], 'rwanda', '2025-09-30', 'Boundary: MR given on 2025-03-31: the next dose is expected from 2025-09-30 (Rwanda)', $passed, $failed);
+assert_due_on('mr', ['2024-12-31'], 'burundi', '2025-09-30', 'Boundary: MR given on 2024-12-31: the next dose is expected from 2025-09-30 (Burundi)', $passed, $failed);
+assert_due_on('hpv', ['2023-08-31'], 'rwanda', '2024-02-29', 'Boundary: HPV given on 2023-08-31: the next dose is expected from 2024-02-29', $passed, $failed);
+assert_due_on('mr', ['2025-08-30'], 'rwanda', '2026-02-28', 'Boundary: MR given on 2025-08-30: the next dose is expected from 2026-02-28 (Rwanda)', $passed, $failed);
+// Guards: a second dose given on the new due day still completes the course.
+assert_complete('mr', ['2025-08-31', '2026-02-28'], 'rwanda', 'guard: MR given on 2025-08-31 and 2026-02-28 completes the course', $passed, $failed);
+assert_complete('hpv', ['2025-08-31', '2026-02-28'], 'rwanda', 'guard: HPV given on 2025-08-31 and 2026-02-28 completes the course', $passed, $failed);
+
+// Criterion: a dose given on the 1st to the 28th is due on the same day of
+// the month as before.
+assert_due_on('mr', ['2025-08-15'], 'rwanda', '2026-02-15', 'A dose given on the 1st to the 28th is due on the same day of the month as before: MR given on 2025-08-15 is due on 2026-02-15 (Rwanda)', $passed, $failed);
+assert_due_on('mr', ['2025-05-15'], 'burundi', '2026-02-15', 'guard: MR given on 2025-05-15 is due on 2026-02-15 (Burundi)', $passed, $failed);
+assert_due_on('hpv', ['2025-08-28'], 'rwanda', '2026-02-28', 'guard: HPV given on 2025-08-28 is due on 2026-02-28', $passed, $failed);
+
+// Criterion: intervals in days or weeks are unchanged. Four weeks after the
+// 31st of a month is not the last day of the next month.
+assert_due_on('dtp', ['2025-08-31'], 'rwanda', '2025-09-28', 'Intervals in days or weeks are unchanged: DTP given on 2025-08-31 makes the next dose due 4 weeks later, on 2025-09-28', $passed, $failed);
+assert_due_on('opv', ['2025-01-31'], 'rwanda', '2025-02-28', 'guard: OPV given on 2025-01-31 makes the next dose due 4 weeks later, on 2025-02-28', $passed, $failed);
+assert_due_on('pcv13', ['2024-01-31'], 'burundi', '2024-02-28', 'guard: PCV13 given on 2024-01-31 makes the next dose due 4 weeks later, on 2024-02-28, in a leap year', $passed, $failed);
+// Rwanda's second IPV dose is 28 days after the first, the child being well
+// past 36 weeks of age.
+assert_due_on('ipv', ['2025-08-31'], 'rwanda', '2025-09-28', 'guard: IPV given on 2025-08-31 on Rwanda makes the second dose due 28 days later, on 2025-09-28', $passed, $failed);
 
 report_results('Expected immunisation', $passed, $failed);

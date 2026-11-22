@@ -603,6 +603,108 @@ assert_same(
 );
 
 /**
+ * Builds the data of a nurse visit, after earlier visits that gave doses.
+ *
+ * @param string $visit_date
+ *   The day of the visit, as Y-m-d.
+ * @param array $doses
+ *   The tetanus doses given, each at its own earlier visit, keyed by dose,
+ *   like ['dose-1' => '2023-06-01'].
+ */
+function tetanus_visit($visit_date, array $doses) {
+  $earlier_visits = [];
+  foreach ($doses as $dose => $date) {
+    $immunisation = new stdClass();
+    $immunisation->field_administered_doses[LANGUAGE_NONE] = [['value' => $dose]];
+    $immunisation->field_administration_dates[LANGUAGE_NONE] = [['value' => "$date 00:00:00"]];
+    $earlier_visits[] = [
+      'encounter_type' => 'nurse',
+      'start_date_obj' => new DateTime($date),
+      'diagnoses' => [],
+      'measurements_by_type' => nurse_measurements(['prenatal_tetanus_immunisation' => $immunisation]),
+    ];
+  }
+
+  return [
+    'encounter_type' => 'nurse',
+    'start_date_obj' => new DateTime($visit_date),
+    'previous_nurse_encounters_data' => $earlier_visits,
+  ];
+}
+
+/**
+ * Tells whether a nurse visit expects the tetanus immunisation.
+ */
+function tetanus_expected($visit_date, array $doses) {
+  $expected = [];
+  hedley_reports_prenatal_add_immunisation_activities(tetanus_visit($visit_date, $doses), $expected);
+  return in_array('prenatal_tetanus_immunisation', $expected, TRUE);
+}
+
+/**
+ * Checks that the next tetanus dose is due on a day, and not the day before.
+ */
+function assert_tetanus_due_on(array $doses, $due_date, $case, &$passed, &$failed) {
+  $day_before = (new DateTime($due_date))->modify('-1 day')->format('Y-m-d');
+  $result = [
+    tetanus_expected($day_before, $doses),
+    tetanus_expected($due_date, $doses),
+  ];
+  assert_same($result, [FALSE, TRUE], $case, $passed, $failed);
+}
+
+// Prenatal tetanus doses given on the 29th to the 31st. Dose 3 follows dose 2
+// by 6 months, and doses 4 and 5 follow by 12 months. The app adds the months
+// and stops on the last day of a shorter month: dose 3 given on 29 February
+// 2024 makes dose 4 due on 28 February 2025, not 1 March. The report must
+// expect it from the same day, or a skipped dose in the days between is not
+// counted as missing.
+$three_tetanus_doses = [
+  'dose-1' => '2023-06-01',
+  'dose-2' => '2023-06-29',
+  'dose-3' => '2024-02-29',
+];
+
+// Criterion: dose 3 given on 2024-02-29 makes dose 4 expected from
+// 2025-02-28.
+assert_tetanus_due_on($three_tetanus_doses, '2025-02-28', 'A prenatal tetanus dose 3 given on 2024-02-29: dose 4 is expected from 2025-02-28', $passed, $failed);
+assert_same(tetanus_expected('2025-03-01', $three_tetanus_doses), TRUE, 'guard: dose 3 given on 2024-02-29: dose 4 is still expected on 2025-03-01', $passed, $failed);
+
+// Boundaries: dose 4 to dose 5, also 12 months; dose 2 to dose 3, 6 months,
+// from the 31st into February and into a 30-day month. Each dose has its own
+// date, since the report pairs doses and dates by their distinct values.
+$four_tetanus_doses = [
+  'dose-1' => '2022-06-01',
+  'dose-2' => '2022-06-29',
+  'dose-3' => '2023-02-15',
+  'dose-4' => '2024-02-29',
+];
+assert_tetanus_due_on($four_tetanus_doses, '2025-02-28', 'Boundary: tetanus dose 4 given on 2024-02-29: dose 5 is expected from 2025-02-28', $passed, $failed);
+assert_tetanus_due_on(['dose-1' => '2025-07-01', 'dose-2' => '2025-08-31'], '2026-02-28', 'Boundary: tetanus dose 2 given on 2025-08-31: dose 3 is expected from 2026-02-28', $passed, $failed);
+assert_tetanus_due_on(['dose-1' => '2025-03-01', 'dose-2' => '2025-03-31'], '2025-09-30', 'Boundary: tetanus dose 2 given on 2025-03-31: dose 3 is expected from 2025-09-30', $passed, $failed);
+assert_tetanus_due_on(['dose-1' => '2023-07-01', 'dose-2' => '2023-08-31'], '2024-02-29', 'Boundary: tetanus dose 2 given on 2023-08-31: dose 3 is expected from 2024-02-29, a leap year', $passed, $failed);
+
+// Criterion: a dose given on the 1st to the 28th is due on the same day of
+// the month as before. 28 February 2023 is the last day of its month, but
+// still the 28th, so dose 4 is due on 28 February 2024, not the 29th.
+$dose_3_on_28_february = [
+  'dose-1' => '2022-06-01',
+  'dose-2' => '2022-06-29',
+  'dose-3' => '2023-02-28',
+];
+assert_tetanus_due_on($dose_3_on_28_february, '2024-02-28', 'A dose given on the 1st to the 28th is due on the same day of the month as before: tetanus dose 3 given on 2023-02-28 makes dose 4 due on 2024-02-28', $passed, $failed);
+assert_tetanus_due_on(['dose-1' => '2025-07-01', 'dose-2' => '2025-08-15'], '2026-02-15', 'guard: tetanus dose 2 given on 2025-08-15 makes dose 3 due on 2026-02-15', $passed, $failed);
+
+// Criterion: intervals in days or weeks are unchanged. Dose 2 follows dose 1
+// by 4 weeks, which from the 31st is not the last day of the next month.
+assert_tetanus_due_on(['dose-1' => '2025-08-31'], '2025-09-28', 'Intervals in days or weeks are unchanged: tetanus dose 1 given on 2025-08-31 makes dose 2 due on 2025-09-28', $passed, $failed);
+assert_tetanus_due_on(['dose-1' => '2025-01-31'], '2025-02-28', 'guard: tetanus dose 1 given on 2025-01-31 makes dose 2 due on 2025-02-28', $passed, $failed);
+
+// Guards: no dose yet is expected, and five doses complete the course.
+assert_same(tetanus_expected('2025-02-28', []), TRUE, 'guard: tetanus with no dose given is expected', $passed, $failed);
+assert_same(tetanus_expected('2040-01-01', $three_tetanus_doses + ['dose-4' => '2025-02-28', 'dose-5' => '2026-02-28']), FALSE, 'guard: five tetanus doses complete the course', $passed, $failed);
+
+/**
  * Builds the data of a CHW visit on 2026-06-01, at the given EGA in weeks.
  *
  * The measurements are filled in like a nurse visit's, so that a Treatment
