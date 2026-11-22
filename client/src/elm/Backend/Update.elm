@@ -8858,8 +8858,13 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         -- we can use the diganoses set for the encounter.
                         assembledAfter.encounter.diagnoses
 
+                    -- With no visit to report to, the regenerated set is stored on this visit.
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
+                        if isJust originData then
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
+
+                        else
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
