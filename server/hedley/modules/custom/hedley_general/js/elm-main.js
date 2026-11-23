@@ -41458,6 +41458,13 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_l
 												$elm$core$Maybe$Just(
 													$author$project$Backend$Entities$toEntityId(5113)))),
 											_Utils_Tuple2(
+											$author$project$Backend$Entities$toEntityId(5532),
+											A2(
+												$author$project$Utils$GeoLocation$GeoLocation,
+												'Byimana',
+												$elm$core$Maybe$Just(
+													$author$project$Backend$Entities$toEntityId(5113)))),
+											_Utils_Tuple2(
 											$author$project$Backend$Entities$toEntityId(5120),
 											A2(
 												$author$project$Utils$GeoLocation$GeoLocation,
@@ -44020,7 +44027,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(38),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Busebw',
+				'Busebwa',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(37)))),
 			_Utils_Tuple2(

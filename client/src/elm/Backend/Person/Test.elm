@@ -170,6 +170,7 @@ all =
         , nationalIdNumberSaved
         , addressAndHealthCentre
         , storedAddressComparison
+        , villagesOnTheList
         ]
 
 
@@ -1455,4 +1456,138 @@ storedAddressComparison =
                         [ district, sector, cell, village ]
                             |> List.filter (\name -> isJust (Form.getFieldAsString name shown).liveError)
                             |> Expect.equalLists []
+        ]
+
+
+{-| The full address on the site's list with these names, from province to
+village, compared without letter case.
+-}
+addressNamed : Site -> List String -> Maybe Address
+addressNamed site names =
+    addressesOn site
+        |> List.Extra.find
+            (\address ->
+                List.map (placeName >> String.toLower) [ address.province, address.district, address.sector, address.cell, address.village ]
+                    == List.map String.toLower names
+            )
+
+
+{-| The names of the villages the list offers under a cell, given the names
+from province to cell, sorted.
+-}
+villagesUnder : Site -> List String -> List String
+villagesUnder site names =
+    addressesOn site
+        |> List.filter
+            (\address ->
+                List.map (placeName >> String.toLower) [ address.province, address.district, address.sector, address.cell ]
+                    == List.map String.toLower names
+            )
+        |> List.map (.village >> placeName)
+        |> List.sort
+
+
+{-| Criteria: Byimana (Jali › Nyabuliba, Rwanda) and Busebwa (Gatete ›
+Busebwa, Burundi) are on the address list, so people stored there are shown
+and saved with them.
+-}
+villagesOnTheList : Test
+villagesOnTheList =
+    let
+        nyabuliba =
+            [ "Umujyi wa Kigali", "Gasabo", "Jali", "Nyabuliba" ]
+
+        busebwaCell =
+            [ "Rumonge", "Rumonge", "Gatete", "Busebwa" ]
+
+        byimanaId =
+            addressNamed SiteRwanda (nyabuliba ++ [ "Byimana" ])
+                |> Maybe.map (.village >> placeId)
+
+        -- Stored as the 2023 import wrote it, in capitals. A listed
+        -- neighbour gives the rest of the person.
+        byimanaResident =
+            addressNamed SiteRwanda (nyabuliba ++ [ "Kirehe" ])
+                |> Maybe.map
+                    (personAt
+                        >> (\person ->
+                                { person
+                                    | province = Just "UMUJYI WA KIGALI"
+                                    , district = Just "GASABO"
+                                    , sector = Just "JALI"
+                                    , cell = Just "NYABULIBA"
+                                    , village = Just "BYIMANA"
+                                }
+                           )
+                    )
+
+        villageFilledIn operation =
+            case ( byimanaResident, byimanaId ) of
+                ( Just person, Just expectedId ) ->
+                    applyDefaultValuesForPerson saveDate
+                        SiteRwanda
+                        (reverseGeoInfoOn SiteRwanda)
+                        Nothing
+                        False
+                        (Just person)
+                        operation
+                        ParticipantDirectoryOrigin
+                        (case operation of
+                            CreatePerson _ ->
+                                emptyCreateForm SiteRwanda
+
+                            EditPerson _ ->
+                                emptyEditForm SiteRwanda
+                        )
+                        |> Form.getFieldAsString village
+                        |> .value
+                        |> Expect.equal (Just expectedId)
+
+                ( Nothing, _ ) ->
+                    Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+
+                ( _, Nothing ) ->
+                    Expect.fail "the list has no Byimana under Nyabuliba"
+    in
+    describe "Villages on the address list"
+        [ test "Jali › Nyabuliba offers Byimana next to the five villages offered before" <|
+            \_ ->
+                villagesUnder SiteRwanda nyabuliba
+                    |> Expect.equalLists [ "Byimana", "Kirehe", "Mataba", "Nyaburira", "Nyarurembo", "Rubona" ]
+        , test "editing a person stored in BYIMANA shows Byimana selected" <|
+            \_ -> villageFilledIn editPerson
+        , test "editing a person stored in BYIMANA and saving keeps Byimana" <|
+            \_ ->
+                case byimanaResident of
+                    Just person ->
+                        saveEdit SiteRwanda person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map (.village >> Maybe.map String.toLower)
+                            |> Expect.equal (Ok (Just "byimana"))
+
+                    Nothing ->
+                        Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+        , test "adding a family member to a person stored in BYIMANA fills in Byimana" <|
+            \_ -> villageFilledIn (CreatePerson (Just (toEntityUuid "related-person")))
+        , test "Gatete › Busebwa offers Busebwa, spelled in full" <|
+            \_ ->
+                villagesUnder SiteBurundi busebwaCell
+                    |> Expect.equalLists [ "Busebwa" ]
+        , test "picking Busebwa and saving stores Busebwa" <|
+            \_ ->
+                withPlaces SiteBurundi <|
+                    \places ->
+                        case addressNamed SiteBurundi (busebwaCell ++ [ "Busebwa" ]) of
+                            Just address ->
+                                [ pick province (placeId address.province)
+                                , pick district (placeId address.district)
+                                , pick sector (placeId address.sector)
+                                , pick cell (placeId address.cell)
+                                , pick village (placeId address.village)
+                                ]
+                                    |> saveEdit SiteBurundi (personAt places.home)
+                                    |> Result.map .village
+                                    |> Expect.equal (Ok (Just "Busebwa"))
+
+                            Nothing ->
+                                Expect.fail "the list has no Busebwa under Gatete › Busebwa"
         ]
