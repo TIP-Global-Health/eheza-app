@@ -308,8 +308,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
   }
 
   // Load input file.
-  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/geolocations_' . strtolower($site) . '.csv';
+  $source_file = hedley_general_geolocations_file($site);
 
   $handler = fopen($source_file, 'r');
   if (!$handler) {
@@ -335,7 +334,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
   $line = 0;
   while ($row = fgetcsv($handler)) {
     $line++;
-    $row = _hedley_migrate_geo_row($row, count($column_mapping));
+    $row = hedley_general_geo_row($row, count($column_mapping));
 
     if (!$row) {
       watchdog('hedley_migrate', 'Skipped line @line of @file: it names no location.', [
@@ -363,57 +362,6 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 }
 
 /**
- * Reads the locations of one input row.
- *
- * @param array $row
- *   A row of the input file.
- * @param int $columns
- *   The number of locations a row holds.
- *
- * @return array
- *   The locations the row names, with the spacing around them removed. A row
- *   naming a location but not the one below it describes the levels above, so
- *   reading stops at the first it leaves out.
- */
-function _hedley_migrate_geo_row(array $row, $columns) {
-  $locations = [];
-
-  foreach (array_slice($row, 0, $columns) as $location) {
-    $location = trim($location);
-
-    if ($location === '') {
-      break;
-    }
-
-    $locations[] = $location;
-  }
-
-  return $locations;
-}
-
-/**
- * The key under which the term for a path of locations is kept.
- *
- * Locations are compared without their case, so a location spelled two ways in
- * the input file is one location. Each is escaped, so that the key for one path
- * can never read as the key for another.
- *
- * @param array $path
- *   The locations leading to a term, itself included.
- *
- * @return string
- *   The key for that path.
- */
-function _hedley_migrate_geo_path_key(array $path) {
-  $escaped = [];
-  foreach ($path as $location) {
-    $escaped[] = rawurlencode(drupal_strtolower($location));
-  }
-
-  return implode('/', $escaped);
-}
-
-/**
  * Processes a column form input file row.
  *
  * Row contains 5 columns:
@@ -435,7 +383,7 @@ function _hedley_migrate_geo_path_key(array $path) {
  *   Columns mapping array.
  */
 function _hedley_migrate_process_column(array &$data, array &$locator, $index, array $row, $vocabulary_id, array $column_mapping) {
-  $path_key = _hedley_migrate_geo_path_key(array_slice($row, 0, $index + 1));
+  $path_key = hedley_general_geo_path_key(array_slice($row, 0, $index + 1));
 
   if (!empty($locator[$path_key])) {
     // Term already exists.
@@ -446,7 +394,7 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
   // so locations sharing a name under different parents stay apart, and the
   // rows of the input file may arrive in any order.
   if ($index != 0) {
-    $parent_key = _hedley_migrate_geo_path_key(array_slice($row, 0, $index));
+    $parent_key = hedley_general_geo_path_key(array_slice($row, 0, $index));
     $parent = $data[$index - 1][$parent_key];
   }
   else {

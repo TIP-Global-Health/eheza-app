@@ -167,6 +167,7 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
 
     $this->checkFeatureFlags();
     $this->checkVillageGeoFieldsRequired($health_center_id);
+    $this->checkVillageAddressOnList($health_center_id);
   }
 
   /**
@@ -269,6 +270,147 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
     node_save($village);
     $village = node_load($village->nid, NULL, TRUE);
     $this->assertEqual($village->title, 'Village with every geo field, edited', 'A village with every geo field can be edited.');
+  }
+
+  /**
+   * Village address block, called from testStockUpdateWithVillageRef.
+   *
+   * A village whose address the app cannot find on the location list leaves a
+   * CHW unable to register anyone, so the form and the save refuse it.
+   *
+   * @param int $health_center_id
+   *   The health center node ID.
+   */
+  protected function checkVillageAddressOnList($health_center_id) {
+    variable_set('hedley_general_site_name', 'rwanda');
+    drupal_static_reset('hedley_general_geo_path_keys');
+
+    $village_values = function ($title, array $address) use ($health_center_id) {
+      $values = [
+        'type' => 'village',
+        'title' => $title,
+        'field_health_center' => [
+          LANGUAGE_NONE => [
+            ['target_id' => $health_center_id],
+          ],
+        ],
+      ];
+      foreach ($address as $field_name => $value) {
+        $values[$field_name] = [LANGUAGE_NONE => [['value' => $value]]];
+      }
+      return $values;
+    };
+
+    $listed = [
+      'field_province' => 'Umujyi wa Kigali',
+      'field_district' => 'Gasabo',
+      'field_sector' => 'Jali',
+      'field_cell' => 'Nyabuliba',
+      'field_village' => 'Kirehe',
+    ];
+
+    // Names match without regard to letter case, and the village gets its CHW
+    // group.
+    $village = $this->drupalCreateNode($village_values('Listed village', array_map('strtoupper', $listed)));
+    $this->assertTrue(!empty($village->nid), 'A village on the location list, in capitals, is saved.');
+    $groups = db_select('field_data_field_village_ref', 'v')
+      ->condition('v.bundle', 'clinic')
+      ->condition('v.field_village_ref_target_id', $village->nid)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEqual($groups, 1, 'A village on the location list gets its CHW group.');
+
+    // A level not found under the one above it is refused, and nothing is
+    // stored. Spaces around a name count as not found.
+    $refused = [
+      'sector not under its district' => [
+        ['field_sector' => 'Nyagasaga'],
+        'Sector "Nyagasaga" is not on the location list under district "Gasabo".',
+      ],
+      'province not on the list' => [
+        ['field_province' => 'Province missing from the list'],
+        'Province "Province missing from the list" is not on the location list.',
+      ],
+      'village with a space after it' => [
+        ['field_village' => 'Kirehe '],
+        'Village "Kirehe " is not on the location list under cell "Nyabuliba".',
+      ],
+    ];
+    foreach ($refused as $label => $case) {
+      list($changes, $expected) = $case;
+      $title = "Village with $label";
+      try {
+        $this->drupalCreateNode($village_values($title, $changes + $listed));
+        $this->fail("A village with $label was saved.");
+      }
+      catch (Exception $e) {
+        $this->assertEqual($e->getMessage(), $expected, "A village with $label is refused.");
+      }
+
+      $stored = db_select('node', 'n')
+        ->condition('n.type', 'village')
+        ->condition('n.title', $title)
+        ->countQuery()
+        ->execute()
+        ->fetchField();
+      $this->assertEqual($stored, 0, "No village with $label is stored.");
+    }
+
+    // Only unpublishing a published village skips the check, so one created
+    // unpublished is still refused.
+    try {
+      $this->drupalCreateNode(['status' => NODE_NOT_PUBLISHED] + $village_values('Unpublished village', ['field_sector' => 'Nyagasaga'] + $listed));
+      $this->fail('An unpublished village not on the location list was created.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Sector "Nyagasaga" is not on the location list under district "Gasabo".', 'An unpublished village not on the location list is refused.');
+    }
+
+    // The node form shows the message on the level that is not found.
+    $node = (object) $village_values('Village on the form', ['field_sector' => 'Nyagasaga'] + $listed);
+    $form_state = [];
+    hedley_chw_node_validate($node, [], $form_state);
+    $errors = form_get_errors();
+    $this->assertEqual($errors['field_sector'], 'Sector &quot;Nyagasaga&quot; is not on the location list under district &quot;Gasabo&quot;.', 'The village form shows the level that is not found.');
+    form_clear_error();
+    drupal_get_messages('error');
+
+    // A village saved before the check, with an address not on the list, is
+    // refused when edited until its address is corrected.
+    variable_set('hedley_general_site_name', '');
+    drupal_static_reset('hedley_general_geo_path_keys');
+    $old = $this->drupalCreateNode($village_values('Village saved before the check', ['field_sector' => 'Nyagasaga'] + $listed));
+    variable_set('hedley_general_site_name', 'rwanda');
+    drupal_static_reset('hedley_general_geo_path_keys');
+
+    $old = node_load($old->nid, NULL, TRUE);
+    $old->title = 'Village saved before the check, edited';
+    try {
+      node_save($old);
+      $this->fail('A village not on the location list was edited.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Sector "Nyagasaga" is not on the location list under district "Gasabo".', 'Editing a village not on the location list is refused.');
+    }
+
+    // Unpublishing takes it out of use, so that is not refused.
+    variable_set('hedley_super_user_mode', 1);
+    $old = node_load($old->nid, NULL, TRUE);
+    $old->status = NODE_NOT_PUBLISHED;
+    node_save($old);
+    $old = node_load($old->nid, NULL, TRUE);
+    $this->assertEqual($old->status, NODE_NOT_PUBLISHED, 'A village not on the location list can be unpublished.');
+    variable_del('hedley_super_user_mode');
+
+    $old->status = NODE_PUBLISHED;
+    $old->field_sector[LANGUAGE_NONE][0]['value'] = 'Jali';
+    node_save($old);
+    $old = node_load($old->nid, NULL, TRUE);
+    $this->assertEqual($old->field_sector[LANGUAGE_NONE][0]['value'], 'Jali', 'Once its address is corrected, the village saves.');
+
+    variable_del('hedley_general_site_name');
+    drupal_static_reset('hedley_general_geo_path_keys');
   }
 
   /**

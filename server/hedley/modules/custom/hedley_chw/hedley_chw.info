@@ -5,6 +5,7 @@ package = Hedley
 dependencies[] = ctools
 dependencies[] = entityreference
 dependencies[] = features
+dependencies[] = hedley_general
 dependencies[] = hedley_person
 dependencies[] = hedley_schedule
 dependencies[] = node

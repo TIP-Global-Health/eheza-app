@@ -10,8 +10,8 @@ include_once 'hedley_chw.features.inc';
 /**
  * Implements hook_node_presave().
  *
- * Refuses a village without a health center or with a blank geo field. The
- * form requires them too, but scripts and migrations skip form validation.
+ * Refuses a village without a health center, a blank geo field, or an address
+ * off the location list. Scripts skip form validation.
  */
 function hedley_chw_node_presave($node) {
   if ($node->type != 'village') {
@@ -29,11 +29,133 @@ function hedley_chw_node_presave($node) {
   // so the whole general sync batch fails and every device of the site stops
   // syncing.
   foreach (hedley_chw_village_geo_fields() as $field_name) {
-    $items = field_get_items('node', $node, $field_name);
-    if (empty($items) || trim((string) $items[0]['value']) === '') {
+    if (hedley_chw_village_geo_value($node, $field_name) === NULL) {
       throw new Exception("A village must have a value for $field_name.");
     }
   }
+
+  // The app finds a village's address by these names. One it cannot find
+  // leaves a CHW's hidden address fields empty, so the CHW registers no one.
+  $error = hedley_chw_village_address_error($node);
+  if ($error) {
+    throw new Exception($error['message']);
+  }
+}
+
+/**
+ * Implements hook_node_validate().
+ *
+ * Shows a village address not on the location list on the form, next to the
+ * level that is not found.
+ */
+function hedley_chw_node_validate($node, $form, &$form_state) {
+  if ($node->type != 'village') {
+    return;
+  }
+
+  $error = hedley_chw_village_address_error($node);
+  if ($error) {
+    form_set_error($error['field'], check_plain($error['message']));
+  }
+}
+
+/**
+ * The value of one of a village's geo fields.
+ *
+ * @param object $node
+ *   The village node.
+ * @param string $field_name
+ *   The geo field.
+ *
+ * @return string|null
+ *   The value as stored, or NULL when it is missing, empty or only spaces.
+ */
+function hedley_chw_village_geo_value($node, $field_name) {
+  $items = field_get_items('node', $node, $field_name);
+  if (empty($items) || trim((string) $items[0]['value']) === '') {
+    return NULL;
+  }
+
+  return (string) $items[0]['value'];
+}
+
+/**
+ * Whether a save turns a published village into an unpublished one.
+ *
+ * @param object $node
+ *   The village node being saved.
+ *
+ * @return bool
+ *   TRUE when the village was published and is saved unpublished.
+ */
+function hedley_chw_village_unpublishing($node) {
+  if (empty($node->nid) || !isset($node->status) || $node->status != NODE_NOT_PUBLISHED) {
+    return FALSE;
+  }
+
+  $original = !empty($node->original) ? $node->original : entity_load_unchanged('node', $node->nid);
+
+  return $original && $original->status == NODE_PUBLISHED;
+}
+
+/**
+ * The first level of a village's address not on the location list.
+ *
+ * Case is ignored, as in the app; spaces around a name are not.
+ *
+ * @param object $node
+ *   The village node.
+ *
+ * @return array|null
+ *   The level's 'field' and a plain-text 'message', or NULL when there is none
+ *   to report.
+ */
+function hedley_chw_village_address_error($node) {
+  // Unpublishing takes a village out of use, so it is never refused.
+  if (hedley_chw_village_unpublishing($node)) {
+    return NULL;
+  }
+
+  $keys = hedley_general_geo_path_keys();
+  if ($keys === NULL) {
+    return NULL;
+  }
+
+  $values = [];
+  foreach (hedley_chw_village_geo_fields() as $field_name) {
+    $value = hedley_chw_village_geo_value($node, $field_name);
+    if ($value === NULL) {
+      return NULL;
+    }
+    $values[$field_name] = $value;
+  }
+
+  $path = [];
+  $parent = NULL;
+  foreach ($values as $field_name => $value) {
+    $path[] = $value;
+    $instance = field_info_instance('node', $field_name, 'village');
+    $level = $instance ? $instance['label'] : $field_name;
+
+    if (empty($keys[hedley_general_geo_path_key($path)])) {
+      $message = "$level \"$value\" is not on the location list";
+      if ($parent) {
+        $message .= " under {$parent['level']} \"{$parent['name']}\"";
+      }
+
+      return [
+        'field' => $field_name,
+        'message' => "$message.",
+      ];
+    }
+
+    $parent = [
+      'level' => drupal_strtolower($level),
+      'name' => $value,
+    ];
+  }
+
+  return NULL;
 }
 
 /**
