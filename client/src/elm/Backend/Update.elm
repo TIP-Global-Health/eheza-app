@@ -8858,8 +8858,13 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         -- we can use the diganoses set for the encounter.
                         assembledAfter.encounter.diagnoses
 
+                    -- With no visit to report to, the regenerated set is stored on this visit.
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
+                        if isJust originData then
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
+
+                        else
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
@@ -9113,7 +9118,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                             }
                         )
                             assembled_.encounter
@@ -9163,7 +9168,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                                 }
                             )
                                 assembled_.encounter

@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         ( AbdomenCPESign(..)
         , AdministrationNote(..)
         , BloodGpRsTestValue
+        , BloodGroup(..)
         , BloodSmearResult(..)
         , CSectionScar(..)
         , CorePhysicalExamValue
@@ -22,6 +23,7 @@ import Backend.Measurement.Model
         , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
+        , IllnessSymptom(..)
         , LegsCPESign(..)
         , LmpDateNotConfidentReason(..)
         , LungsCPESign(..)
@@ -84,7 +86,7 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, expectActivity, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, mandatoryActivitiesForNextStepsCompleted, nextStepsTaskCompleted, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveMedicationTasks, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, expectActivity, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generatePrenatalDiagnosesFromOwnResults, immunisationTasksCompletedFromTotal, mandatoryActivitiesForNextStepsCompleted, nextStepsTaskCompleted, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveMedicationTasks, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, emptyHealthEducationForm, emptyReferralForm)
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
@@ -3038,6 +3040,61 @@ generatePrenatalDiagnosesForNurseBloodSmearTest =
         ]
 
 
+reportedBloodSugarNotPerformedTest : Test
+reportedBloodSugarNotPerformedTest =
+    let
+        urineGlucosePlus2 measurements =
+            withUrineDipstickAt ( 14, 0 ) (Just Protein0) measurements
+                |> (\withDipstick ->
+                        { withDipstick
+                            | urineDipstickTest =
+                                Maybe.map (Tuple.mapSecond (\m -> { m | value = (\v -> { v | glucose = Just GlucosePlus2 }) m.value }))
+                                    withDipstick.urineDipstickTest
+                        }
+                   )
+
+        bloodSugarNotPerformedFromLabHistory measurements =
+            withBloodSugarAt ( 14, 0 ) (Just laterVisitId) Nothing measurements
+                |> (\withSugar ->
+                        { withSugar
+                            | randomBloodSugarTest =
+                                Maybe.map (Tuple.mapSecond (\m -> { m | value = (\v -> { v | executionNote = TestNoteLackOfReagents }) m.value }))
+                                    withSugar.randomBloodSugarTest
+                        }
+                   )
+    in
+    describe "a test reported from lab history as not performed"
+        [ test "a blood group test holding a rhesus negative value gives no rhesus negative on the earlier visit" <|
+            \_ ->
+                { emptyPrenatalMeasurements
+                    | bloodGpRsTest =
+                        TestFixtures.wrapMeasurement (dayAtEga ( 14, 0 ))
+                            { executionNote = TestNoteLackOfReagents
+                            , executionDate = Nothing
+                            , testPrerequisites = Nothing
+                            , bloodGroup = Nothing
+                            , rhesus = Just RhesusNegative
+                            , originatingEncounter = Just laterVisitId
+                            }
+                }
+                    |> nurseVisitAt ( 14, 0 ) [] []
+                    |> generatePrenatalDiagnosesFromOwnResults
+                    |> EverySet.toList
+                    |> List.any (\diagnosis -> List.member diagnosis [ DiagnosisRhesusNegativeInitialPhase, DiagnosisRhesusNegativeRecurrentPhase ])
+                    |> Expect.equal False
+        , test "a blood sugar leaves urine glucose to decide diabetes on the earlier visit" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bloodSugarNotPerformedFromLabHistory
+                    |> urineGlucosePlus2
+                    |> nurseVisitAt ( 14, 0 ) [] []
+                    |> generatePrenatalDiagnosesFromOwnResults
+                    |> EverySet.toList
+                    |> List.any (\diagnosis -> List.member diagnosis diabetesDiagnoses)
+                    |> Expect.equal True
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
@@ -3115,6 +3172,8 @@ all =
         , reportedDiabetesPreeclampsiaRiskTest
         , reportedDiabetesKnownAtLaterVisitTest
         , reportedDiabetesKnownAtReportingVisitTest
+        , secondLabHistoryResultTest
+        , reportedBloodSugarNotPerformedTest
         ]
 
 
@@ -10758,4 +10817,909 @@ nurseReferralToFacilitiesTest =
                 ]
                     |> List.map sendToHCDone
                     |> Expect.equal [ False, False ]
+        ]
+
+
+
+-- A SECOND LAB HISTORY RESULT FOR THE SAME EARLIER VISIT
+--
+-- The scenario: a nurse visit (the "earlier visit") sends a fasting blood
+-- sugar test and another test to the lab, and ends. At a later nurse visit,
+-- the nurse opens lab history for the earlier visit and enters a diabetic
+-- blood sugar result. Blood sugar is a result type that names the visit it
+-- reports to (its `originatingEncounter`), so that save stores nothing on the
+-- earlier visit: diabetes is reported to the later visit (its
+-- `pastDiagnoses`).
+--
+-- The nurse then enters the other pending result for the same earlier visit:
+-- urine dipstick, hemoglobin, HIV PCR, HIV, partner HIV or malaria. None of
+-- these name a reporting visit, so the save is the earlier visit's own: the
+-- set `generatePrenatalDiagnosesFromOwnResults` returns for the earlier visit,
+-- with its measurements as they are after the save and its stored diagnoses
+-- as they were before it, is what gets stored on it.
+--
+-- The next nurse visit, from 12 weeks, sees the earlier visit (with what its
+-- own saves stored) and the later visit (with the reported diabetes). It must
+-- diagnose high risk of preeclampsia and offer Aspirin in Medication
+-- Distribution (`highRiskAndAspirinAtVisit`).
+--
+-- Syphilis, hepatitis B and blood group / rhesus also name the visit they
+-- report to when entered from lab history. Entered on the visit's own Lab
+-- Results page, no result type names one (`originatingEncounter = Nothing`).
+--
+-- The seam reads no entry date, so "the same sitting or another day" is
+-- carried by the visits around it: on another day, the second result is
+-- entered at a third nurse visit, between the later visit and the next one,
+-- which the next visit also sees. A further result entered for the earlier
+-- visit after the second one reassesses it again, carrying what the second
+-- save stored.
+--
+-- Every visit shares `reportedDiabetesLmp`; weeks are (weeks, days) of EGA at
+-- each visit's start. Tests sent to the lab answer the immediate-result
+-- question No (`deferredResultPrerequisites`); blood sugar is fasting.
+--
+-- Oracle: issue #2566, "Expected behaviour". A test named after a criterion
+-- carries the criterion's words; the others are boundary cases around it.
+-- "High risk of preeclampsia" accepts either high risk variant.
+
+
+{-| A lab test of the earlier visit: how it is stored when sent to the lab,
+how it is stored once its result is entered, and whether its result type
+names a later visit to report to (a result entered from lab history whose
+type carries `originatingEncounter`).
+-}
+type alias LabResultEntry =
+    { name : String
+    , pending : ( Int, Int ) -> PrenatalMeasurements -> PrenatalMeasurements
+    , entered : ( Int, Int ) -> PrenatalMeasurements -> PrenatalMeasurements
+    , reportsToLaterVisit : Bool
+    }
+
+
+{-| The later visit a lab history result is entered at.
+-}
+laterVisitId : PrenatalEncounterId
+laterVisitId =
+    toEntityUuid "later-visit"
+
+
+withUrineDipstickAt : ( Int, Int ) -> Maybe ProteinValue -> PrenatalMeasurements -> PrenatalMeasurements
+withUrineDipstickAt ega protein measurements =
+    { measurements
+        | urineDipstickTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { testVariant = Nothing
+                , executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = deferredResultPrerequisites
+                , protein = protein
+                , ph = Nothing
+                , glucose = Maybe.map (always Glucose0) protein
+                , leukocytes = Nothing
+                , nitrite = Nothing
+                , urobilinogen = Nothing
+                , haemoglobin = Nothing
+                , ketone = Nothing
+                , bilirubin = Nothing
+                }
+    }
+
+
+{-| Urine dipstick: no protein, no glucose.
+-}
+urineDipstickEntry : LabResultEntry
+urineDipstickEntry =
+    { name = "urine dipstick"
+    , pending = \ega -> withUrineDipstickAt ega Nothing
+    , entered = \ega -> withUrineDipstickAt ega (Just Protein0)
+    , reportsToLaterVisit = False
+    }
+
+
+withHemoglobinAt : ( Int, Int ) -> Maybe Float -> PrenatalMeasurements -> PrenatalMeasurements
+withHemoglobinAt ega count measurements =
+    { measurements
+        | hemoglobinTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = deferredResultPrerequisites
+                , hemoglobinCount = count
+                }
+    }
+
+
+hemoglobinEntry : Float -> LabResultEntry
+hemoglobinEntry count =
+    { name = "hemoglobin " ++ String.fromFloat count
+    , pending = \ega -> withHemoglobinAt ega Nothing
+    , entered = \ega -> withHemoglobinAt ega (Just count)
+    , reportsToLaterVisit = False
+    }
+
+
+withHIVPCRAt : ( Int, Int ) -> Maybe ViralLoadStatus -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVPCRAt ega status measurements =
+    { measurements
+        | hivPCRTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = deferredResultPrerequisites
+                , hivViralLoadStatus = status
+                , hivViralLoad = Nothing
+                }
+    }
+
+
+{-| HIV PCR: viral load undetectable.
+-}
+hivPCREntry : LabResultEntry
+hivPCREntry =
+    { name = "HIV PCR"
+    , pending = \ega -> withHIVPCRAt ega Nothing
+    , entered = \ega -> withHIVPCRAt ega (Just ViralLoadUndetectable)
+    , reportsToLaterVisit = False
+    }
+
+
+{-| An HIV test value, sent to the lab at `ega`. Once the result is entered,
+the follow up question about the partner is answered: none of the signs.
+-}
+hivTestValueSentAt : ( Int, Int ) -> Maybe TestResult -> HIVTestValue
+hivTestValueSentAt ega result =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just (dayAtEga ega)
+    , testPrerequisites = deferredResultPrerequisites
+    , testResult = result
+    , hivSigns = Maybe.map (always (EverySet.singleton NoPrenatalHIVSign)) result
+    }
+
+
+hivEntry : TestResult -> LabResultEntry
+hivEntry result =
+    let
+        withHIVAt ega testResult measurements =
+            { measurements | hivTest = TestFixtures.wrapMeasurement (dayAtEga ega) (hivTestValueSentAt ega testResult) }
+    in
+    { name =
+        if result == TestPositive then
+            "HIV positive"
+
+        else
+            "HIV"
+    , pending = \ega -> withHIVAt ega Nothing
+    , entered = \ega -> withHIVAt ega (Just result)
+    , reportsToLaterVisit = False
+    }
+
+
+{-| Partner HIV: negative.
+-}
+partnerHIVEntry : LabResultEntry
+partnerHIVEntry =
+    let
+        withPartnerHIVAt ega testResult measurements =
+            { measurements | partnerHIVTest = TestFixtures.wrapMeasurement (dayAtEga ega) (hivTestValueSentAt ega testResult) }
+    in
+    { name = "partner HIV"
+    , pending = \ega -> withPartnerHIVAt ega Nothing
+    , entered = \ega -> withPartnerHIVAt ega (Just TestNegative)
+    , reportsToLaterVisit = False
+    }
+
+
+withMalariaAt : ( Int, Int ) -> Maybe TestResult -> PrenatalMeasurements -> PrenatalMeasurements
+withMalariaAt ega result measurements =
+    { measurements
+        | malariaTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = deferredResultPrerequisites
+                , testResult = result
+                , bloodSmearResult = BloodSmearNotTaken
+                , bloodSmearOrdered = False
+                }
+    }
+
+
+malariaEntry : TestResult -> LabResultEntry
+malariaEntry result =
+    { name =
+        if result == TestPositive then
+            "malaria positive"
+
+        else
+            "malaria"
+    , pending = \ega -> withMalariaAt ega Nothing
+    , entered = \ega -> withMalariaAt ega (Just result)
+    , reportsToLaterVisit = False
+    }
+
+
+{-| The six result types the issue names as the second result, each with a
+result that diagnoses nothing by itself.
+-}
+secondResults : List LabResultEntry
+secondResults =
+    [ urineDipstickEntry
+    , hemoglobinEntry 12
+    , hivPCREntry
+    , hivEntry TestNegative
+    , partnerHIVEntry
+    , malariaEntry TestNegative
+    ]
+
+
+withBloodSugarAt : ( Int, Int ) -> Maybe PrenatalEncounterId -> Maybe Float -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSugarAt ega origin count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = Just (EverySet.singleton PrerequisiteFastFor12h)
+                , sugarCount = count
+                , originatingEncounter = origin
+                }
+    }
+
+
+{-| A fasting blood sugar result entered from lab history at the later visit
+(above 126 is diabetes).
+-}
+bloodSugarFromLabHistory : Float -> LabResultEntry
+bloodSugarFromLabHistory count =
+    { name = "blood sugar " ++ String.fromFloat count ++ " from lab history"
+    , pending = \ega -> withBloodSugarAt ega Nothing Nothing
+    , entered = \ega -> withBloodSugarAt ega (Just laterVisitId) (Just count)
+    , reportsToLaterVisit = True
+    }
+
+
+{-| A fasting blood sugar result entered on the visit's own Lab Results page.
+-}
+bloodSugarEnteredOnOwnPage : Float -> LabResultEntry
+bloodSugarEnteredOnOwnPage count =
+    { name = "blood sugar " ++ String.fromFloat count ++ " on own Lab Results"
+    , pending = \ega -> withBloodSugarAt ega Nothing Nothing
+    , entered = \ega -> withBloodSugarAt ega Nothing (Just count)
+    , reportsToLaterVisit = False
+    }
+
+
+{-| A positive syphilis result with the given symptoms, entered from lab
+history at the later visit (`Just laterVisitId`) or on the visit's own Lab
+Results page (`Nothing`).
+-}
+syphilisEntry : Maybe PrenatalEncounterId -> EverySet IllnessSymptom -> LabResultEntry
+syphilisEntry origin symptoms =
+    let
+        withSyphilisAt ega result measurements =
+            { measurements
+                | syphilisTest =
+                    TestFixtures.wrapMeasurement (dayAtEga ega)
+                        { executionNote = TestNoteRunToday
+                        , executionDate = Just (dayAtEga ega)
+                        , testPrerequisites = deferredResultPrerequisites
+                        , testResult = result
+                        , symptoms = Maybe.map (always symptoms) result
+                        , originatingEncounter = Maybe.andThen (always origin) result
+                        }
+            }
+    in
+    { name = "syphilis" ++ entryPlace origin
+    , pending = \ega -> withSyphilisAt ega Nothing
+    , entered = \ega -> withSyphilisAt ega (Just TestPositive)
+    , reportsToLaterVisit = origin /= Nothing
+    }
+
+
+hepatitisBEntry : Maybe PrenatalEncounterId -> LabResultEntry
+hepatitisBEntry origin =
+    let
+        withHepatitisBAt ega result measurements =
+            { measurements
+                | hepatitisBTest =
+                    TestFixtures.wrapMeasurement (dayAtEga ega)
+                        { executionNote = TestNoteRunToday
+                        , executionDate = Just (dayAtEga ega)
+                        , testPrerequisites = deferredResultPrerequisites
+                        , testResult = result
+                        , originatingEncounter = Maybe.andThen (always origin) result
+                        }
+            }
+    in
+    { name = "hepatitis B" ++ entryPlace origin
+    , pending = \ega -> withHepatitisBAt ega Nothing
+    , entered = \ega -> withHepatitisBAt ega (Just TestPositive)
+    , reportsToLaterVisit = origin /= Nothing
+    }
+
+
+{-| Blood group O, rhesus negative.
+-}
+rhesusNegativeEntry : Maybe PrenatalEncounterId -> LabResultEntry
+rhesusNegativeEntry origin =
+    let
+        withBloodGpRsAt ega rhesus measurements =
+            { measurements
+                | bloodGpRsTest =
+                    TestFixtures.wrapMeasurement (dayAtEga ega)
+                        { executionNote = TestNoteRunToday
+                        , executionDate = Just (dayAtEga ega)
+                        , testPrerequisites = deferredResultPrerequisites
+                        , bloodGroup = Maybe.map (always BloodGroupO) rhesus
+                        , rhesus = rhesus
+                        , originatingEncounter = Maybe.andThen (always origin) rhesus
+                        }
+            }
+    in
+    { name = "rhesus negative" ++ entryPlace origin
+    , pending = \ega -> withBloodGpRsAt ega Nothing
+    , entered = \ega -> withBloodGpRsAt ega (Just RhesusNegative)
+    , reportsToLaterVisit = origin /= Nothing
+    }
+
+
+entryPlace : Maybe PrenatalEncounterId -> String
+entryPlace origin =
+    if origin == Nothing then
+        " on own Lab Results"
+
+    else
+        " from lab history"
+
+
+{-| Syphilis (plain, and with symptoms), hepatitis B and rhesus negative
+results entered from lab history.
+-}
+reportedNonDiabetesResults : List LabResultEntry
+reportedNonDiabetesResults =
+    [ syphilisEntry (Just laterVisitId) (EverySet.singleton NoIllnessSymptoms)
+    , syphilisEntry (Just laterVisitId) (EverySet.singleton IllnessSymptomRash)
+    , hepatitisBEntry (Just laterVisitId)
+    , rhesusNegativeEntry (Just laterVisitId)
+    ]
+
+
+syphilisHepatitisBRhesusDiagnoses : List PrenatalDiagnosis
+syphilisHepatitisBRhesusDiagnoses =
+    [ DiagnosisHepatitisBInitialPhase
+    , DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    , DiagnosisRhesusNegativeInitialPhase
+    , DiagnosisRhesusNegativeRecurrentPhase
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsInitialPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    ]
+
+
+diabetesAndHighRiskDiagnoses : List PrenatalDiagnosis
+diabetesAndHighRiskDiagnoses =
+    allDiabetesDiagnoses ++ highRiskOfPreeclampsiaVariants
+
+
+{-| The earlier visit at `ega`, after the visits `before`, ended on its visit
+day, carrying `stored` as its diagnoses and `measurements`.
+-}
+earlierVisitStoring : ( Int, Int ) -> List PreviousEncounterData -> EverySet PrenatalDiagnosis -> PrenatalMeasurements -> AssembledData
+earlierVisitStoring ega before stored measurements =
+    let
+        assembled =
+            nurseVisitAt ega before [] measurements
+
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = stored, endDate = Just (dayAtEga ega) } }
+
+
+{-| The earlier visit once its results are entered: its measurements, and the
+diagnoses stored on it.
+-}
+type alias EarlierVisitAfter =
+    { measurements : PrenatalMeasurements
+    , stored : EverySet PrenatalDiagnosis
+    }
+
+
+{-| The earlier visit at `ega`, after the visits `before`, recorded `findings`
+and sent every test of `entries` to the lab. Its visit-day diagnoses (every
+test pending) are stored on it. The results are then entered in the order
+given. A result that reports to the later visit stores nothing on the earlier
+visit; any other result stores what the seam returns for the visit as that
+save leaves it.
+-}
+afterEntries : ( Int, Int ) -> List PreviousEncounterData -> List LabResultEntry -> PrenatalMeasurements -> EarlierVisitAfter
+afterEntries ega before entries findings =
+    let
+        sent =
+            List.foldl (\entry -> entry.pending ega) findings entries
+
+        visitDayDiagnoses =
+            generatePrenatalDiagnosesForNurse (nurseVisitAt ega before [] sent)
+    in
+    List.foldl
+        (\entry earlier ->
+            let
+                measurements =
+                    entry.entered ega earlier.measurements
+            in
+            { measurements = measurements
+            , stored =
+                if entry.reportsToLaterVisit then
+                    earlier.stored
+
+                else
+                    generatePrenatalDiagnosesFromOwnResults (earlierVisitStoring ega before earlier.stored measurements)
+            }
+        )
+        { measurements = sent, stored = visitDayDiagnoses }
+        entries
+
+
+{-| `afterEntries` for a first visit that recorded nothing else.
+-}
+storedAfter : ( Int, Int ) -> List LabResultEntry -> EverySet PrenatalDiagnosis
+storedAfter ega entries =
+    (afterEntries ega [] entries emptyPrenatalMeasurements).stored
+
+
+{-| A nurse visit after the earlier one, with nothing stored, the given
+diagnoses reported to it from lab history, and nothing recorded.
+-}
+laterNurseVisitAt : ( Int, Int ) -> List PrenatalDiagnosis -> PreviousEncounterData
+laterNurseVisitAt ega reported =
+    earlierNurseVisitAt ega [] reported emptyPrenatalMeasurements
+
+
+{-| The next nurse visit at `nextAt`: before it, `before`, the earlier visit at
+`earlierAt` as its entries left it, and the visits `after` it.
+-}
+nextVisitAfter : ( Int, Int ) -> List PreviousEncounterData -> ( Int, Int ) -> EarlierVisitAfter -> List PreviousEncounterData -> AssembledData
+nextVisitAfter nextAt before earlierAt earlier after =
+    nurseVisitWithReported nextAt
+        (before ++ earlierNurseVisitAt earlierAt (EverySet.toList earlier.stored) [] earlier.measurements :: after)
+        []
+
+
+{-| The issue's timeline: the earlier visit at `earlierAt` (a first visit)
+with `entries` entered; the later visit two weeks after it, which got
+`reported`; on another day, a third visit two weeks after that, where the
+second result was entered. The next visit at `nextAt`, read for (high risk
+of preeclampsia, Aspirin).
+-}
+nextVisitOutcome : ( Int, Int ) -> ( Int, Int ) -> PrenatalDiagnosis -> Bool -> List LabResultEntry -> ( Bool, Bool )
+nextVisitOutcome earlierAt nextAt reported anotherDay entries =
+    let
+        ( weeks, days ) =
+            earlierAt
+
+        visitsAfter =
+            laterNurseVisitAt ( weeks + 2, days ) [ reported ]
+                :: (if anotherDay then
+                        [ laterNurseVisitAt ( weeks + 4, days ) [] ]
+
+                    else
+                        []
+                   )
+    in
+    nextVisitAfter nextAt [] earlierAt (afterEntries earlierAt [] entries emptyPrenatalMeasurements) visitsAfter
+        |> highRiskAndAspirinAtVisit
+
+
+{-| Each second result, named, after the given first entries.
+-}
+afterEachSecondResult : List LabResultEntry -> List ( String, List LabResultEntry )
+afterEachSecondResult firstEntries =
+    List.map (\second -> ( second.name, firstEntries ++ [ second ] )) secondResults
+
+
+{-| Both timings of each second result after the given first entries:
+(name and timing, (entries, entered on another day)).
+-}
+eachSecondResultEitherDay : List LabResultEntry -> List ( String, ( List LabResultEntry, Bool ) )
+eachSecondResultEitherDay firstEntries =
+    afterEachSecondResult firstEntries
+        |> List.concatMap
+            (\( name, entries ) ->
+                [ ( name ++ ", same sitting", ( entries, False ) )
+                , ( name ++ ", another day", ( entries, True ) )
+                ]
+            )
+
+
+secondLabHistoryResultTest : Test
+secondLabHistoryResultTest =
+    describe "a second lab history result for the same earlier visit"
+        [ secondResultNextVisitTest
+        , secondResultWhicheverAndWheneverTest
+        , secondResultGestationalDiabetesTest
+        , earlierVisitGainsNoDiabetesTest
+        , reportedSyphilisHepatitisBRhesusNotStoredTest
+        , secondResultOwnDiagnosisTest
+        , otherResultFirstTest
+        , diabetesOnOwnLabResultsStillDiagnosedTest
+        ]
+
+
+secondResultNextVisitTest : Test
+secondResultNextVisitTest =
+    describe "the next nurse visit after a second result"
+        [ test "After a diabetic blood sugar result is entered from lab history at a later nurse visit, entering another pending result for the same earlier visit still gives high risk of preeclampsia and Aspirin at the next nurse visit (12 weeks or later)." <|
+            -- The issue's steps: the earlier visit at 14 weeks sent blood
+            -- sugar and malaria to the lab. At the later visit, at 16 weeks,
+            -- the nurse enters 130 for the blood sugar from lab history
+            -- (diabetes reported to the later visit), then the malaria
+            -- result, positive as in the issue. Next nurse visit at 28 weeks.
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestPositive ]
+                    |> nextVisitOutcome ( 14, 0 ) ( 28, 0 ) reportedDiabetes False
+                    |> Expect.equal ( True, True )
+        , test "negative malaria as the second result, next visit at 22 weeks: high risk and Aspirin" <|
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    |> nextVisitOutcome ( 14, 0 ) ( 22, 0 ) reportedDiabetes False
+                    |> Expect.equal ( True, True )
+        , test "earlier visit at 12 weeks 0 days, next visit at 16 weeks: high risk and Aspirin" <|
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    |> nextVisitOutcome ( 12, 0 ) ( 16, 0 ) reportedDiabetes False
+                    |> Expect.equal ( True, True )
+        , test "guard: earlier visit at 8 weeks, next visit at exactly 12 weeks 0 days: high risk and Aspirin" <|
+            -- Before 12 weeks no high risk is diagnosed at the earlier visit
+            -- itself, so this already holds today; a fix must keep it.
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    |> nextVisitOutcome ( 8, 0 ) ( 12, 0 ) reportedDiabetes False
+                    |> Expect.equal ( True, True )
+        , test "the earlier visit is not the first (a visit at 10 weeks before it): high risk and Aspirin" <|
+            \_ ->
+                let
+                    before =
+                        [ earlierNurseVisitAt ( 10, 0 ) [] [] emptyPrenatalMeasurements ]
+
+                    earlier =
+                        afterEntries ( 14, 0 ) before [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ] emptyPrenatalMeasurements
+                in
+                nextVisitAfter ( 22, 0 ) before ( 14, 0 ) earlier [ laterNurseVisitAt ( 16, 0 ) [ reportedDiabetes ] ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "the earlier visit also recorded a normal blood pressure: high risk and Aspirin" <|
+            \_ ->
+                let
+                    earlier =
+                        afterEntries ( 14, 0 ) [] [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ] (withVitals 115 75 emptyPrenatalMeasurements)
+                in
+                nextVisitAfter ( 22, 0 ) [] ( 14, 0 ) earlier [ laterNurseVisitAt ( 16, 0 ) [ reportedDiabetes ] ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "guard: next visit at 11 weeks 6 days: no preeclampsia risk, no Aspirin" <|
+            \_ ->
+                let
+                    earlier =
+                        afterEntries ( 6, 0 ) [] [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ] emptyPrenatalMeasurements
+                in
+                nextVisitAfter ( 11, 6 ) [] ( 6, 0 ) earlier [ laterNurseVisitAt ( 8, 0 ) [ reportedDiabetes ] ]
+                    |> anyRiskAndAspirinAtVisit
+                    |> Expect.equal ( False, False )
+        ]
+
+
+secondResultWhicheverAndWheneverTest : Test
+secondResultWhicheverAndWheneverTest =
+    let
+        outcomes earlierAt nextAt reported firstEntries =
+            eachSecondResultEitherDay firstEntries
+                |> forEachNamed (\( entries, anotherDay ) -> nextVisitOutcome earlierAt nextAt reported anotherDay entries)
+    in
+    describe "whichever result comes second, whenever"
+        [ test "This holds whichever result comes second (urine dipstick, hemoglobin, HIV PCR, HIV, partner HIV or malaria), and whether it is entered in the same sitting or on another day." <|
+            -- Earlier visit at 14 weeks; blood sugar 130 entered from lab
+            -- history at the visit at 16 weeks; the second result entered in
+            -- the same sitting, or at a visit at 18 weeks. Next visit at 22
+            -- weeks.
+            \_ ->
+                let
+                    scenarios =
+                        outcomes ( 14, 0 ) ( 22, 0 ) reportedDiabetes [ bloodSugarFromLabHistory 130 ]
+                in
+                scenarios
+                    |> Expect.equal (allGive ( True, True ) scenarios)
+        , test "two more results after the blood sugar, the last one on another day: high risk and Aspirin" <|
+            -- Blood sugar, then malaria in the same sitting, then hemoglobin
+            -- at the visit at 18 weeks.
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestNegative, hemoglobinEntry 12 ]
+                    |> nextVisitOutcome ( 14, 0 ) ( 22, 0 ) reportedDiabetes True
+                    |> Expect.equal ( True, True )
+        , test "every second result, then all the others too: high risk and Aspirin" <|
+            \_ ->
+                (bloodSugarFromLabHistory 130 :: secondResults)
+                    |> nextVisitOutcome ( 14, 0 ) ( 22, 0 ) reportedDiabetes True
+                    |> Expect.equal ( True, True )
+        ]
+
+
+secondResultGestationalDiabetesTest : Test
+secondResultGestationalDiabetesTest =
+    describe "gestational diabetes reported from lab history"
+        [ test "The same holds for a gestational diabetes result." <|
+            -- Earlier visit at 24 weeks (gestational diabetes after 20
+            -- weeks); blood sugar 130 entered from lab history at the visit
+            -- at 26 weeks; each second result in the same sitting or at a
+            -- visit at 28 weeks. Next visit at 30 weeks.
+            \_ ->
+                let
+                    scenarios =
+                        eachSecondResultEitherDay [ bloodSugarFromLabHistory 130 ]
+                            |> forEachNamed (\( entries, anotherDay ) -> nextVisitOutcome ( 24, 0 ) ( 30, 0 ) reportedGestationalDiabetes anotherDay entries)
+                in
+                scenarios
+                    |> Expect.equal (allGive ( True, True ) scenarios)
+        , test "earlier visit at 21 weeks 0 days, next visit at 38 weeks: high risk and Aspirin" <|
+            \_ ->
+                [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    |> nextVisitOutcome ( 21, 0 ) ( 38, 0 ) reportedGestationalDiabetes False
+                    |> Expect.equal ( True, True )
+        ]
+
+
+earlierVisitGainsNoDiabetesTest : Test
+earlierVisitGainsNoDiabetesTest =
+    let
+        -- The diabetes and high risk diagnoses stored on the earlier visit
+        -- at `ega` after each second result follows the blood sugar.
+        gainedAt ega firstEntries =
+            afterEachSecondResult firstEntries
+                |> forEachNamed (storedAfter ega >> presentOf diabetesAndHighRiskDiagnoses)
+    in
+    describe "the earlier visit's own diagnoses"
+        [ test "The earlier visit does not gain a diabetes or high risk of preeclampsia diagnosis of its own from the reported blood sugar result." <|
+            -- Earlier visit at 14 weeks (diabetes) and at 24 weeks
+            -- (gestational diabetes), each second result after blood sugar
+            -- 130 from lab history. The list names what was stored.
+            \_ ->
+                let
+                    scenarios =
+                        List.concatMap (\ega -> gainedAt ega [ bloodSugarFromLabHistory 130 ]) [ ( 14, 0 ), ( 24, 0 ) ]
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        , test "earlier visit at 12 weeks 0 days, and at 8 weeks (before the risk opens): nothing stored" <|
+            \_ ->
+                let
+                    scenarios =
+                        List.concatMap (\ega -> gainedAt ega [ bloodSugarFromLabHistory 130 ]) [ ( 12, 0 ), ( 8, 0 ) ]
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        , test "earlier visit at 20 weeks 6 days (diabetes) and 21 weeks 0 days (gestational diabetes): nothing stored" <|
+            \_ ->
+                let
+                    scenarios =
+                        List.concatMap (\ega -> gainedAt ega [ bloodSugarFromLabHistory 130 ]) [ ( 20, 6 ), ( 21, 0 ) ]
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        , test "two more results after the blood sugar: neither save stores diabetes or high risk" <|
+            \_ ->
+                [ storedAfter ( 14, 0 ) [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                , storedAfter ( 14, 0 ) [ bloodSugarFromLabHistory 130, malariaEntry TestNegative, hemoglobinEntry 12 ]
+                ]
+                    |> List.map (presentOf diabetesAndHighRiskDiagnoses)
+                    |> Expect.equal [ [], [] ]
+        , test "the earlier visit is not the first (a visit at 10 weeks before it): nothing stored" <|
+            \_ ->
+                (afterEntries ( 14, 0 )
+                    [ earlierNurseVisitAt ( 10, 0 ) [] [] emptyPrenatalMeasurements ]
+                    [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    emptyPrenatalMeasurements
+                ).stored
+                    |> presentOf diabetesAndHighRiskDiagnoses
+                    |> Expect.equal []
+        , test "guard: a high risk of preeclampsia the earlier visit found itself (preeclampsia in a previous pregnancy) stays stored" <|
+            \_ ->
+                (afterEntries ( 14, 0 )
+                    []
+                    [ bloodSugarFromLabHistory 130, malariaEntry TestNegative ]
+                    (withPreeclampsiaRiskHistory ObstetricHistoryPreeclampsiaPreviousPregnancy Neither emptyPrenatalMeasurements)
+                ).stored
+                    |> highRiskOfPreeclampsiaIn
+                    |> Expect.equal True
+        , test "guard: a normal blood sugar (90) from lab history, then each second result: nothing stored" <|
+            \_ ->
+                let
+                    scenarios =
+                        gainedAt ( 14, 0 ) [ bloodSugarFromLabHistory 90 ]
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        ]
+
+
+reportedSyphilisHepatitisBRhesusNotStoredTest : Test
+reportedSyphilisHepatitisBRhesusNotStoredTest =
+    let
+        -- The syphilis, hepatitis B and rhesus diagnoses stored on the
+        -- earlier visit at 14 weeks after each second result follows each
+        -- of the given entries.
+        storedAfterEach firstEntriesList =
+            firstEntriesList
+                |> List.concatMap
+                    (\firstEntries ->
+                        afterEachSecondResult firstEntries
+                            |> List.map
+                                (\( name, entries ) ->
+                                    ( String.join ", " (List.map .name firstEntries) ++ ", then " ++ name
+                                    , storedAfter ( 14, 0 ) entries
+                                        |> presentOf syphilisHepatitisBRhesusDiagnoses
+                                    )
+                                )
+                    )
+    in
+    describe "syphilis, hepatitis B and rhesus negative reported from lab history"
+        [ test "A syphilis, hepatitis B or rhesus negative result reported from lab history is not added to the earlier visit's own diagnoses when a later result is entered for that visit." <|
+            -- Each reported result (syphilis with no symptoms and with a
+            -- rash, hepatitis B, rhesus negative) entered from lab history
+            -- for the earlier visit at 14 weeks, then each second result.
+            -- The list names what was stored.
+            \_ ->
+                let
+                    scenarios =
+                        storedAfterEach (List.map List.singleton reportedNonDiabetesResults)
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        , test "reported together with the diabetic blood sugar: not stored" <|
+            \_ ->
+                let
+                    scenarios =
+                        storedAfterEach (List.map (\reported -> [ bloodSugarFromLabHistory 130, reported ]) reportedNonDiabetesResults)
+                in
+                scenarios
+                    |> Expect.equal (allGive [] scenarios)
+        , test "all three reported, then malaria, then hemoglobin on another day: not stored by either save" <|
+            \_ ->
+                [ storedAfter ( 14, 0 ) (reportedNonDiabetesResults ++ [ malariaEntry TestNegative ])
+                , storedAfter ( 14, 0 ) (reportedNonDiabetesResults ++ [ malariaEntry TestNegative, hemoglobinEntry 12 ])
+                ]
+                    |> List.map (presentOf syphilisHepatitisBRhesusDiagnoses)
+                    |> Expect.equal [ [], [] ]
+        , test "guard: the same results entered on the earlier visit's own Lab Results page are stored, and stay stored after a second result" <|
+            \_ ->
+                [ ( syphilisEntry Nothing (EverySet.singleton NoIllnessSymptoms), DiagnosisSyphilisRecurrentPhase )
+                , ( hepatitisBEntry Nothing, DiagnosisHepatitisBRecurrentPhase )
+                , ( rhesusNegativeEntry Nothing, DiagnosisRhesusNegativeRecurrentPhase )
+                ]
+                    |> List.map
+                        (\( own, diagnosis ) ->
+                            ( own.name
+                            , ( EverySet.member diagnosis (storedAfter ( 14, 0 ) [ own ])
+                              , EverySet.member diagnosis (storedAfter ( 14, 0 ) [ own, malariaEntry TestNegative ])
+                              )
+                            )
+                        )
+                    |> Expect.equal
+                        [ ( "syphilis on own Lab Results", ( True, True ) )
+                        , ( "hepatitis B on own Lab Results", ( True, True ) )
+                        , ( "rhesus negative on own Lab Results", ( True, True ) )
+                        ]
+        ]
+
+
+secondResultOwnDiagnosisTest : Test
+secondResultOwnDiagnosisTest =
+    describe "the second result's own diagnosis"
+        [ test "The second result's own diagnosis is still recorded on the earlier visit, as today. For example, a positive malaria result gives malaria." <|
+            -- Earlier visit at 14 weeks; blood sugar 130 entered from lab
+            -- history, then a positive malaria result.
+            \_ ->
+                storedAfter ( 14, 0 ) [ bloodSugarFromLabHistory 130, malariaEntry TestPositive ]
+                    |> EverySet.member DiagnosisMalariaRecurrentPhase
+                    |> Expect.equal True
+        , test "hemoglobin 9 gives moderate anemia; a positive HIV result gives HIV" <|
+            \_ ->
+                [ ( hemoglobinEntry 9, DiagnosisModerateAnemiaRecurrentPhase )
+                , ( hivEntry TestPositive, DiagnosisHIVRecurrentPhase )
+                ]
+                    |> List.map (\( second, diagnosis ) -> EverySet.member diagnosis (storedAfter ( 14, 0 ) [ bloodSugarFromLabHistory 130, second ]))
+                    |> Expect.equal [ True, True ]
+        , test "positive malaria at an earlier visit at 24 weeks (gestational diabetes reported): malaria" <|
+            \_ ->
+                storedAfter ( 24, 0 ) [ bloodSugarFromLabHistory 130, malariaEntry TestPositive ]
+                    |> EverySet.member DiagnosisMalariaRecurrentPhase
+                    |> Expect.equal True
+        , test "positive malaria after a reported syphilis result: malaria" <|
+            \_ ->
+                storedAfter ( 14, 0 ) [ syphilisEntry (Just laterVisitId) (EverySet.singleton NoIllnessSymptoms), malariaEntry TestPositive ]
+                    |> EverySet.member DiagnosisMalariaRecurrentPhase
+                    |> Expect.equal True
+        , test "positive malaria, then a positive HIV result on another day: both stay stored" <|
+            \_ ->
+                storedAfter ( 14, 0 ) [ bloodSugarFromLabHistory 130, malariaEntry TestPositive, hivEntry TestPositive ]
+                    |> presentOf [ DiagnosisHIVRecurrentPhase, DiagnosisMalariaRecurrentPhase ]
+                    |> Expect.equal [ DiagnosisHIVRecurrentPhase, DiagnosisMalariaRecurrentPhase ]
+        ]
+
+
+otherResultFirstTest : Test
+otherResultFirstTest =
+    describe "the other result first, the blood sugar second"
+        [ test "Entering the other result first and the diabetic blood sugar second behaves as today: high risk of preeclampsia and Aspirin at the next visit." <|
+            -- Earlier visit at 14 weeks; each other result entered first,
+            -- then blood sugar 130 from lab history at the visit at 16
+            -- weeks, in the same sitting or on another day. Next visit at 22
+            -- weeks.
+            \_ ->
+                let
+                    scenarios =
+                        secondResults
+                            |> List.concatMap
+                                (\first ->
+                                    [ ( first.name ++ ", same sitting", nextVisitOutcome ( 14, 0 ) ( 22, 0 ) reportedDiabetes False [ first, bloodSugarFromLabHistory 130 ] )
+                                    , ( first.name ++ ", another day", nextVisitOutcome ( 14, 0 ) ( 22, 0 ) reportedDiabetes True [ first, bloodSugarFromLabHistory 130 ] )
+                                    ]
+                                )
+                in
+                scenarios
+                    |> Expect.equal (allGive ( True, True ) scenarios)
+        , test "gestational diabetes: an earlier visit at 24 weeks, malaria first: high risk and Aspirin at 30 weeks" <|
+            \_ ->
+                [ malariaEntry TestNegative, bloodSugarFromLabHistory 130 ]
+                    |> nextVisitOutcome ( 24, 0 ) ( 30, 0 ) reportedGestationalDiabetes False
+                    |> Expect.equal ( True, True )
+        , test "positive malaria first: the earlier visit stores malaria and no diabetes or high risk" <|
+            \_ ->
+                storedAfter ( 14, 0 ) [ malariaEntry TestPositive, bloodSugarFromLabHistory 130 ]
+                    |> (\stored -> ( EverySet.member DiagnosisMalariaRecurrentPhase stored, presentOf diabetesAndHighRiskDiagnoses stored ))
+                    |> Expect.equal ( True, [] )
+        ]
+
+
+diabetesOnOwnLabResultsStillDiagnosedTest : Test
+diabetesOnOwnLabResultsStillDiagnosedTest =
+    let
+        -- (the given diabetes stored, high risk of preeclampsia stored)
+        diabetesAndRisk diabetes stored =
+            ( EverySet.member diabetes stored, highRiskOfPreeclampsiaIn stored )
+    in
+    describe "diabetes entered on the visit's own Lab Results page"
+        [ test "Diabetes entered on a visit's own Lab Results page still diagnoses diabetes and high risk of preeclampsia at that visit, as today." <|
+            -- Blood sugar 130 entered on the visit's own Lab Results page,
+            -- at 14 weeks (diabetes) and at 24 weeks (gestational diabetes).
+            \_ ->
+                [ diabetesAndRisk DiagnosisDiabetesRecurrentPhase (storedAfter ( 14, 0 ) [ bloodSugarEnteredOnOwnPage 130 ])
+                , diabetesAndRisk DiagnosisGestationalDiabetesRecurrentPhase (storedAfter ( 24, 0 ) [ bloodSugarEnteredOnOwnPage 130 ])
+                ]
+                    |> Expect.equal [ ( True, True ), ( True, True ) ]
+        , test "own Lab Results at exactly 12 weeks 0 days: diabetes and high risk" <|
+            \_ ->
+                storedAfter ( 12, 0 ) [ bloodSugarEnteredOnOwnPage 130 ]
+                    |> diabetesAndRisk DiagnosisDiabetesRecurrentPhase
+                    |> Expect.equal ( True, True )
+        , test "own Lab Results blood sugar, then each second result: diabetes and high risk stay stored" <|
+            \_ ->
+                let
+                    scenarios =
+                        afterEachSecondResult [ bloodSugarEnteredOnOwnPage 130 ]
+                            |> forEachNamed (storedAfter ( 14, 0 ) >> diabetesAndRisk DiagnosisDiabetesRecurrentPhase)
+                in
+                scenarios
+                    |> Expect.equal (allGive ( True, True ) scenarios)
+        , test "a second result first, then the blood sugar on own Lab Results: diabetes and high risk" <|
+            \_ ->
+                storedAfter ( 14, 0 ) [ malariaEntry TestNegative, bloodSugarEnteredOnOwnPage 130 ]
+                    |> diabetesAndRisk DiagnosisDiabetesRecurrentPhase
+                    |> Expect.equal ( True, True )
+        , test "guard: own Lab Results at 8 weeks: diabetes, and no high risk before 12 weeks" <|
+            \_ ->
+                storedAfter ( 8, 0 ) [ bloodSugarEnteredOnOwnPage 130 ]
+                    |> diabetesAndRisk DiagnosisDiabetesRecurrentPhase
+                    |> Expect.equal ( True, False )
         ]
