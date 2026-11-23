@@ -586,7 +586,7 @@ B-585		IMPLEMENTED		2516	2517	54	Prenatal: misspelt function names `…Prevoiusl
 B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
-B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
+B-589	4	CLOSED	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
 B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
 B-591	4	IMPLEMENTED	LOW	2562	2563	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
 B-592	4	READY	LOW			26	NCD and Prenatal referral, and Outside Care medicines: changing a saved Yes/No answer keeps the follow-up answers of the
