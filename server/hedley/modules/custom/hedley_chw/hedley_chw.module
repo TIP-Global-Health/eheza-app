@@ -10,9 +10,8 @@ include_once 'hedley_chw.features.inc';
 /**
  * Implements hook_node_presave().
  *
- * Refuses a village without a health center, with a blank geo field, or with
- * an address not on the location list. Scripts and migrations skip form
- * validation, so the save checks too.
+ * Refuses a village without a health center, a blank geo field, or an address
+ * off the location list. Scripts skip form validation.
  */
 function hedley_chw_node_presave($node) {
   if ($node->type != 'village') {
@@ -81,17 +80,15 @@ function hedley_chw_village_geo_value($node, $field_name) {
 }
 
 /**
- * The first level of a village's address that is not on the location list.
+ * The first level of a village's address not on the location list.
  *
- * Names are compared without their case, as the app compares them. A name with
- * spaces around it is not on the list, since the app does not find it either.
+ * Case is ignored, as in the app; spaces around a name are not.
  *
  * @param object $node
  *   The village node.
  *
  * @return array|null
- *   The level's 'field' and a 'message' naming it. NULL when the address is on
- *   the list, a geo field is blank, or the site has no location list.
+ *   The level's 'field' and 'message', or NULL when there is none to report.
  */
 function hedley_chw_village_address_error($node) {
   $keys = hedley_general_geo_path_keys();

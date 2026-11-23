@@ -759,12 +759,11 @@ function hedley_general_geo_row(array $row, $columns) {
 /**
  * The key for a path of locations, from the province down.
  *
- * Locations are compared without their case, so a location spelled two ways is
- * one location. Each is escaped, so that the key for one path can never read as
- * the key for another.
+ * Case is ignored. Each location is escaped, so one path's key never reads as
+ * another's.
  *
  * @param array $path
- *   The locations leading to a location, itself included.
+ *   The locations, from the province down.
  *
  * @return string
  *   The key for that path.
