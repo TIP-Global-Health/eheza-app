@@ -628,7 +628,7 @@ B-627	4	READY	LOW			61	Village import script: running the same file again create
 B-628	3	IMPLEMENTED	MED			62	Statistical Queries › Postnatal Care: the "up to date with immunization" rows forget every dose given before the FROM da
 B-629	4	READY	LOW			62	Statistical Queries › ANC Contacts: the adequate-weight-gain row is labelled "Number of encounters" and counts pregnanci
 B-630	4	IMPLEMENTED	LOW			62	Person registration: after the app restarts on a group-session child page, the address lists stay empty until the next s
-B-631	4	READY	LOW			62	Person edit / add family member: a stored address level under a place missing from the location list is looked up among 
+B-631	4	IMPLEMENTED	LOW	2578	2579	62	Person edit / add family member: a stored address level under a place missing from the location list is looked up among 
 B-632	4	IMPLEMENTED	LOW			63	Statistical Queries › nutrition report: a weighing with no weight-for-age z-score loses its weight-for-length z-score to
 B-633	4	READY	LOW		2573	B-628	Statistical Queries › Postnatal Care: row 1 (visit within 24 hours of birth) can count one newborn in two neighbouring r
 B-634	4	READY	LOW			65	Resilience messages: a read / favourite / remind action made while a sync cycle is running is undone when the device dow
