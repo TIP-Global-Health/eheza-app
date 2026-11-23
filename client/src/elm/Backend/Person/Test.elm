@@ -1533,21 +1533,7 @@ villagesOnTheList =
         villageFilledIn operation =
             case ( byimanaResident, byimanaId ) of
                 ( Just person, Just expectedId ) ->
-                    applyDefaultValuesForPerson saveDate
-                        SiteRwanda
-                        (reverseGeoInfoOn SiteRwanda)
-                        Nothing
-                        False
-                        (Just person)
-                        operation
-                        ParticipantDirectoryOrigin
-                        (case operation of
-                            CreatePerson _ ->
-                                emptyCreateForm SiteRwanda
-
-                            EditPerson _ ->
-                                emptyEditForm SiteRwanda
-                        )
+                    filledInFor SiteRwanda operation person
                         |> Form.getFieldAsString village
                         |> .value
                         |> Expect.equal (Just expectedId)
