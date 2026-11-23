@@ -554,7 +554,7 @@ B-553	4	IMPLEMENTED	LOW	2494	2497	50	Group session child progress report: the pa
 B-554	4	READY	LOW			50	Well Child Next Visit: the pediatric-visit date is never re-derived when ECD or a medication answer is corrected after i
 B-555	4	READY	LOW			50	Case Management Immunization pane: a child whose overdue dose the CHW recorded at a Child Scoreboard visit stays listed 
 B-556	4	IMPLEMENTED	LOW	2477	2481	50	Prenatal weight gain (sites without Healthy Start): the expected gain is taken at the pregnancy week of the day the form
-B-557	4	READY	LOW		2473	50	Burundi screens still say "village" in three texts next to the Sub-Colline label
+B-557	4	CLOSED	LOW		2473	50	Burundi screens still say "village" in three texts next to the Sub-Colline label
 B-558	4	READY	LOW			50	Prenatal activity page: the rest of the pregnancy-week maths still uses the day the page is opened, so a visit reopened 
 B-559	4	READY	LOW			50	Prenatal Nutrition Assessment (sites without Healthy Start): re-saving the pregnancy's first weight compares it with its
 B-560	4	READY	LOW			50	Child registration: the earliest birth date the FBF-group picker (26 months back) and the Child Scoreboard picker (2 yea
