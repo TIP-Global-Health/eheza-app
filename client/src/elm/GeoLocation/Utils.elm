@@ -2679,7 +2679,6 @@ getGeoVillagesForRwanda =
                , ( toEntityId 5116, GeoLocation "Mataba" (Just <| toEntityId 5113) )
                , ( toEntityId 5117, GeoLocation "Nyarurembo" (Just <| toEntityId 5113) )
                , ( toEntityId 5118, GeoLocation "Rubona" (Just <| toEntityId 5113) )
-               , ( toEntityId 5532, GeoLocation "Byimana" (Just <| toEntityId 5113) )
                , ( toEntityId 5120, GeoLocation "Bwocya" (Just <| toEntityId 5119) )
                , ( toEntityId 5121, GeoLocation "Gitaba" (Just <| toEntityId 5119) )
                , ( toEntityId 5122, GeoLocation "Karenge" (Just <| toEntityId 5119) )
@@ -3032,6 +3031,7 @@ getGeoVillagesForRwanda =
                , ( toEntityId 5529, GeoLocation "Nyirakavomo" (Just <| toEntityId 5525) )
                , ( toEntityId 5530, GeoLocation "Nyamico" (Just <| toEntityId 5525) )
                , ( toEntityId 5531, GeoLocation "Nyamyitima" (Just <| toEntityId 5525) )
+               , ( toEntityId 5532, GeoLocation "Byimana" (Just <| toEntityId 5113) )
                ]
 
 

@@ -41458,13 +41458,6 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_l
 												$elm$core$Maybe$Just(
 													$author$project$Backend$Entities$toEntityId(5113)))),
 											_Utils_Tuple2(
-											$author$project$Backend$Entities$toEntityId(5532),
-											A2(
-												$author$project$Utils$GeoLocation$GeoLocation,
-												'Byimana',
-												$elm$core$Maybe$Just(
-													$author$project$Backend$Entities$toEntityId(5113)))),
-											_Utils_Tuple2(
 											$author$project$Backend$Entities$toEntityId(5120),
 											A2(
 												$author$project$Utils$GeoLocation$GeoLocation,
@@ -43920,7 +43913,14 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_l
 													$author$project$Utils$GeoLocation$GeoLocation,
 													'Nyamyitima',
 													$elm$core$Maybe$Just(
-														$author$project$Backend$Entities$toEntityId(5525))))
+														$author$project$Backend$Entities$toEntityId(5525)))),
+												_Utils_Tuple2(
+												$author$project$Backend$Entities$toEntityId(5532),
+												A2(
+													$author$project$Utils$GeoLocation$GeoLocation,
+													'Byimana',
+													$elm$core$Maybe$Just(
+														$author$project$Backend$Entities$toEntityId(5113))))
 											])))))))))));
 var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_list$AssocList$fromList(
 	_List_fromArray(

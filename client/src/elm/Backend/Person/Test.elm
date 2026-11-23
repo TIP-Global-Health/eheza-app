@@ -1565,8 +1565,8 @@ villagesOnTheList =
                 case byimanaResident of
                     Just person ->
                         saveEdit SiteRwanda person [ typeText phoneNumber "0788111111" ]
-                            |> Result.map (.village >> Maybe.map String.toLower)
-                            |> Expect.equal (Ok (Just "byimana"))
+                            |> Result.map .village
+                            |> Expect.equal (Ok (Just "Byimana"))
 
                     Nothing ->
                         Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
