@@ -52,6 +52,7 @@ import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testChild, testPerson)
 import Time exposing (Month(..))
+import Translate exposing (ValidationError)
 
 
 date : Int -> Month -> Int -> NominalDate
@@ -171,6 +172,7 @@ all =
         , addressAndHealthCentre
         , storedAddressComparison
         , villagesOnTheList
+        , unlistedLevelNamedLikeProvince
         ]
 
 
@@ -1531,21 +1533,7 @@ villagesOnTheList =
         villageFilledIn operation =
             case ( byimanaResident, byimanaId ) of
                 ( Just person, Just expectedId ) ->
-                    applyDefaultValuesForPerson saveDate
-                        SiteRwanda
-                        (reverseGeoInfoOn SiteRwanda)
-                        Nothing
-                        False
-                        (Just person)
-                        operation
-                        ParticipantDirectoryOrigin
-                        (case operation of
-                            CreatePerson _ ->
-                                emptyCreateForm SiteRwanda
-
-                            EditPerson _ ->
-                                emptyEditForm SiteRwanda
-                        )
+                    filledInFor SiteRwanda operation person
                         |> Form.getFieldAsString village
                         |> .value
                         |> Expect.equal (Just expectedId)
@@ -1597,4 +1585,543 @@ villagesOnTheList =
 
                             Nothing ->
                                 Expect.fail "the list has no Busebwa under Gatete › Busebwa"
+        ]
+
+
+
+-- A LEVEL MISSING FROM THE LIST, WITH A LOWER LEVEL NAMED LIKE A PROVINCE
+
+
+{-| The provinces on the site's address list.
+-}
+provincesOn : Site -> List Place
+provincesOn site =
+    Dict.toList (getGeoInfo site).provinces
+
+
+{-| The name of a province on the list other than the address's own.
+-}
+otherProvinceName : Site -> Address -> Maybe String
+otherProvinceName site address =
+    provincesOn site
+        |> List.Extra.find (\place -> Tuple.first place /= Tuple.first address.province)
+        |> Maybe.map placeName
+
+
+{-| A stored address with a place missing from the list at `missingFrom`, and
+some level below it carrying the name of a province on the list. `stored`
+builds the person from a full address on the list; `Nothing` means the site
+has no place the scenario needs.
+-}
+type alias UnlistedScenario =
+    { description : String
+    , missingFrom : String
+    , stored : Site -> Address -> Maybe Person
+    }
+
+
+{-| The missing level and every level below it.
+-}
+levelsFrom : String -> List String
+levelsFrom level =
+    List.Extra.dropWhile ((/=) level) addressLevels
+
+
+{-| Each stored shape that makes a lower level be looked up among the
+provinces. A level whose place above it is not found has no parent to look
+under; these names match a province there.
+-}
+unlistedScenarios : List UnlistedScenario
+unlistedScenarios =
+    [ { description = "the district is missing and the sector is named like the person's own province"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | district = Just "District missing from the list", sector = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the district is missing and the sector is named like another province"
+      , missingFrom = district
+      , stored =
+            \site home ->
+                otherProvinceName site home
+                    |> Maybe.map
+                        (\name ->
+                            personAt home
+                                |> (\person -> { person | district = Just "District missing from the list", sector = Just name })
+                        )
+      }
+    , { description = "the district is missing and the sector is named like a province, in capitals"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | district = Just "District missing from the list", sector = Just (String.toUpper (placeName home.province)) })
+                    |> Just
+      }
+    , { description = "the province is missing and the district is named like a province"
+      , missingFrom = province
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | province = Just "Province missing from the list", district = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the sector is missing and the cell is named like a province"
+      , missingFrom = sector
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | sector = Just "Sector missing from the list", cell = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the cell is missing and the village is named like a province"
+      , missingFrom = cell
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | cell = Just "Cell missing from the list", village = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the district and the sector are missing and the cell is named like a province"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person ->
+                            { person
+                                | district = Just "District missing from the list"
+                                , sector = Just "Sector missing from the list"
+                                , cell = Just (placeName home.province)
+                            }
+                       )
+                    |> Just
+      }
+    , { description = "the district is missing, the sector is named like the province and the cell like a district of it"
+      , missingFrom = district
+      , stored =
+            -- Were the sector taken for the province, the cell would be looked
+            -- up among that province's districts, and found.
+            \_ home ->
+                personAt home
+                    |> (\person ->
+                            { person
+                                | district = Just "District missing from the list"
+                                , sector = Just (placeName home.province)
+                                , cell = Just (placeName home.district)
+                            }
+                       )
+                    |> Just
+      }
+    ]
+
+
+{-| One test per scenario and site, each run with the site's places and the
+person the scenario stores.
+-}
+onEveryUnlistedScenario : (Site -> UnlistedScenario -> Person -> Expect.Expectation) -> List Test
+onEveryUnlistedScenario check =
+    List.map
+        (\scenario ->
+            onEverySite scenario.description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            case scenario.stored site places.home of
+                                Just person ->
+                                    check site scenario person
+
+                                Nothing ->
+                                    Expect.fail "the site's address list has no second province"
+        )
+        unlistedScenarios
+
+
+{-| The issue's example, on Burundi: every level stored as Bururi. Province
+Bururi is on the list; commune Bururi is not under it.
+-}
+allBururi : Maybe Person
+allBururi =
+    burundiPlaces
+        |> Maybe.map
+            (\places ->
+                personAt places.home
+                    |> (\person ->
+                            { person
+                                | province = Just "Bururi"
+                                , district = Just "Bururi"
+                                , sector = Just "Bururi"
+                                , cell = Just "Bururi"
+                                , village = Just "Bururi"
+                            }
+                       )
+            )
+
+
+{-| Runs the check with the all-Bururi person.
+-}
+withAllBururi : (Person -> Expect.Expectation) -> Expect.Expectation
+withAllBururi check =
+    case allBururi of
+        Just person ->
+            check person
+
+        Nothing ->
+            Expect.fail "Burundi's address list has no address these scenarios can use"
+
+
+{-| The form opened for the person, for the operation, with the person's
+values filled in, before the nurse changes anything.
+-}
+filledInFor : Site -> ParticipantDirectoryOperation -> Person -> Form ValidationError Person
+filledInFor site operation person =
+    applyDefaultValuesForPerson saveDate
+        site
+        (reverseGeoInfoOn site)
+        Nothing
+        False
+        (Just person)
+        operation
+        ParticipantDirectoryOrigin
+        (case operation of
+            CreatePerson _ ->
+                emptyCreateForm site
+
+            EditPerson _ ->
+                emptyEditForm site
+        )
+
+
+{-| The given address fields that hold a value, written as "field holds
+value". An empty select holds no value, or "".
+-}
+holdingAPlace : List String -> Form e o -> List String
+holdingAPlace levels form =
+    List.filterMap
+        (\name ->
+            case (Form.getFieldAsString name form).value of
+                Just "" ->
+                    Nothing
+
+                Just value ->
+                    Just (name ++ " holds " ++ value)
+
+                Nothing ->
+                    Nothing
+        )
+        levels
+
+
+{-| The address fields of the form, with what each holds.
+-}
+addressFieldsOf : Form e o -> List ( String, Maybe String )
+addressFieldsOf form =
+    List.map (\name -> ( name, (Form.getFieldAsString name form).value )) addressLevels
+
+
+addFamilyMemberTo : ParticipantDirectoryOperation
+addFamilyMemberTo =
+    CreatePerson (Just (toEntityUuid "related-person"))
+
+
+{-| A child added to the related adult: what the nurse types, other than the
+address.
+-}
+newChildFields : List Form.Msg
+newChildFields =
+    [ typeText firstName "New"
+    , typeText secondName "Child"
+    , typeText birthDate "2024-03-10"
+    , pick gender "male"
+    , pick modeOfDelivery "cesarean-delivery"
+    ]
+
+
+{-| The nurse adds a child to the related person, leaves the filled-in address
+as it is, and presses Save.
+-}
+saveNewFamilyMember : Site -> Person -> Result (List String) SavedAddress
+saveNewFamilyMember site related =
+    pressSave site addFamilyMemberTo related newChildFields
+        |> Result.map savedAddress
+
+
+unlistedLevelNamedLikeProvince : Test
+unlistedLevelNamedLikeProvince =
+    describe "A stored address with a place missing from the list and a lower level named like a province"
+        [ unlistedEditSaves
+        , unlistedFamilyMemberSaves
+        , nothingFilledBelowUnlisted
+        , listedAddressAsBefore
+        ]
+
+
+{-| Criterion: a person whose stored address names a place missing from the
+address list, with a lower level named like a province, still saves when the
+address is not touched, and keeps the stored address.
+
+The nurse edits the phone number only, or nothing at all, and presses Save.
+
+-}
+unlistedEditSaves : Test
+unlistedEditSaves =
+    describe "A person whose stored address names a place missing from the address list, with a lower level named like a province, still saves when the address is not touched, and keeps the stored address"
+        [ describe "when the phone number is edited" <|
+            onEveryUnlistedScenario
+                (\site _ person ->
+                    saveEdit site person [ typeText phoneNumber "0788111111" ]
+                        |> Expect.equal (unchanged person)
+                )
+        , describe "when nothing is edited" <|
+            onEveryUnlistedScenario
+                (\site _ person ->
+                    saveEdit site person []
+                        |> Expect.equal (unchanged person)
+                )
+        , test "Burundi: a person stored as Bururi at every level saves when the phone number is edited, and keeps Bururi" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        saveEdit SiteBurundi person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , test "Burundi: the phone number edited on the person stored as Bururi is saved" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        pressSave SiteBurundi editPerson person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .telephoneNumber
+                            |> Expect.equal (Ok (Just "0788111111"))
+        ]
+
+
+{-| Criterion: adding a family member to such a person, saving the filled-in
+address unchanged works, and stores the related person's address.
+
+The family member is a child of the related adult; the nurse fills in the
+child's own details and leaves the address as filled in.
+
+-}
+unlistedFamilyMemberSaves : Test
+unlistedFamilyMemberSaves =
+    describe "Adding a family member to such a person: saving the filled-in address unchanged works, and stores the related person's address"
+        [ describe "for each stored shape" <|
+            onEveryUnlistedScenario
+                (\site _ related ->
+                    saveNewFamilyMember site related
+                        |> Expect.equal (unchanged related)
+                )
+        , test "Burundi: adding a family member to the person stored as Bururi stores Bururi at every level" <|
+            \_ ->
+                withAllBururi <|
+                    \related ->
+                        saveNewFamilyMember SiteBurundi related
+                            |> Expect.equal (unchanged related)
+        ]
+
+
+{-| Criterion: below a level missing from the list, no address field is filled
+with a place from the list. The missing level itself cannot be shown either.
+
+Checked on the form as it opens, for editing the person and for adding a
+family member to them. The levels above the missing one are still filled in
+with their places, as before.
+
+-}
+nothingFilledBelowUnlisted : Test
+nothingFilledBelowUnlisted =
+    let
+        noPlaceFrom operation site scenario person =
+            filledInFor site operation person
+                |> holdingAPlace (levelsFrom scenario.missingFrom)
+                |> Expect.equalLists []
+
+        chwVillageStoredAs person =
+            { healthCenterId = homeHealthCentre
+            , name = "CHW village"
+            , province = Maybe.withDefault "" person.province
+            , district = Maybe.withDefault "" person.district
+            , sector = Maybe.withDefault "" person.sector
+            , cell = Maybe.withDefault "" person.cell
+            , village = Maybe.withDefault "" person.village
+            }
+    in
+    describe "Below a level missing from the list, no address field is filled with a place from the list"
+        [ describe "editing the person" <|
+            onEveryUnlistedScenario (noPlaceFrom editPerson)
+        , describe "adding a family member to the person" <|
+            onEveryUnlistedScenario (noPlaceFrom addFamilyMemberTo)
+        , describe "a CHW registering a person, when the CHW's village has the stored shape" <|
+            -- A CHW's form is filled in from the CHW's village, with the
+            -- address section hidden.
+            onEveryUnlistedScenario
+                (\site scenario person ->
+                    applyDefaultValuesForPerson saveDate
+                        site
+                        (reverseGeoInfoOn site)
+                        (Just (chwVillageStoredAs person))
+                        True
+                        Nothing
+                        (CreatePerson Nothing)
+                        ParticipantDirectoryOrigin
+                        (emptyCreateForm site)
+                        |> holdingAPlace (levelsFrom scenario.missingFrom)
+                        |> Expect.equalLists []
+                )
+        , test "Burundi: the person stored as Bururi has only the province filled in, when edited" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        filledInFor SiteBurundi editPerson person
+                            |> holdingAPlace addressLevels
+                            |> Expect.equalLists [ province ++ " holds 1" ]
+        , test "Burundi: the person stored as Bururi has only the province filled in, when a family member is added" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        filledInFor SiteBurundi addFamilyMemberTo person
+                            |> holdingAPlace addressLevels
+                            |> Expect.equalLists [ province ++ " holds 1" ]
+        , describe "the levels above the missing one are filled in with their places" <|
+            onEveryUnlistedScenario
+                (\site scenario person ->
+                    withPlaces site <|
+                        \places ->
+                            let
+                                above =
+                                    List.Extra.takeWhile ((/=) scenario.missingFrom) addressLevels
+
+                                expected =
+                                    [ ( province, placeId places.home.province )
+                                    , ( district, placeId places.home.district )
+                                    , ( sector, placeId places.home.sector )
+                                    , ( cell, placeId places.home.cell )
+                                    ]
+                                        |> List.filter (\( name, _ ) -> List.member name above)
+                                        |> List.map (\( name, id ) -> ( name, Just id ))
+                            in
+                            filledInFor site editPerson person
+                                |> addressFieldsOf
+                                |> List.filter (\( name, _ ) -> List.member name above)
+                                |> Expect.equalLists expected
+                )
+        ]
+
+
+{-| Criterion: a person whose stored address is fully on the list is filled in
+and saved as before.
+
+On Burundi, commune Rumonge lies in province Rumonge: a lower level that shares
+a province's name and is on the list under it is filled in with its own place,
+not the province.
+
+-}
+listedAddressAsBefore : Test
+listedAddressAsBefore =
+    let
+        rumongeAddress =
+            addressNamed SiteBurundi [ "Rumonge", "Rumonge", "Gatete", "Busebwa", "Busebwa" ]
+
+        withRumonge check =
+            case rumongeAddress of
+                Just address ->
+                    check address
+
+                Nothing ->
+                    Expect.fail "Burundi's list has no Rumonge › Rumonge › Gatete › Busebwa › Busebwa"
+
+        idsOf address =
+            [ ( province, Just (placeId address.province) )
+            , ( district, Just (placeId address.district) )
+            , ( sector, Just (placeId address.sector) )
+            , ( cell, Just (placeId address.cell) )
+            , ( village, Just (placeId address.village) )
+            ]
+    in
+    describe "A person whose stored address is fully on the list is filled in and saved as before"
+        [ onEverySite "editing the person fills in every level with its place" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledInFor site editPerson (personAt places.home)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
+        , onEverySite "adding a family member fills in every level with its place" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledInFor site addFamilyMemberTo (personAt places.home)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
+        , onEverySite "editing the phone number saves the address unchanged" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "adding a family member saves the related person's address" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                        in
+                        saveNewFamilyMember site related
+                            |> Expect.equal (unchanged related)
+        , test "Burundi: a person in commune Rumonge of province Rumonge has the commune filled in, not the province" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        filledInFor SiteBurundi editPerson (personAt address)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf address)
+        , test "Burundi: a person in commune Rumonge of province Rumonge saves the address unchanged" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        let
+                            person =
+                                personAt address
+                        in
+                        saveEdit SiteBurundi person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , test "Burundi: adding a family member to a person in commune Rumonge saves Rumonge at both levels" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        let
+                            related =
+                                personAt address
+                        in
+                        saveNewFamilyMember SiteBurundi related
+                            |> Expect.equal (unchanged related)
+        , onEverySite "a CHW registering a person has every level filled in from the CHW's village" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        applyDefaultValuesForPerson saveDate
+                            site
+                            (reverseGeoInfoOn site)
+                            (Just
+                                { healthCenterId = homeHealthCentre
+                                , name = "CHW village"
+                                , province = placeName places.home.province
+                                , district = placeName places.home.district
+                                , sector = placeName places.home.sector
+                                , cell = placeName places.home.cell
+                                , village = placeName places.home.village
+                                }
+                            )
+                            True
+                            Nothing
+                            (CreatePerson Nothing)
+                            ParticipantDirectoryOrigin
+                            (emptyCreateForm site)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
         ]

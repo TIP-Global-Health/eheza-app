@@ -97,6 +97,16 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> Maybe.andThen (getGeoLocation reverseGeoInfo Nothing)
                 |> Maybe.map Tuple.first
 
+        -- A level is looked up only under a level above that was found. With
+        -- no parent, the lookup would search the provinces instead.
+        idUnder parentId =
+            Maybe.andThen
+                (\name ->
+                    parentId
+                        |> Maybe.andThen (\parent -> getGeoLocation reverseGeoInfo (Just parent) name)
+                        |> Maybe.map Tuple.first
+                )
+
         defaultDistrict =
             if isChw then
                 maybeVillage |> Maybe.map .district
@@ -107,8 +117,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
 
         defaultDistrictId =
             defaultDistrict
-                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultProvinceId)
-                |> Maybe.map Tuple.first
+                |> idUnder defaultProvinceId
 
         defaultSector =
             if isChw then
@@ -120,8 +129,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
 
         defaultSectorId =
             defaultSector
-                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultDistrictId)
-                |> Maybe.map Tuple.first
+                |> idUnder defaultDistrictId
 
         defaultCell =
             if isChw then
@@ -133,8 +141,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
 
         defaultCellId =
             defaultCell
-                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultSectorId)
-                |> Maybe.map Tuple.first
+                |> idUnder defaultSectorId
 
         defaultVillage =
             if isChw then
@@ -146,8 +153,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
 
         defaultVillageId =
             defaultVillage
-                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultCellId)
-                |> Maybe.map Tuple.first
+                |> idUnder defaultCellId
 
         defaultUbudehe =
             -- Ubudehe is Rwanda specific. For all other sites
