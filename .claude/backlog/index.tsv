@@ -386,7 +386,7 @@ B-385	4	READY	LOW			33	Kinyarwanda header for the End-Of-Period resilience categ
 B-386	4	IMPLEMENTED	LOW	2410	2411	33	Client and server now spell five clinical labels differently, so a device screen and a generated report name the same di
 B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it does not implement: its exemption list is unbounded, so an alre
 B-388	3	IMPLEMENTED	MED	2476	2480	33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
-B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
+B-389	4	IMPLEMENTED	LOW	2574	2575	33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
 B-390	2	IMPLEMENTED	MED	2358	2359	33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
 B-391	4	IMPLEMENTED	LOW	2472	2473	33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
 B-392	1	IMPLEMENTED	MED	2272	2273	33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
@@ -635,6 +635,7 @@ B-634	4	READY	LOW			65	Resilience messages: a read / favourite / remind action m
 B-635	4	READY	LOW			65	Resilience messages: once read, the Introduction and End-of-month messages are listed on no tab, so they cannot be opene
 B-636	4	READY	LOW			65	Deploy: a `drush` step on Pantheon is retried after ANY failure, so an update hook that fails part-way is run from the s
 B-637	4	READY	LOW			65	Build / station tooling minors: `ddev client-install` cannot fail; the deploy skills leave the main tree off `develop`; 
+B-638	4	READY	LOW			B-389	Village records: the save accepts an address that is not on the location list, so a CHW assigned there can register no n
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
