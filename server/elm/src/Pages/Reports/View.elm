@@ -59,6 +59,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
+import Set
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -161,7 +162,7 @@ viewReportsData language currentDate themePath data model =
                                             viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPostnatalCare ->
-                                            viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
+                                            viewPostnatalCareReport language data.site limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPrenatal ->
                                             viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
@@ -2883,11 +2884,11 @@ fbfDistributionCategoryCssClass category =
             "fbf-mother"
 
 
-viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> Html Msg
-viewPostnatalCareReport language site limitDate scopeLabel records =
+viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
+viewPostnatalCareReport language site limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePostnatalCareReportData language site limitDate records
+            generatePostnatalCareReportData language site limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2916,8 +2917,9 @@ generatePostnatalCareReportData :
     -> Site
     -> NominalDate
     -> List PatientData
+    -> List PatientData
     -> MetricsResultsTableData
-generatePostnatalCareReportData language site limitDate records =
+generatePostnatalCareReportData language site limitDate scopeRecords records =
     let
         totalEncountersWithin24HoursOfBirth =
             List.filterMap
@@ -2948,58 +2950,70 @@ generatePostnatalCareReportData language site limitDate records =
                     )
                 |> List.length
 
-        birthDatesOfUpToDateWithImmunizationPatients =
-            List.filterMap
-                (\patientData ->
-                    Maybe.andThen
-                        (\wellChildData ->
-                            let
-                                vaccinationProgressDict =
-                                    List.concat wellChildData
-                                        |> List.map .immunisationData
-                                        |> Maybe.Extra.values
-                                        |> List.foldl
-                                            (\immunisationsDict accumDict ->
-                                                Dict.merge
-                                                    (\key value -> Dict.insert key value)
-                                                    (\key value1 value2 -> Dict.insert key (EverySet.union value1 value2))
-                                                    (\key value -> Dict.insert key value)
-                                                    immunisationsDict
-                                                    accumDict
-                                                    Dict.empty
-                                            )
-                                            Dict.empty
-                                        |> Dict.map (\_ value -> generateVaccinationProgressForVaccine value)
-
-                                futureVaccinations =
-                                    generateFutureVaccinationsData site
-                                        patientData.birthDate
-                                        vaccinationProgressDict
-                                        (allVaccineTypes site)
-
-                                closestDateForVaccination =
-                                    List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
-                                        |> List.sortWith Date.compare
-                                        |> List.head
-                            in
-                            if isNothing closestDateForVaccination then
-                                -- Patient has completed the course of all vaccinations.
-                                Just patientData.birthDate
-
-                            else
-                                Maybe.andThen
-                                    (\closestDate ->
-                                        if Date.compare closestDate limitDate == GT then
-                                            Just patientData.birthDate
-
-                                        else
-                                            Nothing
-                                    )
-                                    closestDateForVaccination
-                        )
-                        patientData.wellChildData
+        childrenVisitedInRange =
+            List.filter
+                (.wellChildData
+                    >> Maybe.map (List.any (not << List.isEmpty))
+                    >> Maybe.withDefault False
                 )
                 records
+                |> List.map .id
+                |> Set.fromList
+
+        birthDatesOfUpToDateWithImmunizationPatients =
+            List.filter (\patientData -> Set.member patientData.id childrenVisitedInRange) scopeRecords
+                |> List.filterMap
+                    (\patientData ->
+                        Maybe.andThen
+                            (\wellChildData ->
+                                let
+                                    vaccinationProgressDict =
+                                        List.concat wellChildData
+                                            |> List.map .immunisationData
+                                            |> Maybe.Extra.values
+                                            -- Doses given up to TO, whenever they were recorded.
+                                            |> List.map (Dict.map (\_ -> EverySet.filter (\date -> Date.compare date limitDate /= GT)))
+                                            |> List.foldl
+                                                (\immunisationsDict accumDict ->
+                                                    Dict.merge
+                                                        (\key value -> Dict.insert key value)
+                                                        (\key value1 value2 -> Dict.insert key (EverySet.union value1 value2))
+                                                        (\key value -> Dict.insert key value)
+                                                        immunisationsDict
+                                                        accumDict
+                                                        Dict.empty
+                                                )
+                                                Dict.empty
+                                            |> Dict.map (\_ value -> generateVaccinationProgressForVaccine value)
+
+                                    futureVaccinations =
+                                        generateFutureVaccinationsData site
+                                            patientData.birthDate
+                                            vaccinationProgressDict
+                                            (allVaccineTypes site)
+
+                                    closestDateForVaccination =
+                                        List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                            |> List.sortWith Date.compare
+                                            |> List.head
+                                in
+                                if isNothing closestDateForVaccination then
+                                    -- Patient has completed the course of all vaccinations.
+                                    Just patientData.birthDate
+
+                                else
+                                    Maybe.andThen
+                                        (\closestDate ->
+                                            if Date.compare closestDate limitDate == GT then
+                                                Just patientData.birthDate
+
+                                            else
+                                                Nothing
+                                        )
+                                        closestDateForVaccination
+                            )
+                            patientData.wellChildData
+                    )
 
         totalUpToDateWithImmunizationInRange =
             List.foldl

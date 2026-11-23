@@ -20119,6 +20119,23 @@ var $Gizra$elm_all_set$EverySet$union = F2(
 		return $Gizra$elm_all_set$EverySet$EverySet(
 			A2($pzp1997$assoc_list$AssocList$union, d1, d2));
 	});
+var $Gizra$elm_all_set$EverySet$filter = F2(
+	function (p, _v0) {
+		var d = _v0.a;
+		return $Gizra$elm_all_set$EverySet$EverySet(
+			A2(
+				$pzp1997$assoc_list$AssocList$filter,
+				F2(
+					function (k, _v1) {
+						return p(k);
+					}),
+				d));
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
 var $author$project$Gizra$NominalDate$diffWeeks = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, low, high);
@@ -20419,8 +20436,66 @@ var $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel = {$: 'Up
 var $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel = {$: 'UpToDateWithImmunization10To19MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
-var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
-	function (language, site, limitDate, records) {
+var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F5(
+	function (language, site, limitDate, scopeRecords, records) {
+		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				function (_v2) {
+					var birthDate = _v2.a;
+					var encounter = _v2.b;
+					return _Utils_eq(
+						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
+						$elm$core$Basics$EQ) || _Utils_eq(
+						A2(
+							$justinmimbs$date$Date$compare,
+							A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, birthDate),
+							encounter.startDate),
+						$elm$core$Basics$EQ);
+				},
+				A2(
+					$elm$core$List$filterMap,
+					function (patientData) {
+						return A2(
+							$elm$core$Maybe$andThen,
+							function (wellChildData) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										return _Utils_Tuple2(patientData.birthDate, firstEncounter);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											$elm$core$List$concat(wellChildData))));
+							},
+							patientData.wellChildData);
+					},
+					records)));
+		var childrenVisitedInRange = $elm$core$Set$fromList(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.id;
+				},
+				A2(
+					$elm$core$List$filter,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.wellChildData;
+						},
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Maybe$map(
+								$elm$core$List$any(
+									A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty))),
+							$elm$core$Maybe$withDefault(false))),
+					records)));
 		var birthDatesOfUpToDateWithImmunizationPatients = A2(
 			$elm$core$List$filterMap,
 			function (patientData) {
@@ -20459,13 +20534,24 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 											$pzp1997$assoc_list$AssocList$empty);
 									}),
 								$pzp1997$assoc_list$AssocList$empty,
-								$elm_community$maybe_extra$Maybe$Extra$values(
-									A2(
-										$elm$core$List$map,
-										function ($) {
-											return $.immunisationData;
-										},
-										$elm$core$List$concat(wellChildData)))));
+								A2(
+									$elm$core$List$map,
+									$pzp1997$assoc_list$AssocList$map(
+										function (_v0) {
+											return $Gizra$elm_all_set$EverySet$filter(
+												function (date) {
+													return !_Utils_eq(
+														A2($justinmimbs$date$Date$compare, date, limitDate),
+														$elm$core$Basics$GT);
+												});
+										}),
+									$elm_community$maybe_extra$Maybe$Extra$values(
+										A2(
+											$elm$core$List$map,
+											function ($) {
+												return $.immunisationData;
+											},
+											$elm$core$List$concat(wellChildData))))));
 						var futureVaccinations = A4(
 							$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
 							site,
@@ -20494,7 +20580,12 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 					},
 					patientData.wellChildData);
 			},
-			records);
+			A2(
+				$elm$core$List$filter,
+				function (patientData) {
+					return A2($elm$core$Set$member, patientData.id, childrenVisitedInRange);
+				},
+				scopeRecords));
 		var totalUpToDateWithImmunizationInRange = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -20527,44 +20618,6 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 				}),
 			{inRange7To11Weeks: 0, inRange11To15Weeks: 0, inRange10To19Months: 0, inRange19To24Months: 0, inRange15WeeksTo10Months: 0},
 			birthDatesOfUpToDateWithImmunizationPatients);
-		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				function (_v0) {
-					var birthDate = _v0.a;
-					var encounter = _v0.b;
-					return _Utils_eq(
-						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
-						$elm$core$Basics$EQ) || _Utils_eq(
-						A2(
-							$justinmimbs$date$Date$compare,
-							A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, birthDate),
-							encounter.startDate),
-						$elm$core$Basics$EQ);
-				},
-				A2(
-					$elm$core$List$filterMap,
-					function (patientData) {
-						return A2(
-							$elm$core$Maybe$andThen,
-							function (wellChildData) {
-								return A2(
-									$elm$core$Maybe$map,
-									function (firstEncounter) {
-										return _Utils_Tuple2(patientData.birthDate, firstEncounter);
-									},
-									$elm$core$List$head(
-										A2(
-											$elm$core$List$sortWith,
-											$author$project$Gizra$NominalDate$sortByDate(
-												function ($) {
-													return $.startDate;
-												}),
-											$elm$core$List$concat(wellChildData))));
-							},
-							patientData.wellChildData);
-					},
-					records)));
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -20591,11 +20644,11 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$viewPostnatalCareReport = F5(
-	function (language, site, limitDate, scopeLabel, records) {
+var $author$project$Pages$Reports$View$viewPostnatalCareReport = F6(
+	function (language, site, limitDate, scopeLabel, scopeRecords, recordsTillLimitDate) {
 		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var data = A4($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, records);
+		var data = A5($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, scopeRecords, recordsTillLimitDate);
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
@@ -21651,7 +21704,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 											case 'ReportPeripartum':
 												return A6($author$project$Pages$Reports$View$viewPeripartumReport, language, startDate, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPostnatalCare':
-												return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
+												return A6($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPrenatal':
 												return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 											case 'ReportPrenatalContacts':

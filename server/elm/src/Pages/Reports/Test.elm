@@ -26,6 +26,7 @@ import Date exposing (Unit(..))
 import EverySet
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import List.Extra
 import Pages.Reports.Model exposing (NutritionMetrics, NutritionReportData, PregnancyTrimester(..), emptyNutritionMetrics)
 import Pages.Reports.Utils
     exposing
@@ -689,7 +690,7 @@ dosesTo6Weeks birthDate =
 
 postnatalCare : List PatientData -> List (List String)
 postnatalCare =
-    generatePostnatalCareReportData English SiteRwanda toDate >> rowValues
+    (\records -> generatePostnatalCareReportData English SiteRwanda toDate records records) >> rowValues
 
 
 postnatalCareTest : Test
@@ -743,6 +744,355 @@ postnatalCareTest =
                     |> postnatalCare
                     |> List.drop 1
                     |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+        ]
+
+
+{-| The middle of the month of FROM and TO, a later FROM still.
+-}
+midMonth : NominalDate
+midMonth =
+    Date.fromCalendarDate 2026 Mar 16
+
+
+{-| The postnatal care rows as the report page builds them: every record of
+the scope, and the records filtered to the FROM-TO range, on that day.
+-}
+postnatalCareOn : NominalDate -> Site -> NominalDate -> List PatientData -> List (List String)
+postnatalCareOn currentDate site from records =
+    generatePostnatalCareReportData English site toDate records (filterRecordsByDateRange currentDate from toDate records)
+        |> rowValues
+
+
+{-| Rows 2-6 (up to date with immunization, by age at TO) for Rwanda, from
+the given FROM to TO, on the report date (after TO, so visits after TO
+exist in the data).
+-}
+upToDateRowsFrom : NominalDate -> List PatientData -> List (List String)
+upToDateRowsFrom from =
+    postnatalCareOn reportDate SiteRwanda from >> List.drop 1
+
+
+{-| The doses of the course given up to and including the date.
+-}
+courseUntil : NominalDate -> List ( VaccineType, List NominalDate ) -> List ( VaccineType, List NominalDate )
+courseUntil untilDate =
+    List.map (Tuple.mapSecond (List.filter (\date -> Date.compare date untilDate /= GT)))
+        >> List.filter (Tuple.second >> List.isEmpty >> not)
+
+
+{-| One well-child visit on each day the course gives a dose, up to and
+including the date given, each recording the doses of its own day.
+-}
+visitsGiving : List ( VaccineType, List NominalDate ) -> NominalDate -> List WellChildEncounterData
+visitsGiving course untilDate =
+    List.concatMap Tuple.second (courseUntil untilDate course)
+        |> List.Extra.uniqueBy Date.toRataDie
+        |> List.sortWith Date.compare
+        |> List.map
+            (\date ->
+                course
+                    |> List.filterMap
+                        (\( vaccine, dates ) ->
+                            if List.member date dates then
+                                Just ( vaccine, [ date ] )
+
+                            else
+                                Nothing
+                        )
+                    |> spv date
+            )
+
+
+{-| The course with the dose of the vaccine on that date left out.
+-}
+withoutDose : VaccineType -> NominalDate -> List ( VaccineType, List NominalDate ) -> List ( VaccineType, List NominalDate )
+withoutDose vaccine date =
+    List.map
+        (\( type_, dates ) ->
+            if type_ == vaccine then
+                ( type_, List.filter ((/=) date) dates )
+
+            else
+                ( type_, dates )
+        )
+
+
+{-| A child given every dose of `fullCourse` on time up to TO, at a visit on
+each dose day, plus the extra visits listed.
+-}
+onTimeChild : PersonId -> NominalDate -> List WellChildEncounterData -> PatientData
+onTimeChild id birthDate extraVisits =
+    childWithSpvs id birthDate (visitsGiving (fullCourse birthDate) toDate ++ extraVisits)
+
+
+{-| The child of the issue: born 21 January 2026, birth doses at the birth
+visit, 6-week doses on 4 March 2026. At TO (31 March) they are 9 weeks and
+6 days old, and their next doses are due at 10 weeks, on 1 April, so they
+are up to date in the 7-11 weeks row.
+-}
+issueChildBirthDate : NominalDate
+issueChildBirthDate =
+    Date.fromCalendarDate 2026 Jan 21
+
+
+{-| A child 30 weeks old at TO. Every dose up to the 14-week ones was given
+by 9 December 2025, before FROM, and the next (IPV 2 and MR 1) is due at 36
+weeks, after TO. Up to date, in the 15 weeks - 10 months row.
+-}
+thirtyWeeksBirthDate : NominalDate
+thirtyWeeksBirthDate =
+    bornDaysBeforeTo 210
+
+
+{-| A visit inside every range used here (FROM up to the middle of the
+month) that gave no vaccine: its immunisation data is Nothing.
+-}
+visitInRange : WellChildEncounterData
+visitInRange =
+    spv (Date.fromCalendarDate 2026 Mar 20) []
+
+
+postnatalCareLaterEntryTest : Test
+postnatalCareLaterEntryTest =
+    describe "generatePostnatalCareReportData with doses entered after TO"
+        [ test "doses given by TO but entered at a visit after TO count" <|
+            \_ ->
+                [ childWithSpvs 1
+                    thirtyWeeksBirthDate
+                    [ spv (Date.fromCalendarDate 2026 Apr 5) (courseUntil toDate (fullCourse thirtyWeeksBirthDate))
+                    , visitInRange
+                    ]
+                ]
+                    |> upToDateRowsFrom fromDate
+                    |> Expect.equal [ [ "0" ], [ "0" ], [ "1" ], [ "0" ], [ "0" ] ]
+        ]
+
+
+postnatalCareRangeTest : Test
+postnatalCareRangeTest =
+    describe "generatePostnatalCareReportData with FROM after the earlier doses"
+        [ describe "a child with a well-child visit inside the range is counted as up to date when every dose due by TO was given, including doses given before FROM"
+            [ test "the child of the issue, birth doses before FROM and 6-week doses inside the range" <|
+                \_ ->
+                    [ onTimeChild 1 issueChildBirthDate [] ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+            , test "every dose given before FROM, and the visit inside the range gave no vaccine" <|
+                \_ ->
+                    [ onTimeChild 1 thirtyWeeksBirthDate [ visitInRange ] ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "0" ], [ "0" ], [ "1" ], [ "0" ], [ "0" ] ]
+            , test "a visit on FROM and a visit on TO are both inside the range" <|
+                \_ ->
+                    [ onTimeChild 1 thirtyWeeksBirthDate [ spv fromDate [] ]
+                    , onTimeChild 2 thirtyWeeksBirthDate [ spv toDate [] ]
+                    ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "0" ], [ "0" ], [ "2" ], [ "0" ], [ "0" ] ]
+            , test "a dose due on TO and given on TO counts, with the birth doses before FROM" <|
+                \_ ->
+                    -- Born 70 days before TO: the 10-week doses fall due on TO
+                    -- and are given that day, so the next is due at 14 weeks.
+                    [ onTimeChild 1 (bornDaysBeforeTo 70) [] ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+            , test "doses dated before FROM but recorded at a visit inside the range count" <|
+                \_ ->
+                    -- The history of earlier doses is entered at the visit on
+                    -- 20 March, the only well-child visit the child has.
+                    [ childWithSpvs 1 issueChildBirthDate [ spv (Date.fromCalendarDate 2026 Mar 20) (courseUntil toDate (fullCourse issueChildBirthDate)) ] ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+            , test "the birth visit and the visit inside the range belong to different participations" <|
+                \_ ->
+                    let
+                        child =
+                            emptyPatient 1 issueChildBirthDate
+                    in
+                    [ { child | wellChildData = Just (List.map List.singleton (visitsGiving (fullCourse issueChildBirthDate) toDate)) } ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+            , test "Burundi: the child of the issue is counted too" <|
+                \_ ->
+                    [ onTimeChild 1 issueChildBirthDate [] ]
+                        |> postnatalCareOn reportDate SiteBurundi fromDate
+                        |> List.drop 1
+                        |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+            ]
+        , test "for that child, rows 2-6 give the same result whether FROM is the launch date or a later date such as the start of the month" <|
+            \_ ->
+                let
+                    records =
+                        [ -- Up to date, 7-11 weeks.
+                          onTimeChild 1 issueChildBirthDate [ visitInRange ]
+
+                        -- Up to date, 15 weeks - 10 months.
+                        , onTimeChild 2 thirtyWeeksBirthDate [ visitInRange ]
+
+                        -- Up to date, 10-19 months: 36-week doses given in
+                        -- November 2025, MR 2 due six months later.
+                        , onTimeChild 3 (bornDaysBeforeTo 380) [ visitInRange ]
+
+                        -- Behind, 7-11 weeks: only the birth doses, the
+                        -- 6-week ones were due on 4 March.
+                        , childWithSpvs 4 issueChildBirthDate (visitsGiving (fullCourse issueChildBirthDate) issueChildBirthDate ++ [ visitInRange ])
+                        ]
+
+                    expected =
+                        [ [ "1" ], [ "0" ], [ "1" ], [ "1" ], [ "0" ] ]
+                in
+                [ upToDateRowsFrom launchDate records
+                , upToDateRowsFrom fromDate records
+                , upToDateRowsFrom midMonth records
+
+                -- The default range, launch date to today, where today is TO.
+                , postnatalCareOn toDate SiteRwanda launchDate records |> List.drop 1
+                ]
+                    |> Expect.equal (List.repeat 4 expected)
+        , test "a child missing a dose that was due by TO is not counted as up to date, whatever FROM is" <|
+            \_ ->
+                let
+                    sixWeeks =
+                        Date.add Weeks 6 issueChildBirthDate
+
+                    records =
+                        [ -- The 6-week doses, due on 4 March inside the range,
+                          -- were never given.
+                          childWithSpvs 1 issueChildBirthDate (visitsGiving (fullCourse issueChildBirthDate) issueChildBirthDate ++ [ visitInRange ])
+
+                        -- BCG, due at birth before FROM, was never given.
+                        , childWithSpvs 2 issueChildBirthDate (visitsGiving (withoutDose VaccineBCG issueChildBirthDate (fullCourse issueChildBirthDate)) toDate ++ [ visitInRange ])
+
+                        -- Rotarix 1, due at 6 weeks, was never given; the rest
+                        -- of the 6-week doses were.
+                        , childWithSpvs 3 issueChildBirthDate (visitsGiving (withoutDose VaccineRotarix sixWeeks (fullCourse issueChildBirthDate)) toDate ++ [ visitInRange ])
+
+                        -- Rotarix 2, due at 10 weeks in November 2025, before
+                        -- FROM, was never given.
+                        , childWithSpvs 4 thirtyWeeksBirthDate (visitsGiving (withoutDose VaccineRotarix (Date.add Weeks 10 thirtyWeeksBirthDate) (fullCourse thirtyWeeksBirthDate)) toDate ++ [ visitInRange ])
+                        ]
+
+                    nobody =
+                        List.repeat 5 [ "0" ]
+                in
+                [ upToDateRowsFrom launchDate records
+                , upToDateRowsFrom fromDate records
+                , upToDateRowsFrom midMonth records
+                ]
+                    |> Expect.equal (List.repeat 3 nobody)
+        , test "a dose given after TO does not count towards being up to date at TO" <|
+            \_ ->
+                let
+                    -- Born 80 days before TO, on 10 January 2026: birth and
+                    -- 6-week doses on time, the 10-week doses were due on 21
+                    -- March but given on 5 April, at a visit after TO.
+                    birthDate =
+                        bornDaysBeforeTo 80
+
+                    tenWeeks =
+                        Date.add Weeks 10 birthDate
+
+                    lateDate =
+                        Date.fromCalendarDate 2026 Apr 5
+
+                    lateDoses =
+                        fullCourse birthDate
+                            |> List.filterMap
+                                (\( vaccine, dates ) ->
+                                    if List.member tenWeeks dates then
+                                        Just ( vaccine, [ lateDate ] )
+
+                                    else
+                                        Nothing
+                                )
+
+                    records =
+                        [ childWithSpvs 1 birthDate (visitsGiving (fullCourse birthDate) (Date.add Weeks 6 birthDate) ++ [ spv (Date.fromCalendarDate 2026 Mar 10) [], spv lateDate lateDoses ]) ]
+                in
+                [ upToDateRowsFrom launchDate records
+                , upToDateRowsFrom fromDate records
+                ]
+                    |> Expect.equal (List.repeat 2 (List.repeat 5 [ "0" ]))
+        , describe "a child with no well-child visit inside the range is not counted in rows 2-6"
+            [ test "children up to date at TO, none with a visit inside the range" <|
+                \_ ->
+                    let
+                        noData =
+                            emptyPatient 3 thirtyWeeksBirthDate
+
+                        noParticipation =
+                            emptyPatient 4 thirtyWeeksBirthDate
+
+                        noVisit =
+                            emptyPatient 5 thirtyWeeksBirthDate
+                    in
+                    [ -- Every visit before FROM, the last on 20 February.
+                      onTimeChild 1 thirtyWeeksBirthDate [ spv (Date.fromCalendarDate 2026 Feb 20) [] ]
+
+                    -- Visits before FROM and one after TO.
+                    , onTimeChild 2 thirtyWeeksBirthDate [ spv (Date.fromCalendarDate 2026 Apr 5) [] ]
+
+                    -- No well-child data at all, as an empty list of
+                    -- participations, and as a participation with no visits.
+                    , noData
+                    , { noParticipation | wellChildData = Just [] }
+                    , { noVisit | wellChildData = Just [ [] ] }
+                    ]
+                        |> upToDateRowsFrom fromDate
+                        |> Expect.equal (List.repeat 5 [ "0" ])
+            , test "a visit between the start of the month and its middle counts from the start of the month, not from its middle" <|
+                \_ ->
+                    let
+                        records =
+                            [ onTimeChild 1 thirtyWeeksBirthDate [ spv (Date.fromCalendarDate 2026 Mar 10) [] ] ]
+                    in
+                    ( upToDateRowsFrom fromDate records, upToDateRowsFrom midMonth records )
+                        |> Expect.equal ( [ [ "0" ], [ "0" ], [ "1" ], [ "0" ], [ "0" ] ], List.repeat 5 [ "0" ] )
+            ]
+        , test "the age row a child falls in is still their age at TO" <|
+            \_ ->
+                -- Every child is up to date, with doses before FROM, and is
+                -- in a different row (or none) at FROM than at TO.
+                [ -- 9 weeks 6 days at TO, 5 weeks at FROM.
+                  onTimeChild 1 issueChildBirthDate [ visitInRange ]
+
+                -- 11 weeks at TO, 6 weeks 5 days at FROM.
+                , onTimeChild 2 (Date.fromCalendarDate 2026 Jan 13) [ visitInRange ]
+
+                -- 15 weeks at TO, 10 weeks 5 days at FROM.
+                , onTimeChild 3 (Date.fromCalendarDate 2025 Dec 16) [ visitInRange ]
+
+                -- 10 months 16 days at TO, 9 months 14 days at FROM.
+                , onTimeChild 4 (Date.fromCalendarDate 2025 May 15) [ visitInRange ]
+
+                -- 19 months 16 days at TO, 18 months 14 days at FROM.
+                , onTimeChild 5 (Date.fromCalendarDate 2024 Aug 15) [ visitInRange ]
+
+                -- 24 months 16 days at TO, in no row; 23 months at FROM.
+                , onTimeChild 6 (Date.fromCalendarDate 2024 Mar 15) [ visitInRange ]
+                ]
+                    |> upToDateRowsFrom fromDate
+                    |> Expect.equal (List.repeat 5 [ "1" ])
+        , test "row 1 (visit within 24 hours of birth) still counts only visits inside the range" <|
+            \_ ->
+                let
+                    records =
+                        [ -- Seen on the day of birth, before FROM, then again
+                          -- inside the range.
+                          childWithSpvs 1 (Date.fromCalendarDate 2026 Feb 20) [ spv (Date.fromCalendarDate 2026 Feb 20) [], spv (Date.fromCalendarDate 2026 Mar 10) [] ]
+
+                        -- Born and seen the next day, inside the range.
+                        , childWithSpvs 2 (Date.fromCalendarDate 2026 Mar 5) [ spv (Date.fromCalendarDate 2026 Mar 6) [] ]
+
+                        -- Born on TO, seen the next day, after TO.
+                        , childWithSpvs 3 toDate [ spv (Date.fromCalendarDate 2026 Apr 1) [] ]
+                        ]
+
+                    rowOne from =
+                        postnatalCareOn reportDate SiteRwanda from records |> List.head
+                in
+                ( rowOne fromDate, rowOne launchDate )
+                    |> Expect.equal ( Just [ "1" ], Just [ "2" ] )
         ]
 
 
@@ -1227,6 +1577,8 @@ all =
         , incidenceTest
         , peripartumTest
         , periodWindowsTest
+        , postnatalCareLaterEntryTest
+        , postnatalCareRangeTest
         , postnatalCareTest
         , prevalenceTest
         , trimesterTest
