@@ -357,6 +357,16 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
       $this->assertEqual($stored, 0, "No village with $label is stored.");
     }
 
+    // Only unpublishing a published village skips the check, so one created
+    // unpublished is still refused.
+    try {
+      $this->drupalCreateNode(['status' => NODE_NOT_PUBLISHED] + $village_values('Unpublished village', ['field_sector' => 'Nyagasaga'] + $listed));
+      $this->fail('An unpublished village not on the location list was created.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Sector "Nyagasaga" is not on the location list under district "Gasabo".', 'An unpublished village not on the location list is refused.');
+    }
+
     // The node form shows the message on the level that is not found.
     $node = (object) $village_values('Village on the form', ['field_sector' => 'Nyagasaga'] + $listed);
     $form_state = [];

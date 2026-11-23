@@ -80,6 +80,25 @@ function hedley_chw_village_geo_value($node, $field_name) {
 }
 
 /**
+ * Whether a save turns a published village into an unpublished one.
+ *
+ * @param object $node
+ *   The village node being saved.
+ *
+ * @return bool
+ *   TRUE when the village was published and is saved unpublished.
+ */
+function hedley_chw_village_unpublishing($node) {
+  if (empty($node->nid) || !isset($node->status) || $node->status != NODE_NOT_PUBLISHED) {
+    return FALSE;
+  }
+
+  $original = !empty($node->original) ? $node->original : entity_load_unchanged('node', $node->nid);
+
+  return $original && $original->status == NODE_PUBLISHED;
+}
+
+/**
  * The first level of a village's address not on the location list.
  *
  * Case is ignored, as in the app; spaces around a name are not.
@@ -92,8 +111,8 @@ function hedley_chw_village_geo_value($node, $field_name) {
  *   to report.
  */
 function hedley_chw_village_address_error($node) {
-  // An unpublished village is out of use, so unpublishing one is never refused.
-  if (isset($node->status) && $node->status == NODE_NOT_PUBLISHED) {
+  // Unpublishing takes a village out of use, so it is never refused.
+  if (hedley_chw_village_unpublishing($node)) {
     return NULL;
   }
 
