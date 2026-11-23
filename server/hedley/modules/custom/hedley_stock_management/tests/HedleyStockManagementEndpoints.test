@@ -362,7 +362,7 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
     $form_state = [];
     hedley_chw_node_validate($node, [], $form_state);
     $errors = form_get_errors();
-    $this->assertEqual($errors['field_sector'], 'Sector "Nyagasaga" is not on the location list under district "Gasabo".', 'The village form shows the level that is not found.');
+    $this->assertEqual($errors['field_sector'], 'Sector &quot;Nyagasaga&quot; is not on the location list under district &quot;Gasabo&quot;.', 'The village form shows the level that is not found.');
     form_clear_error();
     drupal_get_messages('error');
 
@@ -384,7 +384,16 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
       $this->assertEqual($e->getMessage(), 'Sector "Nyagasaga" is not on the location list under district "Gasabo".', 'Editing a village not on the location list is refused.');
     }
 
+    // Unpublishing takes it out of use, so that is not refused.
+    variable_set('hedley_super_user_mode', 1);
     $old = node_load($old->nid, NULL, TRUE);
+    $old->status = NODE_NOT_PUBLISHED;
+    node_save($old);
+    $old = node_load($old->nid, NULL, TRUE);
+    $this->assertEqual($old->status, NODE_NOT_PUBLISHED, 'A village not on the location list can be unpublished.');
+    variable_del('hedley_super_user_mode');
+
+    $old->status = NODE_PUBLISHED;
     $old->field_sector[LANGUAGE_NONE][0]['value'] = 'Jali';
     node_save($old);
     $old = node_load($old->nid, NULL, TRUE);

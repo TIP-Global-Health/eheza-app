@@ -55,7 +55,7 @@ function hedley_chw_node_validate($node, $form, &$form_state) {
 
   $error = hedley_chw_village_address_error($node);
   if ($error) {
-    form_set_error($error['field'], $error['message']);
+    form_set_error($error['field'], check_plain($error['message']));
   }
 }
 
@@ -88,9 +88,15 @@ function hedley_chw_village_geo_value($node, $field_name) {
  *   The village node.
  *
  * @return array|null
- *   The level's 'field' and 'message', or NULL when there is none to report.
+ *   The level's 'field' and a plain-text 'message', or NULL when there is none
+ *   to report.
  */
 function hedley_chw_village_address_error($node) {
+  // An unpublished village is out of use, so unpublishing one is never refused.
+  if (isset($node->status) && $node->status == NODE_NOT_PUBLISHED) {
+    return NULL;
+  }
+
   $keys = hedley_general_geo_path_keys();
   if ($keys === NULL) {
     return NULL;
@@ -113,20 +119,14 @@ function hedley_chw_village_address_error($node) {
     $level = $instance ? $instance['label'] : $field_name;
 
     if (empty($keys[hedley_general_geo_path_key($path)])) {
-      $params = [
-        '@level' => $level,
-        '@name' => $value,
-      ];
-      $message = $parent
-        ? t('@level "@name" is not on the location list under @parent_level "@parent".', $params + [
-          '@parent_level' => $parent['level'],
-          '@parent' => $parent['name'],
-        ])
-        : t('@level "@name" is not on the location list.', $params);
+      $message = "$level \"$value\" is not on the location list";
+      if ($parent) {
+        $message .= " under {$parent['level']} \"{$parent['name']}\"";
+      }
 
       return [
         'field' => $field_name,
-        'message' => $message,
+        'message' => "$message.",
       ];
     }
 

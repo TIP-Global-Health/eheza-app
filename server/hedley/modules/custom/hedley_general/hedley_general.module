@@ -794,6 +794,9 @@ function hedley_general_geo_path_keys() {
     $site = variable_get('hedley_general_site_name', '');
     $file = empty($site) ? FALSE : hedley_general_geolocations_file($site);
     $handler = $file && is_readable($file) ? fopen($file, 'r') : FALSE;
+    if ($file && !$handler) {
+      watchdog('hedley_general', 'The location list @file cannot be read, so village addresses are not checked.', ['@file' => $file], WATCHDOG_WARNING);
+    }
 
     if ($handler) {
       $keys = [];
