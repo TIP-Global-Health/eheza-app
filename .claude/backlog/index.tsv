@@ -637,6 +637,7 @@ B-636	4	READY	LOW			65	Deploy: a `drush` step on Pantheon is retried after ANY f
 B-637	4	READY	LOW			65	Build / station tooling minors: `ddev client-install` cannot fail; the deploy skills leave the main tree off `develop`; 
 B-638	4	IMPLEMENTED	LOW	2576	2577	B-389	Village records: the save accepts an address that is not on the location list, so a CHW assigned there can register no n
 B-639	1	READY	LOW			68	Prenatal lab history: diabetes found by urine glucose for an earlier visit is stored on that visit, so no later visit re
+B-640	4	READY	LOW			69	Comment length check: a long comment added to a script without a file extension, or to a `.ts` file, passes CI
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
