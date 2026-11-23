@@ -1525,6 +1525,9 @@ villagesOnTheList =
                            )
                     )
 
+        noKirehe =
+            Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+
         villageFilledIn operation =
             case ( byimanaResident, byimanaId ) of
                 ( Just person, Just expectedId ) ->
@@ -1548,7 +1551,7 @@ villagesOnTheList =
                         |> Expect.equal (Just expectedId)
 
                 ( Nothing, _ ) ->
-                    Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+                    noKirehe
 
                 ( _, Nothing ) ->
                     Expect.fail "the list has no Byimana under Nyabuliba"
@@ -1569,7 +1572,7 @@ villagesOnTheList =
                             |> Expect.equal (Ok (Just "Byimana"))
 
                     Nothing ->
-                        Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+                        noKirehe
         , test "adding a family member to a person stored in BYIMANA fills in Byimana" <|
             \_ -> villageFilledIn (CreatePerson (Just (toEntityUuid "related-person")))
         , test "Gatete › Busebwa offers Busebwa, spelled in full" <|
