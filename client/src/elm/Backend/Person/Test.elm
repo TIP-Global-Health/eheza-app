@@ -1459,17 +1459,25 @@ storedAddressComparison =
         ]
 
 
+{-| Whether the address's places, from the province down, carry these names,
+compared without letter case. Fewer names than levels compare the levels above
+only.
+-}
+namedAs : List String -> Address -> Bool
+namedAs names address =
+    [ address.province, address.district, address.sector, address.cell, address.village ]
+        |> List.take (List.length names)
+        |> List.map (placeName >> String.toLower)
+        |> (==) (List.map String.toLower names)
+
+
 {-| The full address on the site's list with these names, from province to
-village, compared without letter case.
+village.
 -}
 addressNamed : Site -> List String -> Maybe Address
 addressNamed site names =
     addressesOn site
-        |> List.Extra.find
-            (\address ->
-                List.map (placeName >> String.toLower) [ address.province, address.district, address.sector, address.cell, address.village ]
-                    == List.map String.toLower names
-            )
+        |> List.Extra.find (namedAs names)
 
 
 {-| The names of the villages the list offers under a cell, given the names
@@ -1478,11 +1486,7 @@ from province to cell, sorted.
 villagesUnder : Site -> List String -> List String
 villagesUnder site names =
     addressesOn site
-        |> List.filter
-            (\address ->
-                List.map (placeName >> String.toLower) [ address.province, address.district, address.sector, address.cell ]
-                    == List.map String.toLower names
-            )
+        |> List.filter (namedAs names)
         |> List.map (.village >> placeName)
         |> List.sort
 
@@ -1504,8 +1508,8 @@ villagesOnTheList =
             addressNamed SiteRwanda (nyabuliba ++ [ "Byimana" ])
                 |> Maybe.map (.village >> placeId)
 
-        -- Stored as the 2023 import wrote it, in capitals. A listed
-        -- neighbour gives the rest of the person.
+        -- Stored in capitals, as the people living in Byimana are. A
+        -- listed neighbour gives the rest of the person.
         byimanaResident =
             addressNamed SiteRwanda (nyabuliba ++ [ "Kirehe" ])
                 |> Maybe.map
