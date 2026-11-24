@@ -2468,19 +2468,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                     (\assembledAfter ->
                                         Maybe.map
                                             (\( measurementId, measurement ) ->
-                                                let
-                                                    immunisationDate =
-                                                        Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
-
-                                                    asapImmunisationDate =
-                                                        Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
-
-                                                    value =
-                                                        measurement.value
-                                                in
                                                 [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
                                                     (Just measurementId)
-                                                    { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
+                                                    (Pages.WellChild.Activity.Utils.refreshNextVisitValue currentDate site assembledAfter measurement.value)
                                                     |> Backend.Model.MsgWellChildEncounter id
                                                     |> App.Model.MsgIndexedDb
                                                 ]
