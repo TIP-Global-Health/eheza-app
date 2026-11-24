@@ -3445,6 +3445,21 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
 }
 
 /**
+ * Tells whether FBF activities are shown at a group session.
+ *
+ * @param string $clinic_type
+ *   The group type, for example 'fbf' or 'pmtct'.
+ * @param \DateTime $start_date_obj
+ *   The session date.
+ *
+ * @return bool
+ *   TRUE at FBF and ACHI groups from the FBF launch date.
+ */
+function hedley_reports_fbf_activities_shown($clinic_type, DateTime $start_date_obj) {
+  return $start_date_obj >= new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE) && in_array($clinic_type, ['fbf', 'achi']);
+}
+
+/**
  * Lists the activities expected for a mother at a group session.
  *
  * @param object $person
@@ -3464,7 +3479,7 @@ function hedley_reports_nutrition_group_mother_expected_activities($person, arra
 
   // Lactation (and possibly Mother FBF) activity are shown
   // for sessions taking place at FBF and ACHI clinics.
-  if ($start_date_obj >= new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE) && in_array($clinic_type, ['fbf', 'achi'])) {
+  if (hedley_reports_fbf_activities_shown($clinic_type, $start_date_obj)) {
     $expected[] = 'lactation';
 
     // Mother FBF activity is shown if Lactation activity indicated
@@ -3594,7 +3609,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   }
 
   // Date on which 'Fbf' feature was launched.
-  $fbf_launch_date_obj = new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE);
+  $fbf_activities_shown = hedley_reports_fbf_activities_shown($clinic_type, $start_date_obj);
 
   // Processing measurements by participant type.
   $persons = node_load_multiple(array_keys($measurements_by_participant));
@@ -3673,7 +3688,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
 
       // Child FBF activity is shown for sessions taking
       // place at FBF and ACHI clinics.
-      if ($start_date_obj >= $fbf_launch_date_obj && in_array($clinic_type, ['fbf', 'achi'])) {
+      if ($fbf_activities_shown) {
         $expected[] = 'child_fbf';
       }
 
