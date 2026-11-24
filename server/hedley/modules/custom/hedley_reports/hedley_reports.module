@@ -17,6 +17,7 @@ define('HEDLEY_REPORTS_SCOPE_FULL', 'full');
 define('HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS', 'health_centers');
 
 const RDT_POSITIVE_VALUES = ['positive', 'positive-and-pregnant'];
+const HEDLEY_REPORTS_FBF_LAUNCH_DATE = '2020-06-15';
 
 /**
  * Implements hook_menu().
@@ -3443,6 +3444,43 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
 }
 
 /**
+ * Lists the activities expected for a mother at a group session.
+ *
+ * @param object $person
+ *   The mother's person node.
+ * @param array $measurements_by_type
+ *   The mother's measurements at the session, keyed by type.
+ * @param string $clinic_type
+ *   The group type, for example 'fbf' or 'pmtct'.
+ * @param \DateTime $start_date_obj
+ *   The session date.
+ *
+ * @return array
+ *   The expected activity types.
+ */
+function hedley_reports_nutrition_group_mother_expected_activities($person, array $measurements_by_type, $clinic_type, DateTime $start_date_obj) {
+  $expected = ['family_planning'];
+
+  // Lactation (and possibly Mother FBF) activity are shown
+  // for sessions taking place at FBF and ACHI clinics.
+  if ($start_date_obj >= new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE) && in_array($clinic_type, ['fbf', 'achi'])) {
+    $expected[] = 'lactation';
+
+    // Mother FBF activity is shown if Lactation activity indicated
+    // that mother is breastfeeding, and mother Ubudehe is 1 or 2.
+    if (!empty($measurements_by_type['lactation'])) {
+      $lactation_sign = $measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE][0]['value'];
+      $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'];
+      if ($lactation_sign == 'breastfeeding' && in_array($ubudehe, [1, 2])) {
+        $expected[] = 'mother_fbf';
+      }
+    }
+  }
+
+  return $expected;
+}
+
+/**
  * Generates completion data for a group nutrition encounter.
  *
  * Nutrition group encounter is done for adult+child pair, where for both
@@ -3552,8 +3590,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   }
 
   // Date on which 'Fbf' feature was launched.
-  $fbf_launch_date = '2020-06-15';
-  $fbf_launch_date_obj = new DateTime($fbf_launch_date);
+  $fbf_launch_date_obj = new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE);
 
   // Processing measurements by participant type.
   $persons = node_load_multiple(array_keys($measurements_by_participant));
@@ -3569,24 +3606,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     if ($person_id == $adult_id) {
       // We do not expect to see activities for caregiver.
       if ($is_mother) {
-        $expected = ['family_planning'];
-
-        // Lactation (and possibly Mother FBF) activity are shown
-        // for sessions taking place at FBF and ACHI clinics.
-        if ($start_date_obj >= $fbf_launch_date_obj && in_array($clinic_type, ['fbf', 'achi'])) {
-          $expected[] = 'lactation';
-
-          // Mother FBF activity is shown if Lactation activity indicated
-          // that mother is breastfeeding, and mother Ubudehe is 1 or 2.
-          if (!empty($measurements_by_type['lactation'])) {
-            $lactation_sign = $measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE][0]['value'];
-            $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'];
-            if ($lactation_sign == 'breastfeeding' && in_array($ubudehe, [1, 2])) {
-              $expected[] = 'mother_fbf';
-            }
-          }
-        }
-
+        $expected = hedley_reports_nutrition_group_mother_expected_activities($person, $measurements_by_type, $clinic_type, $start_date_obj);
         $return['mother'] = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping_mother);
       }
     }
