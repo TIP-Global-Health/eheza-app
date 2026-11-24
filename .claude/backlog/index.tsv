@@ -355,7 +355,7 @@ B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip 
 B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
 B-356	3	READY	MED-LOW			31	Lab results pane (Prenatal + NCD progress report): a urine dipstick or lipid panel still waiting for results shows a red
 B-357	4	READY	LOW			31	Lab results pane: a "known positive" answer is always dated TODAY and so always ranked newest, and in the history view i
-B-358	3	READY	MED			31	Child Scoreboard progress report: the Immunization History pane is EMPTY for a child with no Well Child record — the pan
+B-358	3	IMPLEMENTED	MED			31	Child Scoreboard progress report: the Immunization History pane is EMPTY for a child with no Well Child record — the pan
 B-359	3	IMPLEMENTED	MED-LOW	2250	2251	31	Acute Illness progress report: every "simple cold and cough" visit says "Administered lemon juice or honey", whatever wa
 B-360	4	READY	LOW			31	Acute Illness progress report, physical exam pane: earlier readings are judged against the patient's age TODAY — a respi
 B-361	3	READY	MED-LOW			31	Antenatal progress report opened from the Patient Record: whether the viewed encounter counts as a nurse or a CHW visit 
@@ -640,8 +640,9 @@ B-639	1	CLOSED	LOW			68	Prenatal lab history: diabetes found by urine glucose fo
 B-640	4	READY	LOW			69	Comment length check: a long comment added to a script without a file extension, or to a `.ts` file, passes CI
 B-641	4	READY	LOW			70	Statistical Queries › ANC Contacts: the "attended ANC contact within 1st trimester" row leaves out every woman seen more
 B-642	2	PARKED	MED-LOW			71	Acute Illness and every other encounter record: a change saved while a sync cycle is between its upload and its download
-B-643	4	READY	LOW			72	Completion report › Nutrition Group: Mother FBF is expected only for Ubudehe 1 or 2, a condition the app dropped in Sept
-B-644	4	READY	LOW			72	Completion report › Acute Illness: COVID testing is not expected for fever, a non-positive malaria test and two general 
+B-643	4	IMPLEMENTED	LOW			72	Completion report › Nutrition Group: Mother FBF is expected only for Ubudehe 1 or 2, a condition the app dropped in Sept
+B-644	4	IMPLEMENTED	LOW			72	Completion report › Acute Illness: COVID testing is not expected for fever, a non-positive malaria test and two general 
+B-645	4	READY	LOW		2586	B-643	Completion report › Nutrition Group: mothers at ACHI groups are expected to do Family Planning and Lactation, which the 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
