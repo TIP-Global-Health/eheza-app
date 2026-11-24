@@ -2893,8 +2893,8 @@ test.describe('Admin Reports', () => {
       // Mother activities.
       assertDelta('Family Planning', 1, 1);
       assertDelta('Lactation', 1, 1);
-      // Mother FBF: conditional on breastfeeding AND ubudehe 1/2 — not triggered.
-      assertDelta('Mother FBF', 0, 0);
+      // Mother FBF: expected for a breastfeeding mother, whatever her Ubudehe.
+      assertDelta('Mother FBF', 1, 1);
 
       // Child: always expected.
       assertDelta('Height', 1, 1);
