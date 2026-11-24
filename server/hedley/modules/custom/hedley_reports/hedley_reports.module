@@ -3467,11 +3467,14 @@ function hedley_reports_nutrition_group_mother_expected_activities($person, arra
     $expected[] = 'lactation';
 
     // Mother FBF activity is shown if Lactation activity indicated
-    // that mother is breastfeeding, and mother Ubudehe is 1 or 2.
+    // that mother is breastfeeding. Before release 1.13.0, the mother's
+    // Ubudehe also had to be 1 or 2.
     if (!empty($measurements_by_type['lactation'])) {
-      $lactation_sign = $measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE][0]['value'];
-      $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'];
-      if ($lactation_sign == 'breastfeeding' && in_array($ubudehe, [1, 2])) {
+      $lactation_signs = array_column($measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE], 'value');
+      $ubudehe_cutoff = new DateTime('2024-10-13');
+      $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'] ?? NULL;
+      $entitled = $start_date_obj >= $ubudehe_cutoff || in_array($ubudehe, [1, 2]);
+      if (in_array('breastfeeding', $lactation_signs) && $entitled) {
         $expected[] = 'mother_fbf';
       }
     }
@@ -4016,11 +4019,11 @@ function hedley_reports_acute_illness_add_expected_covid_testing(array $encounte
 
   $total_symptoms_respiratory = hedley_reports_count_acute_illness_symptoms_respiratory($measurements_by_type['symptoms_respiratory']);
   $total_symptoms_gi = hedley_reports_count_acute_illness_symptoms_gi($measurements_by_type['symptoms_gi']);
+  $total_symptoms_general = hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
   if ($total_symptoms_gi > 0) {
     $symptoms_indicate_covid = $total_symptoms_respiratory > 0;
   }
   else {
-    $total_symptoms_general = hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
     $symptoms_indicate_covid = ($total_symptoms_general + $total_symptoms_respiratory + $total_symptoms_gi) > 1;
   }
 
