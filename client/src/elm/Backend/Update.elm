@@ -2459,7 +2459,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault []
 
-                processWellChildImmunisationRevision encounterId after =
+                refreshWellChildNextVisitOnRevision encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , refreshWellChildNextVisit encounterId newModel
+                    )
+
+                refreshWellChildNextVisit encounterId after =
                     Maybe.andThen
                         (\id ->
                             Pages.WellChild.Encounter.Utils.generateAssembledData site id after
@@ -3388,128 +3398,48 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                             extraMsgs =
                                 processWellChildECDRevision data.encounterId newModel
+                                    ++ refreshWellChildNextVisit data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
                         , extraMsgs
                         )
+
+                    [ WellChildAlbendazoleRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
+
+                    [ WellChildMebendezoleRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
+
+                    [ WellChildVitaminARevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildBCGImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildDTPImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildHPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildIPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildMRImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildOPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildPCV13ImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildRotarixImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ NCDRandomBloodSugarTestRevision _ data ] ->
                         let

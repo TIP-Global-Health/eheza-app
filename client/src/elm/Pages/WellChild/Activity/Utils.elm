@@ -2166,9 +2166,14 @@ current measurements, after one of them was corrected.
 -}
 refreshNextVisitValue : NominalDate -> Site -> AssembledData -> NextVisitValue -> NextVisitValue
 refreshNextVisitValue currentDate site assembled value =
+    let
+        ( immunisationDate, pediatricVisitDate ) =
+            generateNextVisitDates currentDate site assembled
+    in
     { value
-        | immunisationDate = generateNextDateForImmunisationVisit currentDate site assembled
+        | immunisationDate = immunisationDate
         , asapImmunisationDate = generateASAPImmunisationDate currentDate site assembled
+        , pediatricVisitDate = pediatricVisitDate
     }
 
 
