@@ -530,6 +530,7 @@ flag simply does not appear.
   (macrocephaly), 48 cm normal. Beyond ±3 a `div.ui.active.modal.danger-signs-popup` warns, and the
   reading saves only on its CONTINUE. The warning is kept on the visit (`field_encounter_warnings`;
   on the device the `well_child_encounter` row's `encounter_warnings`), not on the measurement.
+- Nurse ECD at 5 weeks: 2 yes/no questions; at 19 months 26, all No gives the "refer the child to a specialist" popup.
 - Nurse ECD at 24 months: 31 yes/no questions. All No gives an encounter-page popup ("Child is behind
   on ECD milestones…", CONTINUE) and the warning `warning-ecd-milestone-refer-to-specialist`.
 - Report Immunization History (Well Child, Child Scorecard, Patient Record): `.pane.vaccination-history .entry.vaccination` with `.cell.name` (full names,
@@ -558,6 +559,15 @@ flag simply does not appear.
 - Age-chart fixtures: register with the exact birth date by hand (`h.common.setDate` on `.date-input`); the helpers take
   whole months only. WHO −2 SD values come from `client/src/assets/z-score/*anthro.txt` (M·(1+L·S·z)^(1/L)).
 - Well Child Next Visit shows the earlier of the ECD date and the medication date. From 6 months Vitamin A puts the medication date six months on, so the ECD date shows only where it comes first (the 15-month rung).
+- The ECD date follows the answers only at 5 weeks, 13 weeks and after 4 years: born 38 days ago, all Yes gives birth + 14 weeks, one No birth + 6 weeks.
+  A medication answer alone never moves the date (given or not, today + 6 months). It moves only when another medicine was given at an earlier visit under 6 months ago:
+  then "not given" makes that dose + 6 months the date. Fixture: 19 months, earlier visit 122 days back (page clock) with Vitamin A given and Mebendazole No.
+- Next Visit form: `.ui.form.next-visit .date` (immunisation, then pediatric). Report pane `.pane.next-appointment .entry.next-appointment`. Server `well_child_next_visit`:
+  `field_pediatric_visit_date`, `field_immunisation_date`, `field_asap_immunisation_date`; each save is a row in `field_revision_field_pediatric_visit_date`.
+- Well Child Medication tabs: Mebendazole `icon-mebendezole`, Vitamin A `icon-treatment-review`, Albendazole `icon-albendazole`; No reveals Out of Stock first. Rwanda: Albendazole 6–12 years only.
+- Immunisation correction at 5 weeks: OPV "will receive today?" No needs a reason (Out of Stock first); it moves the next immunisation date from today + 28 days to the 6-week date. Saving returns to the Overview tab.
+- An earlier Well Child visit left open on a shifted page clock does not block today's: Standard Pediatric Visit Encounter starts a new visit, and after a reload reopens today's open one.
+- `completeDangerSigns`'s default respiratory rate (20) brings the "signs of acute illness" warning for a 5-week and a 19-month child; the helper presses Cancel.
 - `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit; `h.common.registerChild(page, 'Well Child Visit', 'well-child', …)` stops on the participant page. To stop on the
   participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),

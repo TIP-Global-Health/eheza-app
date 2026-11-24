@@ -1103,3 +1103,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the first posted report said the Child Scorecard tab marked the no-dose child behind every month; only the first child's tab was read (PR #2585).
 - **Wrong conclusion:** a reading from one fixture holds for another.
 - **Rule:** the same pit. Before posting, tie every sentence to a log line of the fixture it names; replace with `--update` when one slips through.
+
+## Concatenated body files that declare the same `const` (met again)
+
+- **Symptom:** a recorded test chaining the visit body and the correction body failed at once on `nv`, leaving a 0.2 s video (PR #2587).
+- **Wrong conclusion:** none; the video was deleted and the test re-run.
+- **Rule:** the same pit. Wrap every body file after the first in `{ … }` before chaining it.
+
+## Reading many same-class yes/no answers with `qa.form()`
+
+- **Symptom:** after an ECD fill with the first answer No, `qa.form()` logged a single answer "Yes" (PR #2587).
+- **Wrong conclusion:** the No did not take. The ECD questions all share the class `form-input yes-no`, so `qa.form()` keeps only the last one.
+- **Rule:** for forms whose questions carry no name class (ECD), read the stored record (`well_child_ecd` `ecd_signs` in `shards`) or the screenshot.
