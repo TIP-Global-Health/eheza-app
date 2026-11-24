@@ -640,6 +640,8 @@ B-639	1	READY	LOW			68	Prenatal lab history: diabetes found by urine glucose for
 B-640	4	READY	LOW			69	Comment length check: a long comment added to a script without a file extension, or to a `.ts` file, passes CI
 B-641	4	READY	LOW			70	Statistical Queries › ANC Contacts: the "attended ANC contact within 1st trimester" row leaves out every woman seen more
 B-642	2	READY	MED-LOW			71	Acute Illness and every other encounter record: a change saved while a sync cycle is between its upload and its download
+B-643	4	READY	LOW			72	Completion report › Nutrition Group: Mother FBF is expected only for Ubudehe 1 or 2, a condition the app dropped in Sept
+B-644	4	READY	LOW			72	Completion report › Acute Illness: COVID testing is not expected for fever, a non-positive malaria test and two general 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
