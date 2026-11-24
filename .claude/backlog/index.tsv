@@ -636,7 +636,7 @@ B-635	4	READY	LOW			65	Resilience messages: once read, the Introduction and End-
 B-636	4	READY	LOW			65	Deploy: a `drush` step on Pantheon is retried after ANY failure, so an update hook that fails part-way is run from the s
 B-637	4	READY	LOW			65	Build / station tooling minors: `ddev client-install` cannot fail; the deploy skills leave the main tree off `develop`; 
 B-638	4	IMPLEMENTED	LOW	2576	2577	B-389	Village records: the save accepts an address that is not on the location list, so a CHW assigned there can register no n
-B-639	1	READY	LOW			68	Prenatal lab history: diabetes found by urine glucose for an earlier visit is stored on that visit, so no later visit re
+B-639	1	CLOSED	LOW			68	Prenatal lab history: diabetes found by urine glucose for an earlier visit is stored on that visit, so no later visit re
 B-640	4	READY	LOW			69	Comment length check: a long comment added to a script without a file extension, or to a `.ts` file, passes CI
 B-641	4	READY	LOW			70	Statistical Queries › ANC Contacts: the "attended ANC contact within 1st trimester" row leaves out every woman seen more
 B-642	2	READY	MED-LOW			71	Acute Illness and every other encounter record: a change saved while a sync cycle is between its upload and its download
