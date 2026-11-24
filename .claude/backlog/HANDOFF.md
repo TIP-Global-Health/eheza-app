@@ -10,6 +10,8 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-12-19 (rerun the recurrence query in the entry on ihangane + vhw; none found 2026-11-19; user 2026-11-19: "keep monitoring for another 30 days") · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
+🅿 **B-642 PARKED by the user 2026-11-24 (verbatim: "Park it, with the sizing as the reason")** — sized on ihangane.live: 8 closed Acute Illness encounters lost a stored diagnosis, 0 by the same user (B-524 shape). Reopen trigger: B-499's second pass finding same-device losses on fixed builds. Do not re-pitch.
+
 ⛔ **B-639 CLOSED by the user 2026-11-24 (verbatim: "close it")** — urine-glucose diabetes from lab history stays on the earlier visit, as B-622's "as today" criterion allows; fix sized medium for near-zero cases. Do not re-pitch; now a declined class in `coverage.md`. Tier 1 READY is EMPTY.
 
 ✅ **Merged 2026-11-23 ≈afternoon (user: "merge all 4, per the plan you presented"), merge commits, fix and `-tests` branches deleted:** #2575 `a730a4dfb` (B-389 part a, issue #2574), then #2577 and #2579 retargeted to develop: #2577 `027eee1d8` (B-638, issue #2576), #2579 `6a95e70a9` (B-631, issue #2578); #2581 `9b773fd71` (Drupal core 7.107 → 7.109, issue #2580; `user_update_7021` runs in the deploy's `updb`, authmap empty on all four sites). No QA on any (user). Issues stay open until the release sweep.
