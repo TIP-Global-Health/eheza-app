@@ -266,6 +266,8 @@ flag simply does not appear.
   "Success…" → CLOSE. The NCD report has the button as soon as a visit starts (Reports tab → Progress Report).
 - The dialog is `.modal.send-via-whatsapp`; the number field `input.phone-number` beside a country `select`.
   Section checkboxes: click the `input` inside `.ui.checkbox`; it covers the label.
+- With no phone on the profile the dialog goes from consent straight to the number. After the sections step the page behind the confirmation shows only
+  the person details and the ticked panes. The screenshot step logs 404s for `/images/…` and fonts, on develop too.
 - Send queues the report in IndexedDB `whatsAppUploads` (`phone_number` as sent, with country code);
   after upload it is a server `whatsapp_record` node (`field_phone_number`, `field_person`).
 - A person's phone is `field_phone_number`; set with drush (`entity_metadata_wrapper`), it reached the
@@ -530,6 +532,9 @@ flag simply does not appear.
   on the device the `well_child_encounter` row's `encounter_warnings`), not on the measurement.
 - Nurse ECD at 24 months: 31 yes/no questions. All No gives an encounter-page popup ("Child is behind
   on ECD milestones…", CONTINUE) and the warning `warning-ecd-milestone-refer-to-specialist`.
+- Report Immunization History (Well Child, Child Scorecard, Patient Record): `.pane.vaccination-history .entry.vaccination` with `.cell.name` (full names,
+  "Oral Polio Vaccine (OPV)"), `.cell.date p`, `.cell.next-due`, `.cell.status`. A child with any Well Child or Child Scorecard record gets one row per vaccine, MR first and BCG last;
+  a vaccine with no dose has an empty date. Tabs `.ui.segment.tabs button`: Standard Pediatric Report / Child Scorecard (NCDA scorecard, immunization row V/X per month).
 - Well Child progress report (`#reports-tab`): Active Diagnosis lists the visit warnings as
   `.entry.diagnosis` — "Microcephaly ONGOING 14/10/2026", "Missed ECD Milestone - 24 Mo …" — or
   "No matches found". REVIEW PRIOR DIAGNOSIS swaps in the Prior Diagnosis pane (`.pane.diagnosis button`); its back arrow
@@ -596,6 +601,8 @@ flag simply does not appear.
   minute. Reach the visit through its participant page.
 - Child Scorecard offers Vaccination History only after NCDA is saved
   (`h.childScoreboard.completeNCDA`), and only while the history shows the child behind.
+- Saving Vaccination History's last tab opens the progress report. An earlier dose is entered with Yes, `h.common.setDate(page, date, '.ui.form.vaccination .form-input.date')`,
+  then `.update.actions` Save; the tab then asks about the next dose. The participant page's Child Scorecard Encounter reopens today's open visit (wait ~5 s first).
 - **NCDA Antenatal Care step with recorded visits** needs a child linked to a pregnancy (`field_newborn`) that has prenatal
   encounters. CHW at Akanduga: register the mother, First Antenatal Visit with Pregnancy Dating only, leave; sync, set the
   encounter's `field_scheduled_date` value and value2 to a past day (ends it), sync, reload; Subsequent Antenatal is offered

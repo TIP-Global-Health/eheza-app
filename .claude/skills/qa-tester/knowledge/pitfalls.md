@@ -1091,3 +1091,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `(?!\d|[A-Z])` after "Qa2571PN" matched nothing: the row runs on as "Qa2571PNDOB:" (PR #2571, after-repair video re-recorded).
 - **Wrong conclusion:** the person did not download.
 - **Rule:** match the row by its name element's exact text, `filter({ has: page.getByText('E2ETest ' + who, { exact: true }) })`.
+
+## Matching Immunization History rows by the vaccine's short name
+
+- **Symptom:** test 1's check "BCG row lists 05/02/2026" failed with `undefined`; the logged rows held the right dates (PR #2585, re-recorded).
+- **Wrong conclusion:** the pane does not list the dose.
+- **Rule:** the report's rows use full names ("BCG Bacilius Calmette - Guérin Vaccine (BCG)", "Oral Polio Vaccine (OPV)"), unlike the form's tabs ("BCG", "OPV"). Match with `includes('(BCG)')`, or read the logged rows before writing the check.
+
+## A "not covered" line that states behaviour nobody ran (met again)
+
+- **Symptom:** the first posted report said the Child Scorecard tab marked the no-dose child behind every month; only the first child's tab was read (PR #2585).
+- **Wrong conclusion:** a reading from one fixture holds for another.
+- **Rule:** the same pit. Before posting, tie every sentence to a log line of the fixture it names; replace with `--update` when one slips through.
