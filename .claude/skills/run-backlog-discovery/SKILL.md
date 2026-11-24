@@ -40,7 +40,7 @@ For each re-swept area add a new coverage row with this round, and change the ol
 area to `↑ R<n>`.
 
 **The round cap does not apply at night.** The launcher keeps the dry-stop: it pauses itself after
-three rounds that add no item.
+five rounds that add no item.
 
 **Scouts audit `develop`.** A scout worktree can start from `main`; name the `develop` commit in each
 brief and have the scout check it out first.

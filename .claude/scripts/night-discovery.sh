@@ -21,7 +21,7 @@ MODEL="${NIGHT_DISCOVERY_MODEL:-claude-fable-5-2}"
 SCOPE="Fable"            # The weekly row to read, by its model label.
 END_HOUR=7               # No round may still be running after this hour.
 SESSION_MAX=90           # Five-hour meter: a round must end below this.
-DRY_STOP_AFTER=3         # Consecutive rounds with no new item.
+DRY_STOP_AFTER=5        # Consecutive rounds with no new item.
 FIRST_ROUND_MINUTES=60   # Assumed length until a round has been measured.
 FIRST_ROUND_SESSION=40   # Assumed session cost until one has been measured.
 
