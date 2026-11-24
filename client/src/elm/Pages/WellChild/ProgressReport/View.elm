@@ -65,7 +65,9 @@ import Measurement.Utils
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , generateVaccinationProgressDictByChildScoreboard
+        , generateVaccinationProgressDictByWellChild
         , getPreviousMeasurements
+        , mergeVaccinationProgressDicts
         , resolveChildANCPregnancyData
         )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
@@ -357,7 +359,7 @@ viewTabs language setActiveTabMsg activeTab =
         |> div [ class "ui segment tabs" ]
 
 
-assembleProgresReportData site childId db =
+assembleProgresReportData site ( childId, child ) db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -387,19 +389,11 @@ assembleProgresReportData site childId db =
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.withDefault Dict.empty
 
-        -- A child with no Well Child encounter has the doses recorded at
-        -- Child Scoreboard encounters. Well Child data still loading shows none.
+        -- Doses recorded at every Well Child and Child Scoreboard encounter.
         vaccinationProgress =
-            case maybeAssembled of
-                Just assembled ->
-                    assembled.vaccinationProgress
-
-                Nothing ->
-                    if List.isEmpty wellChildEncounters then
-                        generateVaccinationProgressDictByChildScoreboard site db childId
-
-                    else
-                        Dict.empty
+            mergeVaccinationProgressDicts
+                (generateVaccinationProgressDictByWellChild site child db childId)
+                (generateVaccinationProgressDictByChildScoreboard site db childId)
     in
     { maybeAssembled = maybeAssembled
     , expectedSessions = expectedSessions
@@ -445,7 +439,7 @@ viewContent :
 viewContent language currentDate zscores site initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
-            assembleProgresReportData site childId db
+            assembleProgresReportData site ( childId, child ) db
 
         individualWellChildMeasurements =
             getPreviousMeasurements reportData.individualWellChildMeasurementsWithDates
@@ -1587,7 +1581,7 @@ viewNCDAScorecard :
 viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     let
         reportData =
-            assembleProgresReportData site childId db
+            assembleProgresReportData site ( childId, child ) db
 
         groupNCDAs =
             Dict.values reportData.groupNutritionMeasurements.ncda

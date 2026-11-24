@@ -814,8 +814,8 @@ ecdWarningEntriesTests =
         ]
 
 
-{-| Immunization History and the NCDA scorecard read the same doses. A child
-with no Well Child encounter has the doses recorded at Child Scoreboard visits.
+{-| Immunization History and the NCDA scorecard read the same doses: those
+recorded at every Well Child and Child Scoreboard encounter of the child.
 -}
 vaccinationProgressTests : Test
 vaccinationProgressTests =
@@ -823,33 +823,50 @@ vaccinationProgressTests =
         childId =
             toEntityUuid "child"
 
-        participantId =
-            toEntityUuid "participant"
+        reportChild =
+            testChild (Date.fromCalendarDate 2024 Time.Mar 1)
 
-        encounterId =
-            toEntityUuid "encounter"
+        healthCenterId =
+            toEntityUuid "health-center"
+
+        scoreboardParticipantId =
+            toEntityUuid "scoreboard-participant"
+
+        scoreboardEncounterId =
+            toEntityUuid "scoreboard-encounter"
+
+        wellChildParticipantId =
+            toEntityUuid "well-child-participant"
+
+        wellChildEncounterId =
+            toEntityUuid "well-child-encounter"
 
         bcgDate =
             Date.fromCalendarDate 2024 Time.Mar 4
 
-        measurements =
+        opvDate =
+            Date.fromCalendarDate 2024 Time.Apr 12
+
+        dose encounterId date =
+            Just
+                ( toEntityUuid "dose"
+                , { dateMeasured = date
+                  , nurse = Nothing
+                  , healthCenter = Nothing
+                  , participantId = childId
+                  , deleted = False
+                  , encounterId = Just encounterId
+                  , value =
+                        { administeredDoses = EverySet.singleton Backend.Measurement.Model.VaccineDoseFirst
+                        , administrationDates = EverySet.singleton date
+                        , administrationNote = Backend.Measurement.Model.AdministeredToday
+                        }
+                  }
+                )
+
+        scoreboardMeasurements =
             { ncda = Nothing
-            , bcgImmunisation =
-                Just
-                    ( toEntityUuid "bcg"
-                    , { dateMeasured = bcgDate
-                      , nurse = Nothing
-                      , healthCenter = Nothing
-                      , participantId = childId
-                      , deleted = False
-                      , encounterId = Just encounterId
-                      , value =
-                            { administeredDoses = EverySet.singleton Backend.Measurement.Model.VaccineDoseFirst
-                            , administrationDates = EverySet.singleton bcgDate
-                            , administrationNote = Backend.Measurement.Model.AdministeredToday
-                            }
-                      }
-                    )
+            , bcgImmunisation = dose scoreboardEncounterId bcgDate
             , dtpImmunisation = Nothing
             , dtpStandaloneImmunisation = Nothing
             , ipvImmunisation = Nothing
@@ -859,35 +876,68 @@ vaccinationProgressTests =
             , rotarixImmunisation = Nothing
             }
 
+        participant date encounterType =
+            Backend.IndividualEncounterParticipant.Model.emptyIndividualEncounterParticipant date childId encounterType healthCenterId
+
         scoreboardOnlyDb : ModelIndexedDb
         scoreboardOnlyDb =
             { emptyModelIndexedDb
                 | individualParticipantsByPerson =
                     Dict.singleton childId
                         (Success <|
-                            Dict.singleton participantId
-                                (Backend.IndividualEncounterParticipant.Model.emptyIndividualEncounterParticipant bcgDate
-                                    childId
-                                    Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                                    (toEntityUuid "health-center")
-                                )
+                            Dict.singleton scoreboardParticipantId
+                                (participant bcgDate Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter)
                         )
                 , childScoreboardEncountersByParticipant =
-                    Dict.singleton participantId
-                        (Success <| Dict.singleton encounterId (emptyChildScoreboardEncounter participantId bcgDate Nothing))
+                    Dict.singleton scoreboardParticipantId
+                        (Success <| Dict.singleton scoreboardEncounterId (emptyChildScoreboardEncounter scoreboardParticipantId bcgDate Nothing))
                 , childScoreboardMeasurements =
-                    Dict.singleton encounterId (Success measurements)
+                    Dict.singleton scoreboardEncounterId (Success scoreboardMeasurements)
             }
+
+        bothProgrammesDb : ModelIndexedDb
+        bothProgrammesDb =
+            { scoreboardOnlyDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.fromList
+                                [ ( scoreboardParticipantId
+                                  , participant bcgDate Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                                  )
+                                , ( wellChildParticipantId
+                                  , participant opvDate Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                                  )
+                                ]
+                        )
+                , wellChildEncountersByParticipant =
+                    Dict.singleton wellChildParticipantId
+                        (Success <| Dict.singleton wellChildEncounterId (emptyWellChildEncounter wellChildParticipantId opvDate PediatricCare Nothing))
+                , wellChildMeasurements =
+                    Dict.singleton wellChildEncounterId
+                        (Success { emptyWellChildMeasurements | opvImmunisation = dose wellChildEncounterId opvDate })
+            }
+
+        dosesOf vaccineType db =
+            (assembleProgresReportData SiteRwanda ( childId, reportChild ) db).vaccinationProgress
+                |> Dict.get vaccineType
+                |> Maybe.map Dict.toList
     in
     describe "Vaccinations shown on the report"
         [ test "a child seen only at Child Scoreboard has the BCG dose recorded there" <|
             \_ ->
-                (assembleProgresReportData SiteRwanda childId scoreboardOnlyDb).vaccinationProgress
-                    |> Dict.get Backend.Measurement.Model.VaccineBCG
-                    |> Maybe.map Dict.toList
+                dosesOf Backend.Measurement.Model.VaccineBCG scoreboardOnlyDb
                     |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, bcgDate ) ])
+        , test "a child seen at both programmes has the Child Scoreboard BCG dose" <|
+            \_ ->
+                dosesOf Backend.Measurement.Model.VaccineBCG bothProgrammesDb
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, bcgDate ) ])
+        , test "a child seen at both programmes has the Well Child OPV dose" <|
+            \_ ->
+                dosesOf Backend.Measurement.Model.VaccineOPV bothProgrammesDb
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, opvDate ) ])
         , test "a child with no vaccination recorded anywhere has none" <|
             \_ ->
-                (assembleProgresReportData SiteRwanda childId emptyModelIndexedDb).vaccinationProgress
+                (assembleProgresReportData SiteRwanda ( childId, reportChild ) emptyModelIndexedDb).vaccinationProgress
                     |> Expect.equal Dict.empty
         ]
