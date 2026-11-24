@@ -388,14 +388,18 @@ assembleProgresReportData site childId db =
                 |> Maybe.withDefault Dict.empty
 
         -- A child with no Well Child encounter has the doses recorded at
-        -- Child Scoreboard encounters.
+        -- Child Scoreboard encounters. Well Child data still loading shows none.
         vaccinationProgress =
             case maybeAssembled of
                 Just assembled ->
                     assembled.vaccinationProgress
 
                 Nothing ->
-                    generateVaccinationProgressDictByChildScoreboard site db childId
+                    if List.isEmpty wellChildEncounters then
+                        generateVaccinationProgressDictByChildScoreboard site db childId
+
+                    else
+                        Dict.empty
     in
     { maybeAssembled = maybeAssembled
     , expectedSessions = expectedSessions
