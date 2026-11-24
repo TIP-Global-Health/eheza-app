@@ -1,9 +1,11 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
+import Backend.ChildScoreboardEncounter.Model exposing (emptyChildScoreboardEncounter)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (HeadCircumferenceInCm(..), HeadCircumferenceValue, HeightInCm(..), MeasurementNote(..), MuacInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..), WellChildMeasurements)
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), emptyWellChildEncounter)
@@ -15,8 +17,10 @@ import Json.Encode
 import List.Extra
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
-import Pages.WellChild.ProgressReport.View exposing (generatePartitionedWarningEntries, generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
+import Pages.WellChild.ProgressReport.View exposing (assembleProgresReportData, generatePartitionedWarningEntries, generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (emptyWellChildMeasurements, testChild, testParticipant, wrapMeasurement)
 import Time
@@ -31,6 +35,7 @@ all =
         , headCircumferenceWarningEntriesTests
         , malnutritionTreatmentValuesTests
         , universalInterventionsValuesTests
+        , vaccinationProgressTests
         ]
 
 
@@ -806,4 +811,83 @@ ecdWarningEntriesTests =
                 generatePartitionedWarningEntries [ visitEncounter visit ]
                     (Just { assembled | person = { child | birthDate = Nothing } })
                     |> expectEntries [] []
+        ]
+
+
+{-| Immunization History and the NCDA scorecard read the same doses. A child
+with no Well Child encounter has the doses recorded at Child Scoreboard visits.
+-}
+vaccinationProgressTests : Test
+vaccinationProgressTests =
+    let
+        childId =
+            toEntityUuid "child"
+
+        participantId =
+            toEntityUuid "participant"
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        bcgDate =
+            Date.fromCalendarDate 2024 Time.Mar 4
+
+        measurements =
+            { ncda = Nothing
+            , bcgImmunisation =
+                Just
+                    ( toEntityUuid "bcg"
+                    , { dateMeasured = bcgDate
+                      , nurse = Nothing
+                      , healthCenter = Nothing
+                      , participantId = childId
+                      , deleted = False
+                      , encounterId = Just encounterId
+                      , value =
+                            { administeredDoses = EverySet.singleton Backend.Measurement.Model.VaccineDoseFirst
+                            , administrationDates = EverySet.singleton bcgDate
+                            , administrationNote = Backend.Measurement.Model.AdministeredToday
+                            }
+                      }
+                    )
+            , dtpImmunisation = Nothing
+            , dtpStandaloneImmunisation = Nothing
+            , ipvImmunisation = Nothing
+            , mrImmunisation = Nothing
+            , opvImmunisation = Nothing
+            , pcv13Immunisation = Nothing
+            , rotarixImmunisation = Nothing
+            }
+
+        scoreboardOnlyDb : ModelIndexedDb
+        scoreboardOnlyDb =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.singleton participantId
+                                (Backend.IndividualEncounterParticipant.Model.emptyIndividualEncounterParticipant bcgDate
+                                    childId
+                                    Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                                    (toEntityUuid "health-center")
+                                )
+                        )
+                , childScoreboardEncountersByParticipant =
+                    Dict.singleton participantId
+                        (Success <| Dict.singleton encounterId (emptyChildScoreboardEncounter participantId bcgDate Nothing))
+                , childScoreboardMeasurements =
+                    Dict.singleton encounterId (Success measurements)
+            }
+    in
+    describe "Vaccinations shown on the report"
+        [ test "a child seen only at Child Scoreboard has the BCG dose recorded there" <|
+            \_ ->
+                (assembleProgresReportData SiteRwanda childId scoreboardOnlyDb).vaccinationProgress
+                    |> Dict.get Backend.Measurement.Model.VaccineBCG
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, bcgDate ) ])
+        , test "a child with no vaccination recorded anywhere has none" <|
+            \_ ->
+                (assembleProgresReportData SiteRwanda childId emptyModelIndexedDb).vaccinationProgress
+                    |> Expect.equal Dict.empty
         ]
