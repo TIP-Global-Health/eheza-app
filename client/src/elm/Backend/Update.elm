@@ -2476,14 +2476,24 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 |> RemoteData.toMaybe
                                 |> Maybe.andThen
                                     (\assembledAfter ->
-                                        Maybe.map
+                                        Maybe.andThen
                                             (\( measurementId, measurement ) ->
-                                                [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
-                                                    (Just measurementId)
-                                                    (Pages.WellChild.Activity.Utils.refreshNextVisitValue currentDate site assembledAfter measurement.value)
-                                                    |> Backend.Model.MsgWellChildEncounter id
-                                                    |> App.Model.MsgIndexedDb
-                                                ]
+                                                let
+                                                    refreshed =
+                                                        Pages.WellChild.Activity.Utils.refreshNextVisitValue currentDate site assembledAfter measurement.value
+                                                in
+                                                -- Saved only when a date changes.
+                                                if refreshed == measurement.value then
+                                                    Nothing
+
+                                                else
+                                                    Just
+                                                        [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
+                                                            (Just measurementId)
+                                                            refreshed
+                                                            |> Backend.Model.MsgWellChildEncounter id
+                                                            |> App.Model.MsgIndexedDb
+                                                        ]
                                             )
                                             assembledAfter.measurements.nextVisit
                                     )
@@ -3408,12 +3418,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildAlbendazoleRevision _ data ] ->
                         refreshWellChildNextVisitOnRevision data.encounterId
 
-                    [ WellChildMebendezoleRevision _ data ] ->
-                        refreshWellChildNextVisitOnRevision data.encounterId
-
-                    [ WellChildVitaminARevision _ data ] ->
-                        refreshWellChildNextVisitOnRevision data.encounterId
-
                     [ WellChildBCGImmunisationRevision _ data ] ->
                         refreshWellChildNextVisitOnRevision data.encounterId
 
@@ -3432,6 +3436,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildMRImmunisationRevision _ data ] ->
                         refreshWellChildNextVisitOnRevision data.encounterId
 
+                    [ WellChildMebendezoleRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
+
                     [ WellChildOPVImmunisationRevision _ data ] ->
                         refreshWellChildNextVisitOnRevision data.encounterId
 
@@ -3439,6 +3446,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildRotarixImmunisationRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
+
+                    [ WellChildVitaminARevision _ data ] ->
                         refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ NCDRandomBloodSugarTestRevision _ data ] ->
