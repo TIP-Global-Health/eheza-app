@@ -37,6 +37,7 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node;
   a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`; ultrasound `us`, `us-referral-form`), not `field_send_to_hc`.
   A CHW's referral is `field_send_to_hc` (`refer-to-hc`, `referral-form`, `accompany-to-hc`), or `none` with `field_reason_not_sent_to_hc` (`client-refused`).
+  A nurse's declined hospital referral stores `field_referrals` `none` with `field_reasons_for_non_referrals` `hospital-client-refused`; an ultrasound one `us`, `us-referral-form`.
 - A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
@@ -469,6 +470,10 @@ flag simply does not appear.
   still open); the tablet's `scheduled_date` mirrors it as `{ value, value2 }`. Editing either with drush and syncing
   moves the visit on the device. For a visit started yesterday and still open, set only `value`:
   `backdateEncounter` sets both, which ends the visit.
+- Nurse postpartum hospital referral: after the postpartum helper chain, reopen Examination from Completed → GU Exam → tick "Bleeding" →
+  Save: excessive bleeding brings Next Steps › Referral (hospital only). Stored as `nurse-postpartum` with `hospital, hospital-referral-form`.
+- Prenatal Next Steps › Referral: one `.form-input.yes-no.referral` per facility, hospital first, then `hand-referral-form` (Yes) or "Why not?"
+  (No; Client refused first). Its Save has neither `active` nor `disabled` when pressable. With LMP not confident, eclampsia asks hospital and ultrasound.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
   after the start; To Do then lists Pregnancy Outcome, Symptom Review, Maternal Mental Health, Breastfeeding, Family Planning, Treatment Review.
 - Postpartum Specialty Care (`.icon-task-speciality-care`) shows only when an earlier nurse visit holds diabetes or a hypertension-like diagnosis
@@ -806,6 +811,14 @@ flag simply does not appear.
   "Currently in Care" come from follow-ups on the tablet. They change as soon as a visit saves.
 - Every other card, including the Antenatal Care page's With Danger Signs, comes from those
   server statistics. A new visit shows only after upload, the drush recalculation and a sync.
+- Each statistics section has its own cache (prenatal, NCD, …). After overlaying a change to a builder such as `hedley_stats_get_prenatal_data`,
+  clear it first: `hedley_stats_clear_caches_for_health_center(4, HEDLEY_STATS_PRENATAL); hedley_stats_calculate_stats_for_health_center(4);` (~1 s).
+  Each recalculation gives a new hash, so the next sync downloads the data even when nothing changed; "Last updated" on the dashboard moves then.
+- The tablet keeps the dashboard data as one IndexedDB `statistics` row, written by the client's encoder: a build switch keeps the old build's
+  saved data until the next download. Prenatal encounters in it carry `encounter_type`, `send_to_hc`, `danger_signs` (and `referrals` since #2593).
+- Nurse Antenatal Care page: 15 `.dashboard-card.chw` cards (New / Current / Within 4 Months, 4+ Visits, Health Center Deliveries, Hospital
+  Referrals, then the diagnosis cards). NCDs › Diabetes and the CHW Snapshot also read the antenatal data. The local DB holds dozens of QA
+  pregnancies a month, so compare with a server count of the same rule, or read the change a fixture makes.
 - Cards are `.dashboard-card.chw` (`.header`, `.value`). The month label is
   `.month-selector .label`; previous month is `span.icon-back:not(.rotate-180)`, next is `.rotate-180`.
 - Sub-pages: Antenatal Care / Child Nutrition / Acute Illness / Group Education buttons; Acute

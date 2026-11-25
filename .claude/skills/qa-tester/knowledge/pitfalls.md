@@ -1133,3 +1133,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the PR's group search listed a child that develop's search had not, the Child Scorecard child that a develop control registered after that search (PR #2592).
 - **Wrong conclusion:** the PR widens the search.
 - **Rule:** run every develop hold read before any develop control that registers people, and give each control's people a name the hold rows' search does not match.
+
+## Clicking `button.active` for the Next Steps Referral Save (met again)
+
+- **Symptom:** the first develop fixture timed out after the referral answers, on `button.ui.fluid.primary.button.active` "Save" (PR #2593).
+- **Wrong conclusion:** the form was incomplete, though it read 2/2.
+- **Rule:** the same pit as "`qa.form()` calls a Save button disabled when it has neither class". Prenatal Next Steps Saves (Referral, Next ANC Visit) carry neither class: click `:not(.disabled)`.
