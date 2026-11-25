@@ -12,7 +12,6 @@ import Backend.AcuteIllnessEncounter.Update
 import Backend.ChildScoreboardActivity.Utils
 import Backend.ChildScoreboardEncounter.Model
 import Backend.ChildScoreboardEncounter.Update
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
@@ -59,7 +58,7 @@ import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), PatchPersonInitator(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, graduatingAgeInMonth)
+import Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, graduatingAgeInMonth, groupTakesChildOfAnyAge)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
@@ -4205,7 +4204,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     (Dict.get clinicId
                                                         >> Maybe.andThen
                                                             (\clinic ->
-                                                                if List.member clinic.clinicType [ Sorwathe, Achi ] then
+                                                                if groupTakesChildOfAnyAge clinic.clinicType then
                                                                     Nothing
 
                                                                 else
