@@ -8,7 +8,7 @@ metadata:
   modified: 2026-09-14
 ---
 
-⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-12-19 (rerun the recurrence query in the entry on ihangane + vhw; none found 2026-11-19; user 2026-11-19: "keep monitoring for another 30 days") · **B-499** 2026-12-25 (user 2026-11-25: "yes" to a new date — old builds still upload; rerun the step-1 queries in the entry, replay only the candidates; the 13 found 2026-11-25 are restored separately).
+⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-12-19 (rerun the recurrence query in the entry on ihangane + vhw; none found 2026-11-19; user 2026-11-19: "keep monitoring for another 30 days") · **B-499** 2026-12-25 (user 2026-11-25: "yes" to a new date — old builds still upload; rerun the step-1 queries in the entry, replay only the candidates; the 6 losses found 2026-11-25 were restored by the user the same day, by hand in the admin UI).
 
 ✅ **Merged 2026-11-25** (user: "Can we merge yesterdays PRs?"): #2585 (B-358, issue #2582) `6223c4c28`, #2586 (B-643 + B-644, issue #2583) `d519caf2e`, #2587 (B-554, issue #2584) `becc44764`; branches + `-tests` branches deleted; issues stay open until the release sweep. **Post-deploy for #2586** (`completion-generate-nutrition-group-data.php`, no `--exclude_set`) is in release PR #2417's post-deploy list. Side-finding **B-645** (tier 4) still queued.
 
