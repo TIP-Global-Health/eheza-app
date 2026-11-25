@@ -2810,4 +2810,50 @@ all =
         , labsEntryResultSavedGuardTest
         , labsEntryLastResultByNurseTest
         , hospitalReferralAskedAgainTest
+        , hospitalReferralPhaseTest
+        ]
+
+
+hospitalReferralPhaseTest : Test
+hospitalReferralPhaseTest =
+    let
+        hepatitisB =
+            examDiagnoses ++ [ DiagnosisHepatitisBRecurrentPhase ]
+    in
+    describe "which part of the visit the hospital answer belongs to"
+        [ test "the exam changes its hospital answer after the lab results part answered: the lab results Send to HC is to do again" <|
+            \_ ->
+                let
+                    afterLabResults =
+                        labResultsSave (NotReferred NoAmbulance) (examSave (Just Referred))
+
+                    shown =
+                        examFormShown afterLabResults
+
+                    changedToReferred =
+                        { shown
+                            | referToHospital = Just True
+                            , referralFormHospital = Just True
+                            , facilityNonReferralReasons =
+                                Maybe.map (EverySet.remove (NonReferralReasonHospital NoAmbulance)) shown.facilityNonReferralReasons
+                        }
+                in
+                toPrenatalReferralValueWithDefaultInitialPhase afterLabResults changedToReferred
+                    |> labSendToHCCompleted hepatitisB
+                    |> Expect.equal False
+        , test "a lab results save that leaves the hospital question alone does not mark a record from before the release as answered there" <|
+            \_ ->
+                let
+                    specialistOnly =
+                        Just
+                            { sendToHCSigns = Nothing
+                            , reasonForNotSendingToHC = Nothing
+                            , referToFacilitySigns = Just (EverySet.singleton ReferToMentalHealthSpecialist)
+                            , facilityNonReferralReasons = Nothing
+                            , hospitalReferralPhase = Nothing
+                            }
+                in
+                toPrenatalReferralValueWithDefaultRecurrentPhase specialistOnly emptyReferralForm
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
         ]
