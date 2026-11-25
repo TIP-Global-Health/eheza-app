@@ -2226,6 +2226,7 @@ encodePrenatalReferralValue value =
         ++ encodeNullable "reason_not_sent_to_hc" value.reasonForNotSendingToHC encodeReasonForNonReferral
         ++ encodeEverySetNullable "referrals" value.referToFacilitySigns encodeReferToFacilitySign
         ++ encodeEverySetNullable "reasons_for_non_referrals" value.facilityNonReferralReasons encodeNonReferralSign
+        ++ encodeIfSet "phase_recorded" value.hospitalReferralPhase encodePhaseRecorded
         ++ [ ( "type", string "prenatal_send_to_hc" ) ]
 
 

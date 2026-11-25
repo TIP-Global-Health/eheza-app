@@ -54,7 +54,7 @@ import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, Prenat
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, LabResultsData, Model, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (examinationMeasurementTaken, examinationTasksCompletedFromTotal, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, resolvePartnerHIVTestResult)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefaultRecurrentPhase, resolvePartnerHIVTestResult)
 import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
     exposing
@@ -517,7 +517,7 @@ viewNextStepsContent language currentDate isLabTech assembled data =
             case activeTask of
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultRecurrentPhase data.referralForm
                         |> viewReferralForm language assembled
 
                 Just NextStepsMedicationDistribution ->

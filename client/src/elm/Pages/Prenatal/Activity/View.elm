@@ -86,7 +86,7 @@ import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInputs
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPreviously, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPreviously, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefaultInitialPhase, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View
     exposing
         ( customWarningPopup
@@ -2124,7 +2124,7 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultInitialPhase data.referralForm
                         |> viewReferralForm language assembled
 
                 Just NextStepsHealthEducation ->

@@ -92,7 +92,7 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, toPrenatalReferralValueWithDefault, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, toPrenatalReferralValueWithDefaultInitialPhase, updateHypertensionTreatmentWithMedication)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -10392,7 +10392,7 @@ reportedDiabetesKnownAtReportingVisitTest =
 -- the task counts as done.
 --
 -- The saved values are produced from a filled form with
--- `toPrenatalReferralValueWithDefault`, the same conversion the Save button
+-- `toPrenatalReferralValueWithDefaultInitialPhase`, the same conversion the Save button
 -- runs, so each test asserts on the shape the app really stores.
 --
 -- On nurse visits the same task lists one question per facility the nurse
@@ -10406,7 +10406,7 @@ savedReferral : ReferralForm -> PrenatalMeasurements -> PrenatalMeasurements
 savedReferral form measurements =
     { measurements
         | sendToHC =
-            toPrenatalReferralValueWithDefault Nothing form
+            toPrenatalReferralValueWithDefaultInitialPhase Nothing form
                 |> Maybe.andThen wrapMeasurement
     }
 
