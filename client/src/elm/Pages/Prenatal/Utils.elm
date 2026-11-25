@@ -1,4 +1,4 @@
-module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedOrReportedPreviouslyAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, reportedAnyOf, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefaultRecurrentPhase, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
+module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedOrReportedPreviouslyAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, hospitalReferralAnsweredAtExam, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, reportedAnyOf, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefaultRecurrentPhase, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
@@ -22,7 +22,7 @@ import Measurement.Utils
         , viewReinforceAdherenceQuestion
         )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatmentUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatmentUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict, emptyReferralForm)
 import Pages.Prenatal.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), HeartburnReliefMethod(..), LegCrampsReliefMethod(..))
 import Pages.Utils
     exposing
@@ -3485,21 +3485,107 @@ referralFormWithDefaultInitialPhase =
     referralFormWithDefault
 
 
+{-| On the lab results part, a hospital answer given at the exam is not
+offered: the hospital question opens unanswered.
+-}
 referralFormWithDefaultRecurrentPhase : ReferralForm -> Maybe PrenatalReferralValue -> ReferralForm
-referralFormWithDefaultRecurrentPhase =
-    referralFormWithDefault
+referralFormWithDefaultRecurrentPhase form saved =
+    let
+        seeded =
+            referralFormWithDefault form saved
+    in
+    if hospitalReferralAnsweredAtExam saved then
+        { seeded
+            | referToHospital = form.referToHospital
+            , referralFormHospital = form.referralFormHospital
+            , facilityNonReferralReasons =
+                or form.facilityNonReferralReasons
+                    (Maybe.andThen .facilityNonReferralReasons saved
+                        |> Maybe.map (\reasons -> EverySet.diff reasons (hospitalNonReferralReasons (Just reasons)))
+                    )
+        }
+
+    else
+        seeded
+
+
+{-| True when the saved hospital answer was given at the exam, so the lab
+results part has not answered it yet.
+-}
+hospitalReferralAnsweredAtExam : Maybe PrenatalReferralValue -> Bool
+hospitalReferralAnsweredAtExam saved =
+    Maybe.andThen .hospitalReferralPhase saved == Just PhaseInitial
+
+
+hospitalNonReferralReasons : Maybe (EverySet NonReferralSign) -> EverySet NonReferralSign
+hospitalNonReferralReasons reasons =
+    getCurrentReasonForNonReferral NonReferralReasonHospital reasons
+        |> Maybe.map (NonReferralReasonHospital >> EverySet.singleton)
+        |> Maybe.withDefault EverySet.empty
 
 
 toPrenatalReferralValueWithDefaultInitialPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefaultInitialPhase saved form =
+    let
+        -- The exam never takes over an answer the lab results part gave.
+        phase =
+            if Maybe.andThen .hospitalReferralPhase saved == Just PhaseRecurrent then
+                PhaseRecurrent
+
+            else
+                PhaseInitial
+    in
     referralFormWithDefaultInitialPhase form saved
         |> toPrenatalReferralValue
+        |> Maybe.map (\value -> { value | hospitalReferralPhase = Just phase })
 
 
+{-| When the lab results part leaves the hospital question unanswered, the
+exam's hospital answer is kept.
+-}
 toPrenatalReferralValueWithDefaultRecurrentPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefaultRecurrentPhase saved form =
-    referralFormWithDefaultRecurrentPhase form saved
-        |> toPrenatalReferralValue
+    let
+        filled =
+            referralFormWithDefaultRecurrentPhase form saved
+
+        answeredHere =
+            isJust filled.referToHospital
+
+        toSave =
+            if answeredHere || not (hospitalReferralAnsweredAtExam saved) then
+                filled
+
+            else
+                let
+                    atExam =
+                        referralFormWithDefault emptyReferralForm saved
+
+                    reasons =
+                        EverySet.union
+                            (hospitalNonReferralReasons atExam.facilityNonReferralReasons)
+                            (Maybe.withDefault EverySet.empty filled.facilityNonReferralReasons)
+                in
+                { filled
+                    | referToHospital = atExam.referToHospital
+                    , referralFormHospital = atExam.referralFormHospital
+                    , facilityNonReferralReasons =
+                        if EverySet.isEmpty reasons then
+                            filled.facilityNonReferralReasons
+
+                        else
+                            Just reasons
+                }
+
+        phase =
+            if answeredHere then
+                Just PhaseRecurrent
+
+            else
+                Maybe.andThen .hospitalReferralPhase saved
+    in
+    toPrenatalReferralValue toSave
+        |> Maybe.map (\value -> { value | hospitalReferralPhase = phase })
 
 
 toPrenatalReferralValue : ReferralForm -> Maybe PrenatalReferralValue

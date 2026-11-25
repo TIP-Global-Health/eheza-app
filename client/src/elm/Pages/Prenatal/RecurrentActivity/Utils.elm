@@ -28,7 +28,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, labsResultsT
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
-import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefaultRecurrentPhase, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, hospitalReferralAnsweredAtExam, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefaultRecurrentPhase, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -684,8 +684,17 @@ nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
 nextStepsTaskCompleted currentDate assembled task =
     case task of
         NextStepsSendToHC ->
+            let
+                hospitalAnsweredAtExam =
+                    getMeasurementValueFunc assembled.measurements.sendToHC
+                        |> hospitalReferralAnsweredAtExam
+            in
             resolveRequiredReferralFacilities assembled
-                |> List.all (referralToFacilityCompleted assembled)
+                |> List.all
+                    (\facility ->
+                        referralToFacilityCompleted assembled facility
+                            && not (facility == FacilityHospital && hospitalAnsweredAtExam)
+                    )
 
         NextStepsMedicationDistribution ->
             let
