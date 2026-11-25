@@ -44,6 +44,7 @@ import Backend.Measurement.Model
         , HCRecommendation(..)
         , MedicalCondition(..)
         , Recommendation114(..)
+        , ReferToFacilitySign(..)
         , SendToHCSign(..)
         , TestExecutionNote(..)
         , TestResult(..)
@@ -1117,7 +1118,7 @@ countHospitalReferralsForSelectedMonth dateLastDayOfSelectedMonth =
                 (\encounter ->
                     isNurseEncounter encounter.encounterType
                         && withinSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
-                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+                        && EverySet.member ReferToHospital encounter.referToFacilitySigns
                 )
         )
         >> List.length
