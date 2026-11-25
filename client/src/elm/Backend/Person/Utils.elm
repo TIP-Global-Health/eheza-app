@@ -1,6 +1,7 @@
-module Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, ageInYears, defaultIconForPerson, earliestChildBirthDate, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, latestAdultBirthDate, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, personAgeInMonthsReached, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
+module Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, ageInYears, defaultIconForPerson, earliestChildBirthDate, earliestChildScoreboardBirthDate, earliestGroupChildBirthDate, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, latestAdultBirthDate, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, personAgeInMonthsReached, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
 
 import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (HealthCenterId)
 import Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -61,6 +62,26 @@ earliestChildBirthDate : NominalDate -> NominalDate
 earliestChildBirthDate currentDate =
     latestAdultBirthDate currentDate
         |> Date.add Date.Days 1
+
+
+{-| The earliest birth date offered when registering a child from a group
+session of this type.
+-}
+earliestGroupChildBirthDate : ClinicType -> NominalDate -> NominalDate
+earliestGroupChildBirthDate clinicType currentDate =
+    if List.member clinicType [ Sorwathe, Achi ] then
+        earliestChildBirthDate currentDate
+
+    else
+        Date.add Date.Months (-1 * graduatingAgeInMonth) currentDate
+
+
+{-| The earliest birth date offered when registering a child for the Child
+Scoreboard.
+-}
+earliestChildScoreboardBirthDate : NominalDate -> NominalDate
+earliestChildScoreboardBirthDate currentDate =
+    Date.add Date.Years -2 currentDate
 
 
 {-| The latest birth date an adult-only birth-date picker offers. Born exactly

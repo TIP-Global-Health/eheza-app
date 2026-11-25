@@ -26,6 +26,8 @@ import Backend.Person.Utils
     exposing
         ( defaultIconForPerson
         , earliestChildBirthDate
+        , earliestChildScoreboardBirthDate
+        , earliestGroupChildBirthDate
         , educationLevelToInt
         , expectedAgeByPerson
         , generateFullName
@@ -621,7 +623,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -2 today
+                            , birthDateSelectorFrom = earliestChildScoreboardBirthDate today
                             , birthDateSelectorTo = Date.add Days -1 today
                             , title = Translate.People
                             }
@@ -707,14 +709,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
                                                 earliestBirthDate =
                                                     getSession sessionId db
-                                                        |> Maybe.map
-                                                            (\session ->
-                                                                if List.member session.clinicType [ Sorwathe, Achi ] then
-                                                                    defaultEarliestBirthDate
-
-                                                                else
-                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
-                                                            )
+                                                        |> Maybe.map (\session -> earliestGroupChildBirthDate session.clinicType currentDate)
                                                         |> Maybe.withDefault defaultEarliestBirthDate
                                             in
                                             ( earliestBirthDate, currentDate )
