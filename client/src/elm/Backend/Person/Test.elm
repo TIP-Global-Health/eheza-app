@@ -11,9 +11,16 @@ to exactly 13 years before `currentDate` (`Date.add Years -13`), inclusive.
 On save, `isAdult` decides whether the birth date belongs to an adult, in
 which case education level and marital status are required.
 
+Registering a child from a group session offers
+`earliestGroupChildBirthDate clinicType currentDate` up to `currentDate`; for
+the Child Scoreboard, `earliestChildScoreboardBirthDate currentDate` up to the
+day before. Every date offered must give a child the group, or the Child
+Scoreboard participant list, then takes.
+
 -}
 
 import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Form
     exposing
@@ -37,14 +44,14 @@ import Backend.Person.Form
         , village
         )
 import Backend.Person.Model exposing (EducationLevel(..), Initiator(..), MaritalStatus(..), ModeOfDelivery(..), ParticipantDirectoryOperation(..), Person, Ubudehe(..))
-import Backend.Person.Utils exposing (earliestChildBirthDate, graduatingAgeInMonth, isAdult)
+import Backend.Person.Utils exposing (earliestChildBirthDate, earliestChildScoreboardBirthDate, earliestGroupChildBirthDate, graduatingAgeInMonth, isAdult, isChildUnderAgeOf2)
 import Date exposing (Interval(..), Unit(..))
 import Expect
 import Form exposing (Form)
 import Form.Field
 import GeoLocation.Model exposing (GeoLocation, GeoLocationId, ReverseGeoInfo)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import List.Extra
 import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityUuid)
@@ -167,6 +174,12 @@ all =
             , everyOfferedDateSavesAsChild
             , exactThirteenYearsSavesAsAdult
             , graduatingAgeUnchanged
+            ]
+        , describe "Group session and Child Scoreboard birth-date ranges"
+            [ groupSessionChildRange
+            , sorwatheAndAchiRangeUnchanged
+            , childScoreboardChildRange
+            , latestBirthDateUnchanged
             ]
         , nationalIdNumberSaved
         , addressAndHealthCentre
@@ -493,7 +506,7 @@ exactThirteenYearsSavesAsAdult =
 
 
 {-| Criterion: the graduating-age limit for other group types is unchanged.
-The picker for a child added in such a group starts this many months back.
+A child in such a group is listed while younger than this many months.
 -}
 graduatingAgeUnchanged : Test
 graduatingAgeUnchanged =
@@ -501,6 +514,372 @@ graduatingAgeUnchanged =
         \_ ->
             graduatingAgeInMonth
                 |> Expect.equal 26
+
+
+
+-- GROUP SESSION AND CHILD SCOREBOARD BIRTH-DATE RANGES
+
+
+{-| Whether a child born on `birth` is listed for adding to a group of this
+type on `today`. FBF and PMTCT groups, like every type other than Sorwathe and
+ACHI, take a child younger than `graduatingAgeInMonth` whole months; Sorwathe
+and ACHI groups take a child of any age.
+-}
+listedForGroup : ClinicType -> NominalDate -> NominalDate -> Bool
+listedForGroup clinicType today birth =
+    case clinicType of
+        Achi ->
+            True
+
+        Chw ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Fbf ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Pmtct ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Sorwathe ->
+            True
+
+
+{-| Whether a child born on `birth` appears in the CHW Child Scoreboard
+participant list on `today`.
+-}
+appearsOnChildScoreboard : NominalDate -> NominalDate -> Bool
+appearsOnChildScoreboard today birth =
+    isChildUnderAgeOf2 today (testChild birth)
+
+
+{-| Every birth date the picker offers when registering a child from a group
+session of this type: from the earliest date up to today, both included.
+-}
+offeredForGroup : ClinicType -> NominalDate -> List NominalDate
+offeredForGroup clinicType today =
+    Date.range Day 1 (earliestGroupChildBirthDate clinicType today) (Date.add Days 1 today)
+
+
+{-| Every birth date the picker offers when registering a child for the Child
+Scoreboard: from the earliest date up to yesterday, both included.
+-}
+offeredForChildScoreboard : NominalDate -> List NominalDate
+offeredForChildScoreboard today =
+    Date.range Day 1 (earliestChildScoreboardBirthDate today) today
+
+
+{-| Whether `birth` lies between `from` and `to`, both included.
+-}
+isWithin : NominalDate -> NominalDate -> NominalDate -> Bool
+isWithin from to birth =
+    Date.compare birth from /= LT && Date.compare birth to /= GT
+
+
+twentySixMonthsAgo : NominalDate -> NominalDate
+twentySixMonthsAgo today =
+    Date.add Months (-1 * graduatingAgeInMonth) today
+
+
+twoYearsAgo : NominalDate -> NominalDate
+twoYearsAgo today =
+    Date.add Years -2 today
+
+
+{-| The "today"s where the calendar does something unusual 26 months or two
+years back, on top of the 13-year edge days. `Date.add` lands on the last day
+of the month when the day does not exist there: 26 months before 30 April
+2025 is 28 February 2023, and two years before 29 February 2028 is 28
+February 2026.
+-}
+rangeEdgeDays : List ( String, NominalDate )
+rangeEdgeDays =
+    edgeDays
+        ++ [ ( "the day this test was written", date 2026 Nov 25 )
+           , ( "30 April, 26 months after a leap day", date 2026 Apr 30 )
+           , ( "30 April, 26 months after a common February", date 2025 Apr 30 )
+           , ( "29 April, 26 months after a common February", date 2025 Apr 29 )
+           , ( "31 August, 26 months after a 30-day June", date 2026 Aug 31 )
+           , ( "31 May, 26 months after 31 March", date 2026 May 31 )
+           , ( "28 February of a common year, two years after a leap year", date 2026 Feb 28 )
+           , ( "1 March of a common year, two years after a leap year", date 2026 Mar 1 )
+           , ( "a leap day, two years after a common year", date 2028 Feb 29 )
+           , ( "the day after a leap day", date 2028 Mar 1 )
+           ]
+
+
+{-| The names of the edge days on which a check fails, for a failure message
+that says where.
+-}
+failingEdgeDays : (NominalDate -> Bool) -> List String
+failingEdgeDays check =
+    rangeEdgeDays
+        |> List.filter (Tuple.second >> check >> not)
+        |> List.map (\( name, today ) -> name ++ " (" ++ Date.toIsoString today ++ ")")
+
+
+{-| A group type's name, for failure messages.
+-}
+groupName : ClinicType -> String
+groupName clinicType =
+    case clinicType of
+        Achi ->
+            "ACHI"
+
+        Chw ->
+            "CHW"
+
+        Fbf ->
+            "FBF"
+
+        Pmtct ->
+            "PMTCT"
+
+        Sorwathe ->
+            "Sorwathe"
+
+
+{-| The group types the 26-month listing rule applies to, as the criteria
+name them.
+-}
+fbfAndPmtct : List ClinicType
+fbfAndPmtct =
+    [ Fbf, Pmtct ]
+
+
+{-| Criteria for registering a child from an FBF or PMTCT group session. A
+child given the earliest birth date offered must then be listed for adding to
+that group; a child of exactly 26 months is not listed, so it must not be
+offered, and the day after it must be.
+-}
+groupSessionChildRange : Test
+groupSessionChildRange =
+    describe "Registering a child from an FBF or PMTCT group session"
+        [ describe "every birth date offered gives a child who is then listed for adding to that group"
+            [ test "the earliest date offered is listed, on every day of the sweep, for FBF and PMTCT" <|
+                \_ ->
+                    expectOnEveryDay "the earliest group birth date is listed for FBF and PMTCT"
+                        (\today ->
+                            List.all
+                                (\clinicType -> listedForGroup clinicType today (earliestGroupChildBirthDate clinicType today))
+                                fbfAndPmtct
+                        )
+            , test "every date in the whole range is listed, on every edge day, for FBF and PMTCT" <|
+                -- From the earliest date offered up to today, each date is
+                -- given to a child and checked against the group's listing.
+                \_ ->
+                    fbfAndPmtct
+                        |> List.concatMap
+                            (\clinicType ->
+                                rangeEdgeDays
+                                    |> List.concatMap
+                                        (\( name, today ) ->
+                                            offeredForGroup clinicType today
+                                                |> List.filter (listedForGroup clinicType today >> not)
+                                                |> List.map (\birth -> groupName clinicType ++ ", " ++ name ++ ": " ++ Date.toIsoString birth)
+                                        )
+                            )
+                        |> Expect.equalLists []
+            , test "every date offered is listed for a CHW-type group too, which lists by the same 26-month rule" <|
+                -- Boundary: CHW is the other type, besides FBF and PMTCT, that
+                -- the 26-month listing applies to.
+                \_ ->
+                    failingEdgeDays (\today -> List.all (listedForGroup Chw today) (offeredForGroup Chw today))
+                        |> Expect.equalLists []
+            ]
+        , test "a child born exactly 26 months ago is not offered there" <|
+            \_ ->
+                expectOnEveryDay "exactly 26 months ago is before the earliest group birth date for FBF and PMTCT"
+                    (\today ->
+                        List.all
+                            (\clinicType -> Date.compare (earliestGroupChildBirthDate clinicType today) (twentySixMonthsAgo today) == GT)
+                            fbfAndPmtct
+                    )
+        , test "a child born one day later is offered and listed" <|
+            \_ ->
+                expectOnEveryDay "the day after exactly 26 months ago is offered and listed for FBF and PMTCT"
+                    (\today ->
+                        let
+                            dayLater =
+                                Date.add Days 1 (twentySixMonthsAgo today)
+                        in
+                        List.all
+                            (\clinicType ->
+                                isWithin (earliestGroupChildBirthDate clinicType today) today dayLater
+                                    && listedForGroup clinicType today dayLater
+                            )
+                            fbfAndPmtct
+                    )
+        , describe "the earliest date offered is the day after exactly 26 months ago"
+            [ test "on 25 November 2026 it is 26 September 2024" <|
+                \_ ->
+                    List.map (\clinicType -> earliestGroupChildBirthDate clinicType (date 2026 Nov 25) |> Date.toIsoString) fbfAndPmtct
+                        |> Expect.equalLists [ "2024-09-26", "2024-09-26" ]
+            , test "on 30 April 2026 it is 1 March 2024: 26 months back is the leap day" <|
+                \_ ->
+                    earliestGroupChildBirthDate Fbf (date 2026 Apr 30)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-03-01"
+            , test "on 30 April 2025 it is 1 March 2023: 26 months back is 28 February" <|
+                \_ ->
+                    earliestGroupChildBirthDate Pmtct (date 2025 Apr 30)
+                        |> Date.toIsoString
+                        |> Expect.equal "2023-03-01"
+            , test "on 31 August 2026 it is 1 July 2024: 26 months back is 30 June" <|
+                \_ ->
+                    earliestGroupChildBirthDate Fbf (date 2026 Aug 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-07-01"
+            , test "on 31 December 2026 it is 1 November 2024" <|
+                \_ ->
+                    earliestGroupChildBirthDate Pmtct (date 2026 Dec 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-11-01"
+            ]
+        ]
+
+
+{-| Criterion: Sorwathe and ACHI group sessions offer the same birth dates as
+today: a child of any age up to 13 is taken there, so the picker starts on the
+earliest child birth date, 13 years ago plus one day.
+-}
+sorwatheAndAchiRangeUnchanged : Test
+sorwatheAndAchiRangeUnchanged =
+    describe "Sorwathe and ACHI group sessions offer the same birth dates as today"
+        [ test "the earliest date offered is 13 years ago plus one day, on every day of the sweep" <|
+            \_ ->
+                expectOnEveryDay "the earliest Sorwathe and ACHI birth date is the earliest child birth date"
+                    (\today ->
+                        List.all
+                            (\clinicType -> earliestGroupChildBirthDate clinicType today == earliestChildBirthDate today)
+                            [ Achi, Sorwathe ]
+                    )
+        , test "on 25 November 2026 it is 26 November 2013" <|
+            \_ ->
+                List.map (\clinicType -> earliestGroupChildBirthDate clinicType (date 2026 Nov 25) |> Date.toIsoString) [ Achi, Sorwathe ]
+                    |> Expect.equalLists [ "2013-11-26", "2013-11-26" ]
+        , test "every date offered is listed for adding to the group" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        List.all
+                            (\clinicType -> List.all (listedForGroup clinicType today) (offeredForGroup clinicType today))
+                            [ Achi, Sorwathe ]
+                    )
+                    |> Expect.equalLists []
+        ]
+
+
+{-| Criteria for registering a child for the Child Scoreboard as a CHW. The
+participant list takes a child under 2 by `isChildUnderAgeOf2`; a child of
+exactly 2 years is not under 2, so it must not be offered, and the day after
+it must be.
+-}
+childScoreboardChildRange : Test
+childScoreboardChildRange =
+    describe "Registering a child for the Child Scoreboard as a CHW"
+        [ describe "every birth date offered gives a child who then appears in the Child Scoreboard participant list"
+            [ test "the earliest date offered appears, on every day of the sweep" <|
+                \_ ->
+                    expectOnEveryDay "the earliest Child Scoreboard birth date appears in the participant list"
+                        (\today -> appearsOnChildScoreboard today (earliestChildScoreboardBirthDate today))
+            , test "every date in the whole range appears, on every edge day" <|
+                -- From the earliest date offered up to yesterday, each date is
+                -- given to a child and checked against the participant list.
+                \_ ->
+                    rangeEdgeDays
+                        |> List.concatMap
+                            (\( name, today ) ->
+                                offeredForChildScoreboard today
+                                    |> List.filter (appearsOnChildScoreboard today >> not)
+                                    |> List.map (\birth -> name ++ ": " ++ Date.toIsoString birth)
+                            )
+                        |> Expect.equalLists []
+            ]
+        , test "a child born exactly 2 years ago is not offered there" <|
+            \_ ->
+                expectOnEveryDay "exactly 2 years ago is before the earliest Child Scoreboard birth date"
+                    (\today -> Date.compare (earliestChildScoreboardBirthDate today) (twoYearsAgo today) == GT)
+        , test "a child born one day later is offered and appears" <|
+            \_ ->
+                expectOnEveryDay "the day after exactly 2 years ago is offered and appears"
+                    (\today ->
+                        let
+                            dayLater =
+                                Date.add Days 1 (twoYearsAgo today)
+                        in
+                        isWithin (earliestChildScoreboardBirthDate today) (Date.add Days -1 today) dayLater
+                            && appearsOnChildScoreboard today dayLater
+                    )
+        , describe "the earliest date offered is the day after exactly 2 years ago"
+            [ test "on 25 November 2026 it is 26 November 2024" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Nov 25)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-11-26"
+            , test "on 28 February 2026 it is the leap day 29 February 2024" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Feb 28)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-02-29"
+            , test "on the leap day 29 February 2028 it is 1 March 2026: two years back is 28 February" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2028 Feb 29)
+                        |> Date.toIsoString
+                        |> Expect.equal "2026-03-01"
+            , test "on 1 March 2025 it is 2 March 2023" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2025 Mar 1)
+                        |> Date.toIsoString
+                        |> Expect.equal "2023-03-02"
+            , test "on 31 December 2026 it is 1 January 2025" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Dec 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2025-01-01"
+            ]
+        , test "a child with no birth date does not appear" <|
+            -- Boundary: the stored shape with no birth date.
+            \_ ->
+                isChildUnderAgeOf2 (date 2026 Nov 25) { testPerson | birthDate = Nothing }
+                    |> Expect.equal False
+        ]
+
+
+{-| Criterion: the latest birth date offered doesn't change in either place:
+today for a group session, yesterday for the Child Scoreboard.
+
+The latest date is set in the view, not in the seam, so these tests pin the
+pure half: the range still reaches that date, and a child given it is listed.
+
+-}
+latestBirthDateUnchanged : Test
+latestBirthDateUnchanged =
+    describe "The latest birth date offered doesn't change in either place"
+        [ test "a group session still offers today, and a child born today is listed, for every group type" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        List.all
+                            (\clinicType ->
+                                isWithin (earliestGroupChildBirthDate clinicType today) today today
+                                    && listedForGroup clinicType today today
+                            )
+                            [ Achi, Chw, Fbf, Pmtct, Sorwathe ]
+                    )
+                    |> Expect.equalLists []
+        , test "the Child Scoreboard still offers yesterday, and a child born yesterday appears" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        let
+                            yesterday =
+                                Date.add Days -1 today
+                        in
+                        isWithin (earliestChildScoreboardBirthDate today) yesterday yesterday
+                            && appearsOnChildScoreboard today yesterday
+                    )
+                    |> Expect.equalLists []
+        ]
 
 
 
