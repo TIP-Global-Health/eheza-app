@@ -1139,3 +1139,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the first develop fixture timed out after the referral answers, on `button.ui.fluid.primary.button.active` "Save" (PR #2593).
 - **Wrong conclusion:** the form was incomplete, though it read 2/2.
 - **Rule:** the same pit as "`qa.form()` calls a Save button disabled when it has neither class". Prenatal Next Steps Saves (Referral, Next ANC Visit) carry neither class: click `:not(.disabled)`.
+
+## Taking `.wrap-cards` as the main menu (met again)
+
+- **Symptom:** a registration chain after a lab results read failed at once waiting for `.icon-task-clinical`; the guard "main menu shows" had passed on the prenatal recurrent encounter page (PR #2594). Two dead videos were recorded before the chain stopped.
+- **Wrong conclusion:** the page was on the main menu, so registration could start.
+- **Rule:** the same pit as "Leaving a group page by `.wrap-cards`": the recurrent encounter page draws it too. Test for `.icon-task-clinical`, and stop a chain on a failed setup before its recording starts.
+
+## Reading a form reopened in the session that typed into it (met again)
+
+- **Symptom:** after the exam changed the hospital answer, the lab results Referral showed the answer typed there earlier (2/2, Save on) while its card read To Do; the exam form showed its own earlier typing, not the stored record (PR #2594).
+- **Wrong conclusion:** the PR keeps a taken-back answer in the form.
+- **Rule:** the same pit as "A develop control run in the session that filled the form". Judge reopened forms after a reload; plan a reload read for every row that saves one part and reopens another.
+
+## Starting a chain with `&` (met again)
+
+- **Symptom:** a re-run of a recorded chain was started with a trailing `&`, which keeps nothing waiting (PR #2594).
+- **Wrong conclusion:** none; a `run_in_background` waiter was started at once.
+- **Rule:** the same pit as "Waiting on a detached chain ends the run". Start the chain itself with `run_in_background: true`.

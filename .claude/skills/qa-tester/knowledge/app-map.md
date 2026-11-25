@@ -38,6 +38,7 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`; ultrasound `us`, `us-referral-form`), not `field_send_to_hc`.
   A CHW's referral is `field_send_to_hc` (`refer-to-hc`, `referral-form`, `accompany-to-hc`), or `none` with `field_reason_not_sent_to_hc` (`client-refused`).
   A nurse's declined hospital referral stores `field_referrals` `none` with `field_reasons_for_non_referrals` `hospital-client-refused`; an ultrasound one `us`, `us-referral-form`.
+  Since #2594 the record also holds `field_phase_recorded` (`initial` / `recurrent`): the visit part that last gave or changed the hospital answer; empty on older records and when no hospital answer was given.
 - A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
@@ -472,6 +473,11 @@ flag simply does not appear.
   `backdateEncounter` sets both, which ends the visit.
 - Nurse postpartum hospital referral: after the postpartum helper chain, reopen Examination from Completed → GU Exam → tick "Bleeding" →
   Save: excessive bleeding brings Next Steps › Referral (hospital only). Stored as `nurse-postpartum` with `hospital, hospital-referral-form`.
+- Hospital + ultrasound referral fixture: Dating "not confident" (Irregular Menses), 26 w, `completeExamination` 165/100, then Core Physical Exam hand Edema → Mild to Moderate
+  Preeclampsia; full chain without Mental Health ~60 s (210 s recorded). Next Steps: Referral (hospital, ultrasound) + Next ANC Visit, no Wait; the visit can stay open.
+- Lab results Referral fixture: send Hepatitis B + Hemoglobin to the lab, enter only Hepatitis B Positive: the ANC Labs entry stays open (Hemoglobin owed), so the recurrent
+  page is reachable after a reload; its Next Steps is Referral (hospital only) behind a "tested positive for Hepatitis B" popup. A record holding only the ultrasound answer
+  opens that hospital question with No already chosen, no reason, 1/2 (develop and #2594).
 - Prenatal Next Steps › Referral: one `.form-input.yes-no.referral` per facility, hospital first, then `hand-referral-form` (Yes) or "Why not?"
   (No; Client refused first). Its Save has neither `active` nor `disabled` when pressable. With LMP not confident, eclampsia asks hospital and ultrasound.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
@@ -730,6 +736,7 @@ flag simply does not appear.
   still closes the entry. PR #2527 offers it only on the day the recheck was scheduled, as issue #2526 now asks.
 - A labs entry saved again on a later day (a lab result entered) drops `vitals-recheck` from its stored performed tests, on
   develop and the PR alike. With nothing else owed it is concluded that day and leaves ANC Labs; the stale recheck never returns.
+- The prenatal recurrent encounter page draws `.wrap-cards` too: test for the main menu with `.icon-task-clinical`.
 - Encounter page cards: the label is plain text in `.card` (`page.locator('.card').allTextContents()`), counted in the "To Do (n)" tab.
 - After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
   returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state;
