@@ -3,10 +3,11 @@ module Pages.Dashboard.Test exposing (all)
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
-import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw, decodePrenatalDataItem)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, SPVDataItem, SPVEncounterDataItem)
-import Backend.Measurement.Model exposing (DangerSign(..), FollowUpOption(..), Gender(..), PrenatalAssesment(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), PregnancyOutcome(..))
+import Backend.Measurement.Model exposing (DangerSign(..), FollowUpOption(..), Gender(..), PrenatalAssesment(..), ReferToFacilitySign(..), SendToHCSign(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
@@ -17,7 +18,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, previousThreeMonthsNewestFirst, resolveDayAfterSelectedDate, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countHospitalReferralsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, previousThreeMonthsNewestFirst, resolveDayAfterSelectedDate, resolveECDStatus)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -687,6 +688,379 @@ previousThreeMonthsNewestFirstTest =
         ]
 
 
+{-| A prenatal visit of `encounterType` on `startDate`, whose Next Steps
+referral recorded `referrals`.
+-}
+visitWithReferrals : PrenatalEncounterType -> NominalDate -> List ReferToFacilitySign -> PrenatalEncounterDataItem
+visitWithReferrals encounterType startDate referrals =
+    let
+        encounter =
+            prenatalEncounterOn startDate
+    in
+    { encounter
+        | encounterType = encounterType
+        , referToFacilitySigns = EverySet.fromList referrals
+    }
+
+
+{-| A nurse antenatal visit on `startDate` where the woman was referred to the
+hospital.
+-}
+nurseHospitalReferralOn : NominalDate -> PrenatalEncounterDataItem
+nurseHospitalReferralOn startDate =
+    visitWithReferrals NurseEncounter startDate [ ReferToHospital, ReferralFormHospital ]
+
+
+{-| An open pregnancy of person `identifier`, holding `encounters`.
+-}
+pregnancyWithVisits : PersonIdentifier -> List PrenatalEncounterDataItem -> PrenatalDataItem
+pregnancyWithVisits identifier encounters =
+    let
+        pregnancy =
+            openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10)
+    in
+    { pregnancy | identifier = identifier, encounters = encounters }
+
+
+{-| A CHW visit of `encounterType` on `startDate` where the woman was sent to
+the health centre, with the referral form handed and an escort.
+-}
+chwHealthCentreReferralOn : PrenatalEncounterType -> NominalDate -> PrenatalEncounterDataItem
+chwHealthCentreReferralOn encounterType startDate =
+    let
+        encounter =
+            prenatalEncounterOn startDate
+    in
+    { encounter
+        | encounterType = encounterType
+        , sendToHCSigns = EverySet.fromList [ HandReferrerForm, PrenatalAccompanyToHC, ReferToHealthCenter ]
+    }
+
+
+countHospitalReferralsForSelectedMonthTest : Test
+countHospitalReferralsForSelectedMonthTest =
+    let
+        endOfJuly =
+            day 31
+
+        count =
+            countHospitalReferralsForSelectedMonth endOfJuly
+
+        -- One pregnancy whose only visit is a nurse visit on `startDate`
+        -- recording `referrals`.
+        nurseVisitOnly startDate referrals =
+            [ pregnancyWithVisits 1 [ visitWithReferrals NurseEncounter startDate referrals ] ]
+    in
+    describe "countHospitalReferralsForSelectedMonth"
+        [ describe "A pregnancy referred to the hospital at a nurse visit (antenatal or postpartum) in the selected month counts in Hospital Referrals for that month"
+            [ test "a pregnancy referred to the hospital at a nurse antenatal visit in the selected month counts" <|
+                \_ ->
+                    -- The nurse records the hospital referral in Next Steps;
+                    -- nothing is recorded among the health-centre signs.
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (day 12) ] ]
+                        |> Expect.equal 1
+            , test "a pregnancy referred to the hospital at a nurse postpartum visit in the selected month counts" <|
+                \_ ->
+                    -- The pregnancy concluded with a live birth earlier in the
+                    -- month; the postpartum visit after it still counts.
+                    let
+                        pregnancy =
+                            pregnancyWithVisits 1
+                                [ prenatalEncounterOn (Date.fromCalendarDate 2026 Time.Jun 2)
+                                , visitWithReferrals NursePostpartumEncounter (day 20) [ ReferToHospital ]
+                                ]
+                    in
+                    count
+                        [ { pregnancy
+                            | dateConcluded = Just (day 5)
+                            , outcome = Just (Pregnancy OutcomeLiveAtTerm)
+                            , deliveryLocation = Just FacilityDelivery
+                          }
+                        ]
+                        |> Expect.equal 1
+            , test "the hospital referral counts without the referral form being handed" <|
+                \_ ->
+                    -- Whether the form was handed is a separate answer; the
+                    -- referral itself is what is counted.
+                    count (nurseVisitOnly (day 12) [ ReferToHospital ])
+                        |> Expect.equal 1
+            , test "a hospital referral recorded beside a referral to another service counts" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [ ReferToHospital, ReferToMentalHealthSpecialist, ReferralFormMentalHealthSpecialist ])
+                        |> Expect.equal 1
+            , test "a referral on the first day of the selected month counts" <|
+                \_ ->
+                    count (nurseVisitOnly (day 1) [ ReferToHospital ])
+                        |> Expect.equal 1
+            , test "a referral on the last day of the selected month counts" <|
+                \_ ->
+                    count (nurseVisitOnly (day 31) [ ReferToHospital ])
+                        |> Expect.equal 1
+            , test "a referral at a later nurse visit counts, after an earlier visit without one" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1
+                            [ visitWithReferrals NurseEncounter (Date.fromCalendarDate 2026 Time.May 4) [ NoReferToFacilitySigns ]
+                            , nurseHospitalReferralOn (day 12)
+                            ]
+                        ]
+                        |> Expect.equal 1
+            , test "a referral at the first nurse visit counts, before a later visit without one in the same month" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1
+                            [ nurseHospitalReferralOn (day 3)
+                            , visitWithReferrals NurseEncounter (day 24) [ NoReferToFacilitySigns ]
+                            ]
+                        ]
+                        |> Expect.equal 1
+            , test "two pregnancies each referred in the selected month count as two" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (day 8) ]
+                        , pregnancyWithVisits 2 [ visitWithReferrals NursePostpartumEncounter (day 15) [ ReferToHospital ] ]
+                        ]
+                        |> Expect.equal 2
+            , test "only the referred pregnancy counts, beside one that was not referred" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (day 8) ]
+                        , pregnancyWithVisits 2 [ visitWithReferrals NurseEncounter (day 9) [ NoReferToFacilitySigns ] ]
+                        ]
+                        |> Expect.equal 1
+            , test "no pregnancies count as 0" <|
+                \_ ->
+                    count []
+                        |> Expect.equal 0
+            ]
+        , describe "A pregnancy referred to the hospital at two nurse visits in the same month counts once, the same way the card counts today"
+            [ test "a pregnancy referred to the hospital at two nurse visits in the same month counts once" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (day 6), nurseHospitalReferralOn (day 27) ] ]
+                        |> Expect.equal 1
+            , test "a pregnancy referred at an antenatal and a postpartum nurse visit in the same month counts once" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1
+                            [ nurseHospitalReferralOn (day 2)
+                            , visitWithReferrals NursePostpartumEncounter (day 29) [ ReferToHospital ]
+                            ]
+                        ]
+                        |> Expect.equal 1
+            ]
+        , describe "A nurse visit where the nurse answered that the woman was not referred to the hospital doesn't count"
+            [ test "a nurse visit where the nurse answered that the woman was not referred to the hospital doesn't count" <|
+                \_ ->
+                    -- Answering "no" with a reason stores the 'none' value.
+                    count (nurseVisitOnly (day 12) [ NoReferToFacilitySigns ])
+                        |> Expect.equal 0
+            , test "a nurse visit with no referral answer stored doesn't count" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [])
+                        |> Expect.equal 0
+            ]
+        , describe "Referrals to other services (mental health specialist, ARV programme, NCD programme, ultrasound) don't count"
+            [ test "a referral to a mental health specialist doesn't count" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [ ReferToMentalHealthSpecialist, ReferralFormMentalHealthSpecialist, AccompanyToMentalHealthSpecialist ])
+                        |> Expect.equal 0
+            , test "a referral to the ARV programme doesn't count" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [ ReferToARVProgram, ReferralFormARVProgram, AccompanyToARVProgram ])
+                        |> Expect.equal 0
+            , test "a referral to the NCD programme doesn't count" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [ ReferToNCDProgram, ReferralFormNCDProgram, AccompanyToNCDProgram ])
+                        |> Expect.equal 0
+            , test "a referral to ultrasound doesn't count" <|
+                \_ ->
+                    count (nurseVisitOnly (day 12) [ ReferToUltrasound, ReferralFormUltrasound ])
+                        |> Expect.equal 0
+            , test "referrals to every other service at once don't count" <|
+                \_ ->
+                    count
+                        (nurseVisitOnly (day 12)
+                            [ ReferToARVProgram
+                            , ReferToMentalHealthSpecialist
+                            , ReferToNCDProgram
+                            , ReferToUltrasound
+                            ]
+                        )
+                        |> Expect.equal 0
+            , test "a referral to the health centre recorded at a nurse visit doesn't count" <|
+                \_ ->
+                    -- The card counts hospital referrals; a health-centre
+                    -- sign on a nurse visit, with no hospital referral, is
+                    -- not one.
+                    let
+                        encounter =
+                            prenatalEncounterOn (day 12)
+                    in
+                    count [ pregnancyWithVisits 1 [ { encounter | sendToHCSigns = EverySet.singleton ReferToHealthCenter } ] ]
+                        |> Expect.equal 0
+            ]
+        , describe "A CHW visit's referral to the health centre doesn't count"
+            [ test "a CHW visit's referral to the health centre doesn't count" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ chwHealthCentreReferralOn ChwFirstEncounter (day 12) ] ]
+                        |> Expect.equal 0
+            , test "a referral to the health centre at any kind of CHW visit doesn't count" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1 [ chwHealthCentreReferralOn ChwFirstEncounter (day 3) ]
+                        , pregnancyWithVisits 2 [ chwHealthCentreReferralOn ChwSecondEncounter (day 10) ]
+                        , pregnancyWithVisits 3 [ chwHealthCentreReferralOn ChwThirdPlusEncounter (day 17) ]
+                        , pregnancyWithVisits 4 [ chwHealthCentreReferralOn ChwPostpartumEncounter (day 24) ]
+                        ]
+                        |> Expect.equal 0
+            , test "a pregnancy sent to the health centre by a CHW and referred to the hospital by the nurse counts once" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1
+                            [ chwHealthCentreReferralOn ChwSecondEncounter (day 4)
+                            , nurseHospitalReferralOn (day 5)
+                            ]
+                        ]
+                        |> Expect.equal 1
+            ]
+        , describe "A hospital referral at a nurse visit in another month doesn't count in the selected month"
+            [ test "a hospital referral at a nurse visit in another month doesn't count in the selected month" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (Date.fromCalendarDate 2026 Time.Jun 12) ] ]
+                        |> Expect.equal 0
+            , test "a referral on the last day of the previous month doesn't count" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (Date.fromCalendarDate 2026 Time.Jun 30) ] ]
+                        |> Expect.equal 0
+            , test "a referral on the first day of the next month doesn't count" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (Date.fromCalendarDate 2026 Time.Aug 1) ] ]
+                        |> Expect.equal 0
+            , test "a referral in the same month of the previous year doesn't count" <|
+                \_ ->
+                    count [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (Date.fromCalendarDate 2025 Time.Jul 12) ] ]
+                        |> Expect.equal 0
+            , test "a pregnancy referred last month and seen this month without a referral doesn't count" <|
+                \_ ->
+                    count
+                        [ pregnancyWithVisits 1
+                            [ nurseHospitalReferralOn (Date.fromCalendarDate 2026 Time.Jun 20)
+                            , visitWithReferrals NurseEncounter (day 18) [ NoReferToFacilitySigns ]
+                            ]
+                        ]
+                        |> Expect.equal 0
+            , test "a pregnancy referred in the selected month and the next is counted in each" <|
+                \_ ->
+                    let
+                        pregnancies =
+                            [ pregnancyWithVisits 1
+                                [ nurseHospitalReferralOn (day 20)
+                                , nurseHospitalReferralOn (Date.fromCalendarDate 2026 Time.Aug 14)
+                                ]
+                            ]
+                    in
+                    [ count pregnancies
+                    , countHospitalReferralsForSelectedMonth (Date.fromCalendarDate 2026 Time.Aug 31) pregnancies
+                    ]
+                        |> Expect.equal [ 1, 1 ]
+            ]
+        ]
+
+
+{-| One pregnancy as the dashboard data carries it, with a nurse visit in
+July 2026. `referrals` is the visit's `referrals` field, or `Nothing` for data
+generated before that field existed.
+-}
+prenatalDataItemJson : Maybe Json.Encode.Value -> Json.Encode.Value
+prenatalDataItemJson referrals =
+    Json.Encode.object
+        [ ( "id", Json.Encode.int 1 )
+        , ( "created", Json.Encode.string "2026-03-10" )
+        , ( "expected_date_concluded", Json.Encode.string "2026-12-01" )
+        , ( "date_concluded", Json.Encode.null )
+        , ( "outcome", Json.Encode.null )
+        , ( "delivery_location", Json.Encode.null )
+        , ( "encounters"
+          , Json.Encode.list Json.Encode.object
+                [ [ ( "start_date", Json.Encode.string "2026-07-12" )
+                  , ( "encounter_type", Json.Encode.string "nurse" )
+                  , ( "danger_signs", Json.Encode.list Json.Encode.string [ "none" ] )
+                  , ( "diagnoses", Json.Encode.list Json.Encode.string [] )
+                  , ( "send_to_hc", Json.Encode.list Json.Encode.string [] )
+                  ]
+                    ++ (Maybe.map (\value -> [ ( "referrals", value ) ]) referrals
+                            |> Maybe.withDefault []
+                       )
+                ]
+          )
+        ]
+
+
+hospitalReferralsInSavedDataTest : Test
+hospitalReferralsInSavedDataTest =
+    let
+        -- Decodes one pregnancy and reads the card for July 2026.
+        countDecoded json =
+            Json.Decode.decodeValue decodePrenatalDataItem json
+                |> Result.map (List.singleton >> countHospitalReferralsForSelectedMonth (day 31))
+
+        strings =
+            Json.Encode.list Json.Encode.string
+    in
+    describe "A device whose saved dashboard data has no hospital referrals still shows the dashboard, with 0 on this card, until new data arrives"
+        [ test "a device whose saved dashboard data has no hospital referrals still shows the dashboard, with 0 on this card" <|
+            \_ ->
+                -- Data saved before the field existed has no `referrals` on
+                -- its visits. It must still decode, or the dashboard is gone.
+                countDecoded (prenatalDataItemJson Nothing)
+                    |> Expect.equal (Ok 0)
+        , test "saved dashboard data without referrals still decodes as a whole" <|
+            \_ ->
+                -- The whole stored record, as it is read on start, with a
+                -- pregnancy whose visit has no `referrals` field.
+                statsWithGenerationDate
+                    |> encodeDashboardStatsRaw
+                    |> List.map
+                        (\( key, value ) ->
+                            if key == "prenatal_data" then
+                                ( key, Json.Encode.list identity [ prenatalDataItemJson Nothing ] )
+
+                            else
+                                ( key, value )
+                        )
+                    |> Json.Encode.object
+                    |> Json.Decode.decodeValue decodeDashboardStatsRaw
+                    |> Result.map (.prenatalData >> countHospitalReferralsForSelectedMonth (day 31))
+                    |> Expect.equal (Ok 0)
+        , test "a null referrals value decodes, with 0 on this card" <|
+            \_ ->
+                countDecoded (prenatalDataItemJson (Just Json.Encode.null))
+                    |> Expect.equal (Ok 0)
+        , test "an empty referrals list decodes, with 0 on this card" <|
+            \_ ->
+                countDecoded (prenatalDataItemJson (Just (strings [])))
+                    |> Expect.equal (Ok 0)
+        , test "new data with a hospital referral at a nurse visit shows on this card" <|
+            \_ ->
+                countDecoded (prenatalDataItemJson (Just (strings [ "hospital", "hospital-referral-form" ])))
+                    |> Expect.equal (Ok 1)
+        , test "a referral value this version does not know is dropped, and the hospital referral beside it still counts" <|
+            \_ ->
+                countDecoded (prenatalDataItemJson (Just (strings [ "a-future-facility", "hospital" ])))
+                    |> Expect.equal (Ok 1)
+        , test "new data with a hospital referral is still counted after it is saved and read back" <|
+            \_ ->
+                -- Downloaded data is re-encoded before it is stored, and
+                -- decoded again on the next start.
+                { statsWithGenerationDate | prenatalData = [ pregnancyWithVisits 1 [ nurseHospitalReferralOn (day 12) ] ] }
+                    |> encodeDashboardStatsRaw
+                    |> Json.Encode.object
+                    |> Json.Decode.decodeValue decodeDashboardStatsRaw
+                    |> Result.map (.prenatalData >> countHospitalReferralsForSelectedMonth (day 31))
+                    |> Expect.equal (Ok 1)
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
@@ -697,6 +1071,8 @@ all =
         , countCurrentlyPregnantWithDangerSignsForSelectedMonthTest
         , dataItemMergeDuplicatesTest
         , followUpsTotalsTest
+        , countHospitalReferralsForSelectedMonthTest
+        , hospitalReferralsInSavedDataTest
         , previousThreeMonthsNewestFirstTest
         , resolveDayAfterSelectedDateTest
         , statsStorageRoundTripTest
