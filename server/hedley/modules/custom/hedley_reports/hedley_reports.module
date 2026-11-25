@@ -3447,6 +3447,8 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
 /**
  * Tells whether FBF activities are shown at a group session.
  *
+ * At ACHI groups only children get them; mothers there are shown nothing.
+ *
  * @param string $clinic_type
  *   The group type, for example 'fbf' or 'pmtct'.
  * @param \DateTime $start_date_obj
