@@ -1115,3 +1115,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after an ECD fill with the first answer No, `qa.form()` logged a single answer "Yes" (PR #2587).
 - **Wrong conclusion:** the No did not take. The ECD questions all share the class `form-input yes-no`, so `qa.form()` keeps only the last one.
 - **Rule:** for forms whose questions carry no name class (ECD), read the stored record (`well_child_ecd` `ecd_signs` in `shards`) or the screenshot.
+
+## `h.common.setDate` clicking last month's cell with the same number
+
+- **Symptom:** a develop child entered as 26/09/2024 was stored as 25/09/2024. The September 2024 grid starts on Monday 26 August, and that cell is greyed out (PR #2592).
+- **Wrong conclusion:** the form or the save changed the date.
+- **Rule:** the helper clicks the first cell showing the day's number. A greyed-out cell from the month before takes no click, so the date stays on the picker's earliest day. Pick the cell after the grid's first "1", and read `.date-input` back before saving.
+
+## Fixture names that start with another fixture's name (met again)
+
+- **Symptom:** a Participants-page card picked by "Qb2592DevFbfMom" opened the card of "Qb2592DevFbfMomB". Adding `$` to the regex then matched nothing, because the cards shorten names (PR #2592).
+- **Wrong conclusion:** the first mother has no child in the session.
+- **Rule:** the same pit as "A substring that also matches longer names". Give fixtures names that are not the start of another name (`…MomA`, `…MomB`).
+
+## A develop control that writes data a later hold row reads
+
+- **Symptom:** the PR's group search listed a child that develop's search had not, the Child Scorecard child that a develop control registered after that search (PR #2592).
+- **Wrong conclusion:** the PR widens the search.
+- **Rule:** run every develop hold read before any develop control that registers people, and give each control's people a name the hold rows' search does not match.

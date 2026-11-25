@@ -249,6 +249,11 @@ flag simply does not appear.
   session's group, already chosen). The nurse's save POSTs `pmtct_participant` (the group membership) first, then `relationship`.
 - A CHW's Add Child: Participant Directory → mother → Add Child → REGISTER A NEW PARTICIPANT → `#person/directory/new/<mother uuid>`;
   Save posts the person and opens Create Relationship ("is the parent of" / "is the caregiver for"), whose Save needs only that choice.
+  That save also puts the child in the village's CHW group ("Akanduga at Mbirima CHW group"), ending at birth + 26 months.
+- Child birth-date pickers: a group session's Add Child (FBF, PMTCT) runs from the day after 26 months ago to today since #2592; ACHI and Sorwathe from 13 years
+  ago plus one day. Child Scorecard runs from the day after 2 years ago to yesterday. Its Save opens `#child-scoreboard-participant/<uuid>` even for a child its search leaves out.
+- A group session's Add New Participant search, and the mother's Family Members forward arrow, take a child under 26 months (FBF, PMTCT, CHW group); ACHI takes any age.
+- Group membership on the server: `pmtct_participant` with `field_person` (child), `field_adult`, `field_clinic`, `field_expected` (start in `value`, end in `value2`; NULL for ACHI).
 - Linking existing people: Participant Directory → adult → `div.add-participant-icon-wrapper` → type the child's name → the result's
   `span.action-icon.forward` opens the Relationship page. One adult and three children by the registration helpers took about 20 s.
 - Failing or holding a relationship save: wrap `XMLHttpRequest` POSTs to `/sw/nodes/<type>` (`installSaveControls` in
@@ -636,6 +641,7 @@ flag simply does not appear.
   Build families: Attendance → Add New Participant → register the mother → her person page → Add Child →
   "is the parent of" → Save (checks her in). The child's activities are then under PARTICIPANTS in the header →
   the mother's card → the baby icon. Programs at Nyange: PMTCT, FBF, ACHI; FBF has only Nyange I.
+  Groups by nid: Nyange I 92 `fbf`, Nyagne II 93 `pmtct`, Nyagne III 94 `achi`; the program buttons read FBF, PMTCT, ACHI. No local Sorwathe group.
 - Participants cards cut names to "E2ETest Qa2532…", so a video shows counts, not names; Attendance shows full names.
   The Activities page cards read "<n> / <N> Completed" per activity and settle about a second after the page opens.
 - From a session page, `.link-back` three times reaches the main menu in-app (Participants → Groups → Programs → `#pincode`).
