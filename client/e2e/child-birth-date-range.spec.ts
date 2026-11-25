@@ -242,11 +242,11 @@ test.describe('Registration: child birth-date range', () => {
         .waitFor({ timeout: 30000 });
     });
 
-    test('FBF group: a child added to a mother starts at the graduating age, 26 months back', async ({ page }) => {
+    test('FBF group: a child added to a mother starts the day after the graduating age, 26 months back', async ({ page }) => {
       // Scenario: in an FBF group (neither Sorwathe nor ACHI), a nurse adds a
       // child to a newly registered mother.
-      // Criterion: the graduating-age limit for other group types is
-      // unchanged: the earliest birth date offered is 26 months ago.
+      // Criterion: for other group types, the earliest birth date offered is
+      // the day after 26 months ago, so the child is still listed for the group.
       await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
       await createMotherOnAttendancePage(page);
 
@@ -264,7 +264,7 @@ test.describe('Registration: child birth-date range', () => {
 
       const now = await today(page);
       const { earliest } = await chooseEarliestBirthDate(page);
-      expect(iso(earliest), 'earliest birth date offered').toBe(iso(addMonths(now, -26)));
+      expect(iso(earliest), 'earliest birth date offered').toBe(iso(addDays(addMonths(now, -26), 1)));
     });
   });
 
