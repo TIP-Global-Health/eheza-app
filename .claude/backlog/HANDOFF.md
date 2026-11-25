@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-12-19 (rerun the recurrence query in the entry on ihangane + vhw; none found 2026-11-19; user 2026-11-19: "keep monitoring for another 30 days") · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-✅ **Merged 2026-11-25** (user: "Can we merge yesterdays PRs?"): #2585 (B-358, issue #2582) `6223c4c28`, #2586 (B-643 + B-644, issue #2583) `d519caf2e`, #2587 (B-554, issue #2584) `becc44764`; branches + `-tests` branches deleted; issues stay open until the release sweep. **Post-deploy for #2586:** run `completion-generate-nutrition-group-data.php` (no `--exclude_set`); Acute Illness forward only. Side-finding **B-645** (tier 4) still queued.
+✅ **Merged 2026-11-25** (user: "Can we merge yesterdays PRs?"): #2585 (B-358, issue #2582) `6223c4c28`, #2586 (B-643 + B-644, issue #2583) `d519caf2e`, #2587 (B-554, issue #2584) `becc44764`; branches + `-tests` branches deleted; issues stay open until the release sweep. **Post-deploy for #2586** (`completion-generate-nutrition-group-data.php`, no `--exclude_set`) is in release PR #2417's post-deploy list. Side-finding **B-645** (tier 4) still queued.
 
 🅿 **B-642 PARKED by the user 2026-11-24 (verbatim: "Park it, with the sizing as the reason")** — sized on ihangane.live: 8 closed Acute Illness encounters lost a stored diagnosis, 0 by the same user (B-524 shape). Reopen trigger: B-499's second pass finding same-device losses on fixed builds. Do not re-pitch.
 
