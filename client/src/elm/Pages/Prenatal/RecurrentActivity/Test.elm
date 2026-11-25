@@ -2856,4 +2856,23 @@ hospitalReferralPhaseTest =
                 toPrenatalReferralValueWithDefaultRecurrentPhase specialistOnly emptyReferralForm
                     |> Maybe.andThen .hospitalReferralPhase
                     |> Expect.equal Nothing
+        , test "the exam saved again unchanged on a record from before the release: the lab results Send to HC stays completed" <|
+            \_ ->
+                let
+                    beforeRelease =
+                        storedHospitalAnswer Referred Nothing
+                in
+                toPrenatalReferralValueWithDefaultInitialPhase beforeRelease (examFormShown beforeRelease)
+                    |> labSendToHCCompleted hepatitisB
+                    |> Expect.equal True
+        , test "a lab results save that leaves the hospital question alone does not take over the hospital answer of a record from before the release" <|
+            \_ ->
+                toPrenatalReferralValueWithDefaultRecurrentPhase (storedHospitalAnswer Referred Nothing) emptyReferralForm
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
+        , test "an exam that refers only to the specialist does not record a hospital answer as the exam's" <|
+            \_ ->
+                examSave Nothing
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
         ]

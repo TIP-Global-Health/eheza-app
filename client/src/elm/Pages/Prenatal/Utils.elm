@@ -3539,9 +3539,36 @@ hospitalReferralAnswer value =
 
 hospitalNonReferralReasons : Maybe (EverySet NonReferralSign) -> EverySet NonReferralSign
 hospitalNonReferralReasons reasons =
-    getCurrentReasonForNonReferral NonReferralReasonHospital reasons
-        |> Maybe.map (NonReferralReasonHospital >> EverySet.singleton)
+    Maybe.map
+        (EverySet.filter
+            (\sign ->
+                case sign of
+                    NonReferralReasonHospital _ ->
+                        True
+
+                    _ ->
+                        False
+            )
+        )
+        reasons
         |> Maybe.withDefault EverySet.empty
+
+
+{-| True when the value holds a hospital answer: referred, or a reason for not
+referring.
+-}
+hospitalReferralAnswered : PrenatalReferralValue -> Bool
+hospitalReferralAnswered value =
+    let
+        ( referred, _, reasons ) =
+            hospitalReferralAnswer value
+    in
+    referred || not (EverySet.isEmpty reasons)
+
+
+hospitalReferralAnswerChanged : Maybe PrenatalReferralValue -> PrenatalReferralValue -> Bool
+hospitalReferralAnswerChanged saved value =
+    Maybe.map hospitalReferralAnswer saved /= Just (hospitalReferralAnswer value)
 
 
 toPrenatalReferralValueWithDefaultInitialPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
@@ -3551,19 +3578,16 @@ toPrenatalReferralValueWithDefaultInitialPhase saved form =
         |> Maybe.map
             (\value ->
                 let
-                    -- The lab results part's answer stays its own while the
-                    -- exam leaves the hospital answer unchanged.
+                    -- The exam takes the hospital answer only when it gives or
+                    -- changes it.
                     phase =
-                        if
-                            (savedHospitalReferralPhase saved == Just PhaseRecurrent)
-                                && (Maybe.map hospitalReferralAnswer saved == Just (hospitalReferralAnswer value))
-                        then
-                            PhaseRecurrent
+                        if hospitalReferralAnswered value && hospitalReferralAnswerChanged saved value then
+                            Just PhaseInitial
 
                         else
-                            PhaseInitial
+                            savedHospitalReferralPhase saved
                 in
-                { value | hospitalReferralPhase = Just phase }
+                { value | hospitalReferralPhase = phase }
             )
 
 
@@ -3573,14 +3597,22 @@ exam's hospital answer is kept.
 toPrenatalReferralValueWithDefaultRecurrentPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefaultRecurrentPhase saved form =
     let
+        savedPhase =
+            savedHospitalReferralPhase saved
+
+        answeredAtExam =
+            savedPhase == Just PhaseInitial
+
         filled =
             referralFormWithDefaultRecurrentPhase form saved
 
-        answeredHere =
+        -- With the exam's answer stored, the question opens unanswered, so an
+        -- answer here is the nurse's own.
+        enteredHere =
             isJust filled.referToHospital
 
         toSave =
-            if answeredHere || not (hospitalReferralAnsweredAtExam saved) then
+            if enteredHere || not answeredAtExam then
                 filled
 
             else
@@ -3608,15 +3640,21 @@ toPrenatalReferralValueWithDefaultRecurrentPhase saved form =
         |> Maybe.map
             (\value ->
                 let
-                    ( referred, _, reasons ) =
-                        hospitalReferralAnswer value
+                    givenHere =
+                        hospitalReferralAnswered value
+                            && (if answeredAtExam then
+                                    enteredHere
+
+                                else
+                                    hospitalReferralAnswerChanged saved value
+                               )
 
                     phase =
-                        if answeredHere && (referred || not (EverySet.isEmpty reasons)) then
+                        if givenHere then
                             Just PhaseRecurrent
 
                         else
-                            savedHospitalReferralPhase saved
+                            savedPhase
                 in
                 { value | hospitalReferralPhase = phase }
             )
