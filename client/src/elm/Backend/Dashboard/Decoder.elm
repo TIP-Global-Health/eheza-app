@@ -1,4 +1,4 @@
-module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw, decodePrenatalDataItem)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
