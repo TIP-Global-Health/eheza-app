@@ -6,6 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , ECDSign(..)
         , HeadCircumferenceInCm(..)
         , HeightInCm(..)
         , MeasurementNote(..)
@@ -16,6 +17,7 @@ import Backend.Measurement.Model
         , WeightInGrm(..)
         , WellChildVaccineType(..)
         )
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Utils exposing (ageInMonthsReached)
@@ -33,9 +35,14 @@ import Pages.WellChild.Activity.Utils
     exposing
         ( expectMedicationByAge
         , expectedECDSignsOnMilestone
+        , generateASAPImmunisationDate
+        , generateNextDateForImmunisationVisit
+        , generateNextVisitDates
         , immunisationTasksCompletedFromTotal
+        , nextVisitFormWithDefault
         , pregnancySummaryFormWithDefault
         , pregnancySummaryMeasurementsOutOfRange
+        , refreshNextVisitValue
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
         , resolveNextDateForMedicationVisitUnderSixMonths
@@ -68,6 +75,7 @@ all =
         , resolvePreviousMaybeValueTests
         , previousHeadCircumferenceTests
         , doseFallingDueTodayTests
+        , nextVisitAfterCorrectionTests
         ]
 
 
@@ -1543,3 +1551,366 @@ doseFallingDueTodayTestsFor hostName site encounterType =
               ]
             ]
         )
+
+
+{-| The nurse saves Next Steps > Next Visit, then reopens an activity from the
+encounter's Completed tab and changes an answer. Once the correction is saved,
+refreshNextVisitValue takes the saved Next Visit and returns it with its dates
+worked out again from the encounter's current data.
+
+Every scenario happens on one day, 15 July 2026, which is also the encounter's
+start date. The saved Next Visit holds the dates Next Visit took when it was
+saved, from the answers given before the correction (`savedBefore`).
+
+The next pediatric visit date is the earlier of the next ECD visit and the next
+medication visit:
+
+  - ECD: under 6 weeks of age the next ECD visit is at 6 weeks, or at 14 weeks
+    once the 5-week signs are all answered Yes; at 13 weeks it is at 14 weeks,
+    or at 6 months once the 13-week signs are all answered Yes.
+  - Medication: under 6 months it is at 6 months of age. Otherwise every
+    medication expected by age is due 6 months after it was last given today
+    (or today when never given), the latest of those is taken, and a date that
+    is today or past becomes today + 6 months.
+
+So a medication correction only moves the date when another medication was
+given more recently: a child of 2 years had one medication given 2 months ago
+(due again on 15 Nov 2026), and the one corrected today is due on 15 Jan 2027
+when given today, or today (so 15 Nov 2026 is the latest) when not given.
+
+-}
+nextVisitAfterCorrectionTests : Test
+nextVisitAfterCorrectionTests =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Jul 15
+
+        assembled birthDate previous measurements progress =
+            { id = toEntityUuid "encounter-today"
+            , encounter = Backend.WellChildEncounter.Model.emptyWellChildEncounter (toEntityUuid "participant") today PediatricCare Nothing
+            , participant = testParticipant birthDate WellChildEncounter
+            , person = TestFixtures.testChild birthDate
+            , measurements = measurements
+            , previousMeasurementsWithDates = previous
+            , vaccinationHistory = Dict.empty
+            , vaccinationProgress = progress
+            }
+
+        -- What Next Visit saved, from the answers before the correction.
+        savedBefore site before =
+            let
+                ( immunisationDate, pediatricVisitDate ) =
+                    generateNextVisitDates today site before
+            in
+            { immunisationDate = immunisationDate
+            , asapImmunisationDate = generateASAPImmunisationDate today site before
+            , pediatricVisitDate = pediatricVisitDate
+            , resolutionDate = Nothing
+            }
+
+        -- The saved Next Visit once the correction is saved.
+        refreshed site before after =
+            refreshNextVisitValue today site after (savedBefore site before)
+
+        -- ECD: a child aged 5 weeks on a first visit (no earlier ECD answers),
+        -- asked the two 5-week signs.
+        fiveWeeksBirthDate =
+            Date.fromCalendarDate 2026 Time.Jun 10
+
+        fiveWeeksECD signs =
+            assembled fiveWeeksBirthDate
+                []
+                { emptyWellChildMeasurements | ecd = wrapMeasurement today (EverySet.fromList signs) }
+                Dict.empty
+
+        fiveWeeksAllYes =
+            fiveWeeksECD [ FollowMothersEyes, MoveArmsAndLegs ]
+
+        fiveWeeksOneNo =
+            fiveWeeksECD [ FollowMothersEyes ]
+
+        -- All answers No is stored as NoECDSigns.
+        fiveWeeksAllNo =
+            fiveWeeksECD [ NoECDSigns ]
+
+        -- 6 and 14 weeks of age.
+        sixWeeks =
+            Date.fromCalendarDate 2026 Time.Jul 22
+
+        fourteenWeeks =
+            Date.fromCalendarDate 2026 Time.Sep 16
+
+        -- ECD: a child aged 13 weeks on a subsequent visit; the 5-week signs
+        -- were all answered Yes at the 5-week visit, today the 13-week signs
+        -- are asked.
+        thirteenWeeksBirthDate =
+            Date.fromCalendarDate 2026 Time.Apr 15
+
+        thirteenWeeksECD signs =
+            let
+                fiveWeekVisit =
+                    Date.fromCalendarDate 2026 Time.May 20
+            in
+            assembled thirteenWeeksBirthDate
+                [ ( fiveWeekVisit
+                  , ( toEntityUuid "encounter-five-weeks"
+                    , { emptyWellChildMeasurements
+                        | ecd = wrapMeasurement fiveWeekVisit (EverySet.fromList [ FollowMothersEyes, MoveArmsAndLegs ])
+                      }
+                    )
+                  )
+                ]
+                { emptyWellChildMeasurements | ecd = wrapMeasurement today (EverySet.fromList signs) }
+                Dict.empty
+
+        thirteenWeeksAllYes =
+            thirteenWeeksECD [ RaiseHandsUp, Smile, RollSideways ]
+
+        thirteenWeeksOneNo =
+            thirteenWeeksECD [ RaiseHandsUp, Smile ]
+
+        -- 14 weeks and 6 months of age for the child born on 15 April.
+        thirteenWeeksNextECD =
+            Date.fromCalendarDate 2026 Time.Jul 22
+
+        sixMonths =
+            Date.fromCalendarDate 2026 Time.Oct 15
+
+        -- Medication: a child aged 2 years (next ECD visit at 3 years, on 15
+        -- Jul 2027) whose previous visit, 2 months ago, gave one medication;
+        -- today the other medication is answered.
+        twoMonthsAgo =
+            Date.fromCalendarDate 2026 Time.May 15
+
+        medicationChild birthDate previousMeasurements todayMeasurements =
+            assembled birthDate
+                [ ( twoMonthsAgo, ( toEntityUuid "encounter-previous", previousMeasurements ) ) ]
+                todayMeasurements
+                Dict.empty
+
+        twoYearsBirthDate =
+            Date.fromCalendarDate 2024 Time.Jul 15
+
+        -- In Rwanda, Mebendazole (1 to 6 years) and Vitamin A (6 months to 6
+        -- years) are expected at 2 years.
+        mebendazoleToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement today note }
+
+        vitaminAToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement today note }
+
+        -- In Burundi, Albendazole (6 months to 12 years) and Vitamin A are
+        -- expected at 2 years; Mebendazole never is. In Rwanda Albendazole
+        -- starts at 6 years, where it is the only medication expected.
+        albendazoleToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | albendazole = wrapMeasurement today note }
+
+        -- Due 6 months after today's administration.
+        sixMonthsFromToday =
+            Date.fromCalendarDate 2027 Time.Jan 15
+
+        -- Due 6 months after the administration 2 months ago.
+        fourMonthsFromToday =
+            Date.fromCalendarDate 2026 Time.Nov 15
+
+        -- A child aged 14 months, whose next ECD visit (15 months, on 15 Aug
+        -- 2026) comes before either medication date.
+        fourteenMonthsMebendazoleToday note =
+            medicationChild (Date.fromCalendarDate 2025 Time.May 15)
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement today note }
+
+        fifteenMonths =
+            Date.fromCalendarDate 2026 Time.Aug 15
+
+        -- Immunisation: a child born 2 weeks ago, given BCG and OPV today;
+        -- the correction says BCG was not given. ECD and medication answers
+        -- do not change.
+        newbornBirthDate =
+            Date.fromCalendarDate 2026 Time.Jul 1
+
+        newborn vaccines =
+            assembled newbornBirthDate
+                []
+                emptyWellChildMeasurements
+                (Dict.fromList <|
+                    List.map (\vaccineType -> ( vaccineType, Dict.singleton VaccineDoseFirst today )) vaccines
+                )
+
+        newbornBCGAndOPV =
+            newborn [ VaccineBCG, VaccineOPV ]
+
+        newbornOPVOnly =
+            newborn [ VaccineOPV ]
+
+        newbornSixWeeks =
+            Date.fromCalendarDate 2026 Time.Aug 12
+
+        pediatricVisitDateOf =
+            .pediatricVisitDate
+    in
+    describe "Next Visit after a correction from the Completed tab"
+        [ describe "Scenario check: the dates Next Visit saved before the correction"
+            [ test "ECD at 5 weeks, all Yes: 14 weeks of age" <|
+                \_ ->
+                    savedBefore SiteRwanda fiveWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourteenWeeks)
+            , test "ECD at 5 weeks, one No: 6 weeks of age" <|
+                \_ ->
+                    savedBefore SiteRwanda fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "ECD at 13 weeks, all Yes: 6 months of age" <|
+                \_ ->
+                    savedBefore SiteRwanda thirteenWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonths)
+            , test "Mebendazole given today: 6 months from today" <|
+                \_ ->
+                    savedBefore SiteRwanda (mebendazoleToday AdministeredToday)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonthsFromToday)
+            , test "Mebendazole not given: when Vitamin A given 2 months ago is due" <|
+                \_ ->
+                    savedBefore SiteRwanda (mebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , describe "After Next Visit is saved, correcting an ECD answer from the Completed tab changes the saved next pediatric visit date to the one the corrected answers give"
+            [ test "first visit at 5 weeks, a Yes corrected to No: from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "first visit at 5 weeks, a No corrected to Yes: from 6 weeks to 14 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksOneNo fiveWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourteenWeeks)
+            , test "first visit at 5 weeks, every Yes corrected to No (stored as no signs): from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksAllNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "subsequent visit at 13 weeks, a Yes corrected to No: from 6 months to 14 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda thirteenWeeksAllYes thirteenWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just thirteenWeeksNextECD)
+            , test "the same correction in Burundi: from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteBurundi fiveWeeksAllYes fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            ]
+        , describe "The same holds after correcting an Albendazole, Mebendazole or Vitamin A answer"
+            [ test "Mebendazole, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (mebendazoleToday AdministeredToday) (mebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "Mebendazole, not given corrected to given today: from 4 months to 6 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (mebendazoleToday NonAdministrationLackOfStock) (mebendazoleToday AdministeredToday)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonthsFromToday)
+            , test "Vitamin A, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (vitaminAToday AdministeredToday) (vitaminAToday NonAdministrationPatientDeclined)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "Albendazole in Burundi, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteBurundi (albendazoleToday AdministeredToday) (albendazoleToday NonAdministrationKnownAllergy)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "a medication correction keeps the date when the next ECD visit comes first (14 months: 15 months of age)" <|
+                \_ ->
+                    refreshed SiteRwanda (fourteenMonthsMebendazoleToday AdministeredToday) (fourteenMonthsMebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fifteenMonths)
+            ]
+        , test "The progress report's Next Appointment pane shows the corrected date (it shows the saved Next Visit's pediatric visit date)" <|
+            \_ ->
+                -- The pane reads the latest encounter's saved Next Visit and
+                -- shows its pediatricVisitDate; the pane function itself is
+                -- not exposed.
+                refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                    |> wrapMeasurement today
+                    |> getMeasurementValueFunc
+                    |> Maybe.andThen .pediatricVisitDate
+                    |> Expect.equal (Just sixWeeks)
+        , describe "Reopening Next Visit shows the corrected date"
+            [ test "after an ECD correction" <|
+                \_ ->
+                    Just (refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo)
+                        |> nextVisitFormWithDefault emptyModel.nextStepsData.nextVisitForm
+                        |> .pediatricVisitDate
+                        |> Expect.equal (Just sixWeeks)
+            , test "after a medication correction" <|
+                \_ ->
+                    Just (refreshed SiteRwanda (mebendazoleToday AdministeredToday) (mebendazoleToday NonAdministrationLackOfStock))
+                        |> nextVisitFormWithDefault emptyModel.nextStepsData.nextVisitForm
+                        |> .pediatricVisitDate
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , describe "The next immunisation date is worked out again after a vaccination correction, as today"
+            [ test "BCG given today corrected to not given: the immunisation dates are those the corrected vaccinations give" <|
+                \_ ->
+                    refreshed SiteRwanda newbornBCGAndOPV newbornOPVOnly
+                        |> Expect.all
+                            [ .immunisationDate >> Expect.equal (generateNextDateForImmunisationVisit today SiteRwanda newbornOPVOnly)
+                            , .asapImmunisationDate >> Expect.equal (generateASAPImmunisationDate today SiteRwanda newbornOPVOnly)
+
+                            -- The correction does move a date, so the
+                            -- scenario tells a refresh from no refresh.
+                            , \value ->
+                                ( value.immunisationDate, value.asapImmunisationDate )
+                                    |> Expect.notEqual
+                                        (savedBefore SiteRwanda newbornBCGAndOPV
+                                            |> (\saved -> ( saved.immunisationDate, saved.asapImmunisationDate ))
+                                        )
+                            ]
+            , test "a vaccination correction keeps the pediatric visit date the unchanged ECD answers give (6 weeks of age)" <|
+                \_ ->
+                    refreshed SiteRwanda newbornBCGAndOPV newbornOPVOnly
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just newbornSixWeeks)
+            , test "an ECD correction keeps the immunisation dates the unchanged vaccinations give" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                        |> (\value -> ( value.immunisationDate, value.asapImmunisationDate ))
+                        |> Expect.equal
+                            ( generateNextDateForImmunisationVisit today SiteRwanda fiveWeeksOneNo
+                            , generateASAPImmunisationDate today SiteRwanda fiveWeeksOneNo
+                            )
+            ]
+        , describe "A correction made before Next Visit is saved changes nothing extra; Next Visit takes the current answers when it is saved, as today"
+            [ test "Next Visit saved after an ECD correction takes the corrected answers" <|
+                \_ ->
+                    generateNextVisitDates today SiteRwanda fiveWeeksOneNo
+                        |> Tuple.second
+                        |> Expect.equal (Just sixWeeks)
+            , test "Next Visit saved after a medication correction takes the corrected answers" <|
+                \_ ->
+                    generateNextVisitDates today SiteRwanda (mebendazoleToday NonAdministrationLackOfStock)
+                        |> Tuple.second
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , test "A correction keeps the saved resolution date" <|
+            \_ ->
+                -- The resolution date is not worked out from the encounter's
+                -- answers, so a refresh carries it over unchanged.
+                savedBefore SiteRwanda fiveWeeksAllYes
+                    |> (\saved -> { saved | resolutionDate = Just today })
+                    |> refreshNextVisitValue today SiteRwanda fiveWeeksOneNo
+                    |> .resolutionDate
+                    |> Expect.equal (Just today)
+        ]
