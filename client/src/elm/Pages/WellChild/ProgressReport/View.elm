@@ -1,5 +1,6 @@
 module Pages.WellChild.ProgressReport.View exposing
-    ( distributeByListIndex
+    ( assembleProgresReportData
+    , distributeByListIndex
     , generatePartitionedWarningEntries
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
@@ -64,7 +65,9 @@ import Measurement.Utils
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , generateVaccinationProgressDictByChildScoreboard
+        , generateVaccinationProgressDictByWellChild
         , getPreviousMeasurements
+        , mergeVaccinationProgressDicts
         , resolveChildANCPregnancyData
         )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
@@ -356,7 +359,7 @@ viewTabs language setActiveTabMsg activeTab =
         |> div [ class "ui segment tabs" ]
 
 
-assembleProgresReportData site childId db =
+assembleProgresReportData site ( childId, child ) db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -385,9 +388,16 @@ assembleProgresReportData site childId db =
             Dict.get childId db.expectedSessions
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.withDefault Dict.empty
+
+        -- Doses recorded at every Well Child and Child Scoreboard encounter.
+        vaccinationProgress =
+            mergeVaccinationProgressDicts
+                (generateVaccinationProgressDictByWellChild site child db childId)
+                (generateVaccinationProgressDictByChildScoreboard site db childId)
     in
     { maybeAssembled = maybeAssembled
     , expectedSessions = expectedSessions
+    , vaccinationProgress = vaccinationProgress
     , acuteIllnesses =
         List.filter
             (\( _, participant ) ->
@@ -429,7 +439,7 @@ viewContent :
 viewContent language currentDate zscores site initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
-            assembleProgresReportData site childId db
+            assembleProgresReportData site ( childId, child ) db
 
         individualWellChildMeasurements =
             getPreviousMeasurements reportData.individualWellChildMeasurementsWithDates
@@ -445,10 +455,6 @@ viewContent language currentDate zscores site initiator mandatoryNutritionAssess
                         -- typing new phone number. Therefore, we do not show it when
                         -- 'Send via WhatsApp' dialog is open, until its final
                         -- confirmation steps.
-                        vaccinationProgress =
-                            Maybe.map .vaccinationProgress reportData.maybeAssembled
-                                |> Maybe.withDefault Dict.empty
-
                         showGrowthPaneByWhatsAppDialog =
                             Maybe.map
                                 (\state ->
@@ -483,7 +489,7 @@ viewContent language currentDate zscores site initiator mandatoryNutritionAssess
                         currentDate
                         site
                         child
-                        vaccinationProgress
+                        reportData.vaccinationProgress
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildImmunizationHistory)
                     , viewECDPane language
                         currentDate
@@ -1575,7 +1581,7 @@ viewNCDAScorecard :
 viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     let
         reportData =
-            assembleProgresReportData site childId db
+            assembleProgresReportData site ( childId, child ) db
 
         groupNCDAs =
             Dict.values reportData.groupNutritionMeasurements.ncda
@@ -1614,14 +1620,6 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
 
         chwQuestionnairesByAgeInMonthsWithDate =
             distributeByAgeInMonthsWithDate child chwNCDAQuestionnaires
-
-        vaccinationProgressDict =
-            case reportData.maybeAssembled of
-                Just assembled ->
-                    assembled.vaccinationProgress
-
-                Nothing ->
-                    generateVaccinationProgressDictByChildScoreboard site db childId
     in
     [ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language db childId child allNCDAQuestionnaires
@@ -1631,7 +1629,7 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
         child
         nurseQuestionnairesByAgeInMonths
         chwQuestionnairesByAgeInMonthsWithDate
-        vaccinationProgressDict
+        reportData.vaccinationProgress
     , viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths
     , viewTargetedInterventionsPane language
         currentDate

@@ -1,9 +1,11 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
+import Backend.ChildScoreboardEncounter.Model exposing (emptyChildScoreboardEncounter)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (HeadCircumferenceInCm(..), HeadCircumferenceValue, HeightInCm(..), MeasurementNote(..), MuacInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..), WellChildMeasurements)
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), emptyWellChildEncounter)
@@ -15,8 +17,10 @@ import Json.Encode
 import List.Extra
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
-import Pages.WellChild.ProgressReport.View exposing (generatePartitionedWarningEntries, generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
+import Pages.WellChild.ProgressReport.View exposing (assembleProgresReportData, generatePartitionedWarningEntries, generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (emptyWellChildMeasurements, testChild, testParticipant, wrapMeasurement)
 import Time
@@ -31,6 +35,7 @@ all =
         , headCircumferenceWarningEntriesTests
         , malnutritionTreatmentValuesTests
         , universalInterventionsValuesTests
+        , vaccinationProgressTests
         ]
 
 
@@ -806,4 +811,133 @@ ecdWarningEntriesTests =
                 generatePartitionedWarningEntries [ visitEncounter visit ]
                     (Just { assembled | person = { child | birthDate = Nothing } })
                     |> expectEntries [] []
+        ]
+
+
+{-| Immunization History and the NCDA scorecard read the same doses: those
+recorded at every Well Child and Child Scoreboard encounter of the child.
+-}
+vaccinationProgressTests : Test
+vaccinationProgressTests =
+    let
+        childId =
+            toEntityUuid "child"
+
+        reportChild =
+            testChild (Date.fromCalendarDate 2024 Time.Mar 1)
+
+        healthCenterId =
+            toEntityUuid "health-center"
+
+        scoreboardParticipantId =
+            toEntityUuid "scoreboard-participant"
+
+        scoreboardEncounterId =
+            toEntityUuid "scoreboard-encounter"
+
+        wellChildParticipantId =
+            toEntityUuid "well-child-participant"
+
+        wellChildEncounterId =
+            toEntityUuid "well-child-encounter"
+
+        bcgDate =
+            Date.fromCalendarDate 2024 Time.Mar 4
+
+        opvDate =
+            Date.fromCalendarDate 2024 Time.Apr 12
+
+        dose encounterId date =
+            Just
+                ( toEntityUuid "dose"
+                , { dateMeasured = date
+                  , nurse = Nothing
+                  , healthCenter = Nothing
+                  , participantId = childId
+                  , deleted = False
+                  , encounterId = Just encounterId
+                  , value =
+                        { administeredDoses = EverySet.singleton Backend.Measurement.Model.VaccineDoseFirst
+                        , administrationDates = EverySet.singleton date
+                        , administrationNote = Backend.Measurement.Model.AdministeredToday
+                        }
+                  }
+                )
+
+        scoreboardMeasurements =
+            { ncda = Nothing
+            , bcgImmunisation = dose scoreboardEncounterId bcgDate
+            , dtpImmunisation = Nothing
+            , dtpStandaloneImmunisation = Nothing
+            , ipvImmunisation = Nothing
+            , mrImmunisation = Nothing
+            , opvImmunisation = Nothing
+            , pcv13Immunisation = Nothing
+            , rotarixImmunisation = Nothing
+            }
+
+        participant date encounterType =
+            Backend.IndividualEncounterParticipant.Model.emptyIndividualEncounterParticipant date childId encounterType healthCenterId
+
+        scoreboardOnlyDb : ModelIndexedDb
+        scoreboardOnlyDb =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.singleton scoreboardParticipantId
+                                (participant bcgDate Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter)
+                        )
+                , childScoreboardEncountersByParticipant =
+                    Dict.singleton scoreboardParticipantId
+                        (Success <| Dict.singleton scoreboardEncounterId (emptyChildScoreboardEncounter scoreboardParticipantId bcgDate Nothing))
+                , childScoreboardMeasurements =
+                    Dict.singleton scoreboardEncounterId (Success scoreboardMeasurements)
+            }
+
+        bothProgrammesDb : ModelIndexedDb
+        bothProgrammesDb =
+            { scoreboardOnlyDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.fromList
+                                [ ( scoreboardParticipantId
+                                  , participant bcgDate Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                                  )
+                                , ( wellChildParticipantId
+                                  , participant opvDate Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                                  )
+                                ]
+                        )
+                , wellChildEncountersByParticipant =
+                    Dict.singleton wellChildParticipantId
+                        (Success <| Dict.singleton wellChildEncounterId (emptyWellChildEncounter wellChildParticipantId opvDate PediatricCare Nothing))
+                , wellChildMeasurements =
+                    Dict.singleton wellChildEncounterId
+                        (Success { emptyWellChildMeasurements | opvImmunisation = dose wellChildEncounterId opvDate })
+            }
+
+        dosesOf vaccineType db =
+            (assembleProgresReportData SiteRwanda ( childId, reportChild ) db).vaccinationProgress
+                |> Dict.get vaccineType
+                |> Maybe.map Dict.toList
+    in
+    describe "Vaccinations shown on the report"
+        [ test "a child seen only at Child Scoreboard has the BCG dose recorded there" <|
+            \_ ->
+                dosesOf Backend.Measurement.Model.VaccineBCG scoreboardOnlyDb
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, bcgDate ) ])
+        , test "a child seen at both programmes has the Child Scoreboard BCG dose" <|
+            \_ ->
+                dosesOf Backend.Measurement.Model.VaccineBCG bothProgrammesDb
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, bcgDate ) ])
+        , test "a child seen at both programmes has the Well Child OPV dose" <|
+            \_ ->
+                dosesOf Backend.Measurement.Model.VaccineOPV bothProgrammesDb
+                    |> Expect.equal (Just [ ( Backend.Measurement.Model.VaccineDoseFirst, opvDate ) ])
+        , test "a child with no vaccination recorded anywhere has none" <|
+            \_ ->
+                (assembleProgresReportData SiteRwanda ( childId, reportChild ) emptyModelIndexedDb).vaccinationProgress
+                    |> Expect.equal Dict.empty
         ]
