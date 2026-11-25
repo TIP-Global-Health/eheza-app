@@ -318,6 +318,7 @@ prenatalEncounterOn startDate =
     , diagnoses = EverySet.empty
     , muac = Nothing
     , sendToHCSigns = EverySet.empty
+    , referToFacilitySigns = EverySet.empty
     }
 
 
