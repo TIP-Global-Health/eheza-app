@@ -65,7 +65,7 @@ earliestChildBirthDate currentDate =
 
 
 {-| The earliest birth date offered when registering a child from a group
-session of this type.
+session. Except at Sorwathe and ACHI, it is the day after the graduating age.
 -}
 earliestGroupChildBirthDate : ClinicType -> NominalDate -> NominalDate
 earliestGroupChildBirthDate clinicType currentDate =
@@ -74,14 +74,16 @@ earliestGroupChildBirthDate clinicType currentDate =
 
     else
         Date.add Date.Months (-1 * graduatingAgeInMonth) currentDate
+            |> Date.add Date.Days 1
 
 
 {-| The earliest birth date offered when registering a child for the Child
-Scoreboard.
+Scoreboard: the day after 2 years ago, so the child is still under 2.
 -}
 earliestChildScoreboardBirthDate : NominalDate -> NominalDate
 earliestChildScoreboardBirthDate currentDate =
     Date.add Date.Years -2 currentDate
+        |> Date.add Date.Days 1
 
 
 {-| The latest birth date an adult-only birth-date picker offers. Born exactly
