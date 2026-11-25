@@ -3526,18 +3526,21 @@ hospitalNonReferralReasons reasons =
 
 toPrenatalReferralValueWithDefaultInitialPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefaultInitialPhase saved form =
-    let
-        -- The exam never takes over an answer the lab results part gave.
-        phase =
-            if Maybe.andThen .hospitalReferralPhase saved == Just PhaseRecurrent then
-                PhaseRecurrent
-
-            else
-                PhaseInitial
-    in
     referralFormWithDefaultInitialPhase form saved
         |> toPrenatalReferralValue
-        |> Maybe.map (\value -> { value | hospitalReferralPhase = Just phase })
+        |> Maybe.map
+            (\value ->
+                let
+                    -- The exam never takes over an answer the lab results part gave.
+                    phase =
+                        if Maybe.andThen .hospitalReferralPhase saved == Just PhaseRecurrent then
+                            PhaseRecurrent
+
+                        else
+                            PhaseInitial
+                in
+                { value | hospitalReferralPhase = Just phase }
+            )
 
 
 {-| When the lab results part leaves the hospital question unanswered, the
@@ -3576,16 +3579,20 @@ toPrenatalReferralValueWithDefaultRecurrentPhase saved form =
                         else
                             Just reasons
                 }
-
-        phase =
-            if answeredHere then
-                Just PhaseRecurrent
-
-            else
-                Maybe.andThen .hospitalReferralPhase saved
     in
     toPrenatalReferralValue toSave
-        |> Maybe.map (\value -> { value | hospitalReferralPhase = phase })
+        |> Maybe.map
+            (\value ->
+                let
+                    phase =
+                        if answeredHere then
+                            Just PhaseRecurrent
+
+                        else
+                            Maybe.andThen .hospitalReferralPhase saved
+                in
+                { value | hospitalReferralPhase = phase }
+            )
 
 
 toPrenatalReferralValue : ReferralForm -> Maybe PrenatalReferralValue
