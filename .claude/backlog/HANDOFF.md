@@ -696,7 +696,7 @@ second encounter over an open antenatal one), B-227 (prenatal lab-results Blood 
 by `5d553d346`, never shows a result), B-230 (`gonorrhea-continued` encoded but undecodable → silently
 dropped since 2022; the ONLY encoder⊄decoder gap in all 209 list fields), B-231 (TB pane drops the patient
 when the TB item is newer than the AI TB-suspect item), B-233 (AI-TB / dummy-HIV entries create duplicate
-participants). Tier 4: B-225 (report-state change-guard dead → 2 user_saves per sync), B-228, B-229, B-234.
+participants). Tier 4: B-225 (report-state change-guard dead → 2 user_saves per sync), B-228 (✅ IMPLEMENTED 2026-11-26, issue #2599, PR #2602), B-229, B-234.
 B-036 extended (feeding-form derived signs), B-019 (parked) annotated. Counts after R24: **134 READY —
 T2 5 · T3 24 · T4 71**. ⚠ Two sizing queries the classifier blocked are written out in B-227 and B-230
 for the user to run on live. Dry-stop counter: 0.
