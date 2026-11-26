@@ -235,6 +235,7 @@ features[field_instance][] = node-ncd_referral-field_deleted
 features[field_instance][] = node-ncd_referral-field_ncd_encounter
 features[field_instance][] = node-ncd_referral-field_nurse
 features[field_instance][] = node-ncd_referral-field_person
+features[field_instance][] = node-ncd_referral-field_phase_recorded
 features[field_instance][] = node-ncd_referral-field_reasons_for_non_referrals
 features[field_instance][] = node-ncd_referral-field_referrals
 features[field_instance][] = node-ncd_referral-field_shards
