@@ -274,7 +274,7 @@ pregnancySummaryFormWithDefault form saved =
                     -- The checklist when the form holds none. "No" holds only
                     -- the "none" entry. A "Yes" the nurse gave, or kept after
                     -- unticking everything, stays an open task.
-                    checklist present noneEntry savedList =
+                    resolvedChecklist present noneEntry savedList =
                         case present of
                             Just False ->
                                 Just [ noneEntry ]
@@ -307,7 +307,7 @@ pregnancySummaryFormWithDefault form saved =
                         (listNotEmptyWithException NoDeliveryComplications savedDeliveryComplications |> Just)
                 , deliveryComplications =
                     or form.deliveryComplications
-                        (checklist form.deliveryComplicationsPresent NoDeliveryComplications savedDeliveryComplications)
+                        (resolvedChecklist form.deliveryComplicationsPresent NoDeliveryComplications savedDeliveryComplications)
                 , apgarScoresAvailable =
                     or form.apgarScoresAvailable
                         (asked ApgarScores [ value.apgarOneMin, value.apgarFiveMin ] |> Just)
@@ -326,7 +326,7 @@ pregnancySummaryFormWithDefault form saved =
                         (listNotEmptyWithException NoBirthDefects savedBirthDefects |> Just)
                 , birthDefects =
                     or form.birthDefects
-                        (checklist form.birthDefectsPresent NoBirthDefects savedBirthDefects)
+                        (resolvedChecklist form.birthDefectsPresent NoBirthDefects savedBirthDefects)
                 }
             )
 
@@ -342,7 +342,7 @@ toPregnancySummaryValue form =
     let
         -- A "Yes" with nothing ticked gives no value, so it is never
         -- stored as "none".
-        checklist present selected noneEntry =
+        storedChecklist present selected noneEntry =
             case ( present, selected ) of
                 ( Just True, Nothing ) ->
                     Nothing
@@ -353,7 +353,7 @@ toPregnancySummaryValue form =
                         |> Just
 
         deliveryComplications =
-            checklist form.deliveryComplicationsPresent form.deliveryComplications NoDeliveryComplications
+            storedChecklist form.deliveryComplicationsPresent form.deliveryComplications NoDeliveryComplications
 
         signs =
             [ ifNullableTrue ApgarScores form.apgarScoresAvailable
@@ -363,7 +363,7 @@ toPregnancySummaryValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySummarySigns)
 
         birthDefects =
-            checklist form.birthDefectsPresent form.birthDefects NoBirthDefects
+            storedChecklist form.birthDefectsPresent form.birthDefects NoBirthDefects
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
         |> andMap deliveryComplications

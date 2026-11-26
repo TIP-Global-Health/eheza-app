@@ -271,6 +271,15 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 |> getMeasurementValueFunc
                 |> pregnancySummaryFormWithDefault form_
 
+        -- Tapping the answer already shown changes nothing, so the items
+        -- ticked under a Yes are kept.
+        changeAnswer currentAnswer setAnswer value pregnancySummaryForm =
+            if currentAnswer == Just value then
+                pregnancySummaryForm
+
+            else
+                setAnswer value pregnancySummaryForm
+
         ( apgarScoresSection, apgarScoresTasks ) =
             let
                 ( apgarMeasurementsSection, apgarMeasurementsTasks ) =
@@ -484,11 +493,13 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     language
                     form.deliveryComplicationsPresent
                     (SetPregnancySummaryBoolInput
-                        (\value pregnancySummaryForm ->
-                            { pregnancySummaryForm
-                                | deliveryComplicationsPresent = Just value
-                                , deliveryComplications = Nothing
-                            }
+                        (changeAnswer form.deliveryComplicationsPresent
+                            (\value pregnancySummaryForm ->
+                                { pregnancySummaryForm
+                                    | deliveryComplicationsPresent = Just value
+                                    , deliveryComplications = Nothing
+                                }
+                            )
                         )
                     )
                     ""
@@ -538,11 +549,13 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     language
                     form.birthDefectsPresent
                     (SetPregnancySummaryBoolInput
-                        (\value pregnancySummaryForm ->
-                            { pregnancySummaryForm
-                                | birthDefectsPresent = Just value
-                                , birthDefects = Nothing
-                            }
+                        (changeAnswer form.birthDefectsPresent
+                            (\value pregnancySummaryForm ->
+                                { pregnancySummaryForm
+                                    | birthDefectsPresent = Just value
+                                    , birthDefects = Nothing
+                                }
+                            )
                         )
                     )
                     ""
