@@ -614,7 +614,7 @@ B-613	4	READY	LOW			B-608	Prenatal (nurse): diabetes found from a lab-history re
 B-614	3	READY	LOW		2555	B-573	NCD lab-results phase: when both phases refer to the hospital, the lab-results Referral task reads done from the initial
 B-615	3	READY	LOW		2555	B-573	NCD initial phase: a pregnant woman with hypertension AND diabetes or renal complications is referred to ANC services on
 B-616	4	READY	LOW			B-595	NCD HIV test: a saved test whose follow-up signs are pending or absent reopens with all four questions answered No
-B-617	4	READY	LOW			B-584	Completion report immunisations: two doses of one vaccine entered with the same date lose the last dose, so the next dos
+B-617	4	UNKNOWN	LOW			B-584	Completion report immunisations: two doses of one vaccine entered with the same date lose the last dose, so the next dos
 B-618	4	READY	LOW			B-584	Completion report (NCD): a recurrent test due 6 or 12 months after one done on the 29th–31st may not be expected on the 
 B-619	4	READY	LOW			B-584	Completion report (Prenatal): a tetanus dose the app offers at once because the last dose was before this pregnancy is n
 B-620	4	READY	LOW			B-610	Photo measurements: a late-synced or edited OLDER photo measurement replaces the person's newer profile photo
