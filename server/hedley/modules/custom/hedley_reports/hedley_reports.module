@@ -3447,6 +3447,8 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
 /**
  * Tells whether FBF activities are shown at a group session.
  *
+ * At ACHI groups only children get them; mothers there are shown nothing.
+ *
  * @param string $clinic_type
  *   The group type, for example 'fbf' or 'pmtct'.
  * @param \DateTime $start_date_obj
@@ -3475,10 +3477,15 @@ function hedley_reports_fbf_activities_shown($clinic_type, DateTime $start_date_
  *   The expected activity types.
  */
 function hedley_reports_nutrition_group_mother_expected_activities($person, array $measurements_by_type, $clinic_type, DateTime $start_date_obj) {
+  // The app shows no mother activities at ACHI groups.
+  if ($clinic_type == 'achi') {
+    return [];
+  }
+
   $expected = ['family_planning'];
 
   // Lactation (and possibly Mother FBF) activity are shown
-  // for sessions taking place at FBF and ACHI clinics.
+  // for sessions taking place at FBF clinics.
   if (hedley_reports_fbf_activities_shown($clinic_type, $start_date_obj)) {
     $expected[] = 'lactation';
 
