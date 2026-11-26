@@ -647,6 +647,7 @@ B-646	4	WONTFIX	LOW		2592	B-560	Person registration from a group session: when t
 B-647	4	PARKED	LOW		2592	B-560	Group enrolment: near a month end, a child the group still takes gets an enrolment end date of today, so the enrolment m
 B-648	4	READY	LOW		2598	B-620	Person photo: an older visit photo synced late still replaces a newer photo taken on the person form
 B-649	4	READY	LOW		2598	B-620	Person photo: deleting the photo measurement that set the person's photo leaves the deleted photo as the person's photo
+B-650	4	READY	LOW		2601	B-614	NCD referral: changing a saved "not referred" hospital answer to Yes keeps the old reason in the record
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
