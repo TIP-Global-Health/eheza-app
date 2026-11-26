@@ -644,7 +644,7 @@ B-643	4	IMPLEMENTED	LOW			72	Completion report › Nutrition Group: Mother FBF i
 B-644	4	IMPLEMENTED	LOW			72	Completion report › Acute Illness: COVID testing is not expected for fever, a non-positive malaria test and two general 
 B-645	4	IMPLEMENTED	LOW	2590	2595	B-643	Completion report › Nutrition Group: mothers at ACHI groups are expected to do Family Planning and Lactation, which the 
 B-646	4	WONTFIX	LOW		2592	B-560	Person registration from a group session: when the expected age is "adult or child", or the person has no relation, the 
-B-647	4	READY	LOW		2592	B-560	Group enrolment: near a month end, a child the group still takes gets an enrolment end date of today, so the enrolment m
+B-647	4	PARKED	LOW		2592	B-560	Group enrolment: near a month end, a child the group still takes gets an enrolment end date of today, so the enrolment m
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
