@@ -2,7 +2,7 @@ module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertension
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, hospitalNonReferralReasons, hospitalReferralAnsweredAtInitialPhase, savedHospitalReferralPhase, testPerformedByExecutionNote)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, hospitalReferralAnsweredAtInitialPhase, hospitalReferralPhaseAfterInitialSave, hospitalReferralPhaseAfterRecurrentSave, keepHospitalNonReferralReasons, savedHospitalReferralPhase, testPerformedByExecutionNote, withoutHospitalNonReferralReasons)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -3501,7 +3501,7 @@ referralFormWithDefaultRecurrentPhase form saved =
             , facilityNonReferralReasons =
                 or form.facilityNonReferralReasons
                     (Maybe.andThen .facilityNonReferralReasons saved
-                        |> Maybe.map (\reasons -> EverySet.diff reasons (hospitalNonReferralReasons (Just reasons)))
+                        |> withoutHospitalNonReferralReasons
                     )
         }
 
@@ -3516,40 +3516,18 @@ hospitalReferralAnswer value =
         value.facilityNonReferralReasons
 
 
-{-| True when the value holds a hospital answer: referred, or a reason for not
-referring.
--}
-hospitalReferralAnswered : PrenatalReferralValue -> Bool
-hospitalReferralAnswered value =
-    let
-        ( referred, _, reasons ) =
-            hospitalReferralAnswer value
-    in
-    referred || not (EverySet.isEmpty reasons)
-
-
-hospitalReferralAnswerChanged : Maybe PrenatalReferralValue -> PrenatalReferralValue -> Bool
-hospitalReferralAnswerChanged saved value =
-    Maybe.map hospitalReferralAnswer saved /= Just (hospitalReferralAnswer value)
-
-
 toPrenatalReferralValueWithDefaultInitialPhase : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefaultInitialPhase saved form =
     referralFormWithDefaultInitialPhase form saved
         |> toPrenatalReferralValue
         |> Maybe.map
             (\value ->
-                let
-                    -- The exam takes the hospital answer only when it gives or
-                    -- changes it.
-                    phase =
-                        if hospitalReferralAnswered value && hospitalReferralAnswerChanged saved value then
-                            Just PhaseInitial
-
-                        else
-                            savedHospitalReferralPhase saved
-                in
-                { value | hospitalReferralPhase = phase }
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterInitialSave (savedHospitalReferralPhase saved)
+                            (Maybe.map hospitalReferralAnswer saved)
+                            (hospitalReferralAnswer value)
+                }
             )
 
 
@@ -3581,44 +3559,24 @@ toPrenatalReferralValueWithDefaultRecurrentPhase saved form =
                 let
                     atExam =
                         referralFormWithDefault emptyReferralForm saved
-
-                    reasons =
-                        EverySet.union
-                            (hospitalNonReferralReasons atExam.facilityNonReferralReasons)
-                            (Maybe.withDefault EverySet.empty filled.facilityNonReferralReasons)
                 in
                 { filled
                     | referToHospital = atExam.referToHospital
                     , referralFormHospital = atExam.referralFormHospital
                     , facilityNonReferralReasons =
-                        if EverySet.isEmpty reasons then
-                            filled.facilityNonReferralReasons
-
-                        else
-                            Just reasons
+                        keepHospitalNonReferralReasons atExam.facilityNonReferralReasons filled.facilityNonReferralReasons
                 }
     in
     toPrenatalReferralValue toSave
         |> Maybe.map
             (\value ->
-                let
-                    givenHere =
-                        hospitalReferralAnswered value
-                            && (if answeredAtExam then
-                                    enteredHere
-
-                                else
-                                    hospitalReferralAnswerChanged saved value
-                               )
-
-                    phase =
-                        if givenHere then
-                            Just PhaseRecurrent
-
-                        else
-                            savedPhase
-                in
-                { value | hospitalReferralPhase = phase }
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterRecurrentSave savedPhase
+                            (Maybe.map hospitalReferralAnswer saved)
+                            (hospitalReferralAnswer value)
+                            enteredHere
+                }
             )
 
 

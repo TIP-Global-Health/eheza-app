@@ -63,7 +63,6 @@ import Pages.NCD.Utils
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
-        , toReferralValueWithDefault
         , toReferralValueWithDefaultInitialPhase
         , toReferralValueWithDefaultRecurrentPhase
         )
@@ -1965,12 +1964,12 @@ changedReferralAnswerTest =
     describe "A saved hospital referral changed to No"
         [ test "the handed-form question is not filled from the record" <|
             \_ ->
-                referralFormWithDefault changedToNo savedReferral
+                referralFormWithDefaultInitialPhase changedToNo savedReferral
                     |> .referralFormHospital
                     |> Expect.equal Nothing
         , test "the record saved holds no handed-form answer" <|
             \_ ->
-                toReferralValueWithDefault savedReferral changedToNo
+                toReferralValueWithDefaultInitialPhase savedReferral changedToNo
                     |> Maybe.map (.referralSigns >> EverySet.member ReferralFormHospital)
                     |> Expect.equal (Just False)
         ]

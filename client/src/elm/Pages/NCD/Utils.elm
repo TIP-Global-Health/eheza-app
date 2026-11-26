@@ -1,9 +1,9 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, toReferralValueWithDefaultInitialPhase, toReferralValueWithDefaultRecurrentPhase, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefaultInitialPhase, toReferralValueWithDefaultRecurrentPhase, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, hospitalNonReferralReasons, hospitalReferralAnswer, hospitalReferralAnsweredAtInitialPhase, savedHospitalReferralPhase, testPerformedByExecutionNote)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, hospitalReferralAnswer, hospitalReferralAnsweredAtInitialPhase, hospitalReferralPhaseAfterInitialSave, hospitalReferralPhaseAfterRecurrentSave, keepHospitalNonReferralReasons, savedHospitalReferralPhase, testPerformedByExecutionNote, withoutHospitalNonReferralReasons)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
@@ -522,7 +522,7 @@ referralFormWithDefaultRecurrentPhase form saved =
             , nonReferralReasons =
                 or form.nonReferralReasons
                     (Maybe.andThen .nonReferralReasons saved
-                        |> Maybe.map (\reasons -> EverySet.diff reasons (hospitalNonReferralReasons (Just reasons)))
+                        |> withoutHospitalNonReferralReasons
                     )
         }
 
@@ -530,28 +530,9 @@ referralFormWithDefaultRecurrentPhase form saved =
         seeded
 
 
-toReferralValueWithDefault : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
-toReferralValueWithDefault saved form =
-    referralFormWithDefault form saved
-        |> toReferralValue
-
-
 ncdHospitalReferralAnswer : ReferralValue -> ( Bool, Bool, EverySet NonReferralSign )
 ncdHospitalReferralAnswer value =
     hospitalReferralAnswer value.referralSigns value.nonReferralReasons
-
-
-{-| True when the value holds a hospital answer: referred, or a reason for not
-referring.
--}
-hospitalReferralAnswered : ReferralValue -> Bool
-hospitalReferralAnswered value =
-    Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons FacilityHospital
-
-
-hospitalReferralAnswerChanged : Maybe ReferralValue -> ReferralValue -> Bool
-hospitalReferralAnswerChanged saved value =
-    Maybe.map ncdHospitalReferralAnswer saved /= Just (ncdHospitalReferralAnswer value)
 
 
 toReferralValueWithDefaultInitialPhase : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
@@ -560,17 +541,12 @@ toReferralValueWithDefaultInitialPhase saved form =
         |> toReferralValue
         |> Maybe.map
             (\value ->
-                let
-                    -- The first part takes the hospital answer only when it gives
-                    -- or changes it.
-                    phase =
-                        if hospitalReferralAnswered value && hospitalReferralAnswerChanged saved value then
-                            Just PhaseInitial
-
-                        else
-                            savedHospitalReferralPhase saved
-                in
-                { value | hospitalReferralPhase = phase }
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterInitialSave (savedHospitalReferralPhase saved)
+                            (Maybe.map ncdHospitalReferralAnswer saved)
+                            (ncdHospitalReferralAnswer value)
+                }
             )
 
 
@@ -602,44 +578,24 @@ toReferralValueWithDefaultRecurrentPhase saved form =
                 let
                     atInitialPhase =
                         referralFormWithDefault emptyReferralForm saved
-
-                    reasons =
-                        EverySet.union
-                            (hospitalNonReferralReasons atInitialPhase.nonReferralReasons)
-                            (Maybe.withDefault EverySet.empty filled.nonReferralReasons)
                 in
                 { filled
                     | referToHospital = atInitialPhase.referToHospital
                     , referralFormHospital = atInitialPhase.referralFormHospital
                     , nonReferralReasons =
-                        if EverySet.isEmpty reasons then
-                            filled.nonReferralReasons
-
-                        else
-                            Just reasons
+                        keepHospitalNonReferralReasons atInitialPhase.nonReferralReasons filled.nonReferralReasons
                 }
     in
     toReferralValue toSave
         |> Maybe.map
             (\value ->
-                let
-                    givenHere =
-                        hospitalReferralAnswered value
-                            && (if answeredAtInitialPhase then
-                                    enteredHere
-
-                                else
-                                    hospitalReferralAnswerChanged saved value
-                               )
-
-                    phase =
-                        if givenHere then
-                            Just PhaseRecurrent
-
-                        else
-                            savedPhase
-                in
-                { value | hospitalReferralPhase = phase }
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterRecurrentSave savedPhase
+                            (Maybe.map ncdHospitalReferralAnswer saved)
+                            (ncdHospitalReferralAnswer value)
+                            enteredHere
+                }
             )
 
 
