@@ -43,6 +43,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
 import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -614,7 +615,16 @@ generateAcuteIllnessFollowUpEntryData currentDate limitDate db ( participantId, 
         dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.andThen .dateConcluded
+                |> Maybe.andThen
+                    (\participant ->
+                        if isAcuteIllnessActive participant then
+                            Nothing
+
+                        else
+                            -- An illness closed by an older app version has
+                            -- no concluded date, so its end date stands in.
+                            Maybe.Extra.or participant.dateConcluded participant.endDate
+                    )
                 |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
     in
     if dateConcludedCriteria == Just LT then

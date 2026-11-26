@@ -159,6 +159,10 @@ generateAcuteIllnessFollowUpEntriesTests =
             \_ ->
                 run [ illness "closed" concluded ]
                     |> Expect.equal []
+        , test "drops an illness closed by an older app version, with an outcome but no concluded date" <|
+            \_ ->
+                run [ illness "closed" { concluded | dateConcluded = Nothing } ]
+                    |> Expect.equal []
         , test "keeps another illness of the same person that is still open" <|
             \_ ->
                 run [ illness "closed" concluded, illness "open" participant ]
