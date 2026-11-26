@@ -617,12 +617,12 @@ generateAcuteIllnessFollowUpEntryData currentDate limitDate db ( participantId, 
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.andThen
                     (\participant ->
+                        -- An illness closed by an older app version has no
+                        -- concluded date, so its end date stands in.
                         if isAcuteIllnessActive participant then
-                            Nothing
+                            participant.dateConcluded
 
                         else
-                            -- An illness closed by an older app version has
-                            -- no concluded date, so its end date stands in.
                             Maybe.Extra.or participant.dateConcluded participant.endDate
                     )
                 |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
