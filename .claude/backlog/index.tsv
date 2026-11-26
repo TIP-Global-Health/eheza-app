@@ -195,7 +195,7 @@ B-194	3	IMPLEMENTED		2133	2134	21	Prenatal: EDD-null pregnancies are ACTIVE FORE
 B-195	2	PARKED				21	Individual encounters: the create-button db-lag race mints DUPLICATE participants in ALL NINE flows, and the app can onl
 B-196	3	READY				21	Prenatal: participant EDD goes STALE when LMP is edited/re-dated — the B-140 dropped-patch mechanism has a live data tra
 B-197	3	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
-B-198	2	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
+B-198	2	PARKED				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
 B-199	3	READY				21	Group enrolment/relationship duplicates from unconditional posts and local-dedup races: 1,101 children double-enrolled i
 B-200	3	IMPLEMENTED		2123	2124	21	✅ IMPLEMENTED 2026-08-20 (issue #2123, PR #2124, range 20-600 per user) — Blood glucose: mg/dL field takes mmol/L-typed 
 B-201		IMPLEMENTED				22	server/elm duplication batch: 7 PR groups, ~400-500 net lines removable, ZERO drift found
