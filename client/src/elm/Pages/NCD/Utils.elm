@@ -1198,8 +1198,8 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
 
 
-{-| The Referral task is done when the facility this phase refers to was
-referred to, or a reason was set for not referring there.
+{-| Done when this phase's facility was referred to, or a reason for not
+referring was set. The lab results part needs its own hospital answer.
 -}
 referralTaskCompleted : NCDEncounterPhase -> AssembledData -> Bool
 referralTaskCompleted phase assembled =
