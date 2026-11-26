@@ -265,19 +265,29 @@ pregnancySummaryFormWithDefault form saved =
             form
             (\value ->
                 let
-                    deliveryComplications =
-                        if form.deliveryComplicationsPresent == Just False then
-                            [ NoDeliveryComplications ]
+                    savedDeliveryComplications =
+                        EverySet.toList value.deliveryComplications
 
-                        else
-                            EverySet.toList value.deliveryComplications
+                    savedBirthDefects =
+                        EverySet.toList value.birthDefects
 
-                    birthDefects =
-                        if form.birthDefectsPresent == Just False then
-                            [ NoBirthDefects ]
+                    -- The checklist under a Yes / No answer. "No" holds only
+                    -- the "none" entry. "Yes" over a saved "none" starts
+                    -- empty, so the checklist stays an open task.
+                    checklist present noneEntry savedList =
+                        case present of
+                            Just False ->
+                                Just [ noneEntry ]
 
-                        else
-                            EverySet.toList value.birthDefects
+                            Just True ->
+                                if listNotEmptyWithException noneEntry savedList then
+                                    Just savedList
+
+                                else
+                                    Nothing
+
+                            Nothing ->
+                                Just savedList
 
                     signsFromValue =
                         EverySet.toList value.signs
@@ -298,8 +308,10 @@ pregnancySummaryFormWithDefault form saved =
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 , deliveryComplicationsPresent =
                     or form.deliveryComplicationsPresent
-                        (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
-                , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
+                        (listNotEmptyWithException NoDeliveryComplications savedDeliveryComplications |> Just)
+                , deliveryComplications =
+                    or form.deliveryComplications
+                        (checklist form.deliveryComplicationsPresent NoDeliveryComplications savedDeliveryComplications)
                 , apgarScoresAvailable =
                     or form.apgarScoresAvailable
                         (asked ApgarScores [ value.apgarOneMin, value.apgarFiveMin ] |> Just)
@@ -315,8 +327,10 @@ pregnancySummaryFormWithDefault form saved =
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =
                     or form.birthDefectsPresent
-                        (listNotEmptyWithException NoBirthDefects birthDefects |> Just)
-                , birthDefects = or form.birthDefects (Just birthDefects)
+                        (listNotEmptyWithException NoBirthDefects savedBirthDefects |> Just)
+                , birthDefects =
+                    or form.birthDefects
+                        (checklist form.birthDefectsPresent NoBirthDefects savedBirthDefects)
                 }
             )
 
