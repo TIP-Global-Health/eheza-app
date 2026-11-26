@@ -1,10 +1,12 @@
 module Pages.GlobalCaseManagement.Test exposing (all)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (PersonId)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
-import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (concludeParticipant, resolveOpenParticipant)
 import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue, Gender(..), LaboratoryTest(..), PrenatalAssesment(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
@@ -14,7 +16,7 @@ import EverySet
 import Expect
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, EncounterStartedToday(..), ImmunizationFollowUpItem)
 import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, generateHIVFollowUps, generateHIVParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, resolveEncounterStartedToday)
-import Pages.GlobalCaseManagement.View exposing (generateImmunizationFollowUpEntries)
+import Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateImmunizationFollowUpEntries)
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -30,6 +32,7 @@ all =
         , filterFollowUpsOfChasedChildrenTests
         , filterFollowUpsOfResidentsTests
         , filterResolvedFollowUpsTests
+        , generateAcuteIllnessFollowUpEntriesTests
         , generateImmunizationFollowUpEntriesTests
         , generateTuberculosisFollowUpsTests
         , resolveEncounterStartedTodayTests
@@ -82,6 +85,92 @@ filterResolvedFollowUpsTests =
             \_ ->
                 filterResolvedFollowUps limitDate Nothing
                     |> Expect.equal True
+        ]
+
+
+{-| The Acute Illness pane lists the follow up of an open illness, and
+drops an illness once the CHW records its outcome.
+-}
+generateAcuteIllnessFollowUpEntriesTests : Test
+generateAcuteIllnessFollowUpEntriesTests =
+    let
+        personId =
+            toEntityUuid "person"
+
+        today =
+            Date.fromCalendarDate 2026 Time.Jun 10
+
+        participant =
+            emptyIndividualEncounterParticipant today
+                personId
+                IndividualEncounterParticipant.AcuteIllnessEncounter
+                (toEntityUuid "health-center")
+
+        concluded =
+            concludeParticipant today
+                (IndividualEncounterParticipant.AcuteIllness IndividualEncounterParticipant.OutcomeIllnessResolved)
+                participant
+
+        illness name participant_ =
+            let
+                participantId =
+                    toEntityUuid name
+
+                encounterId =
+                    toEntityUuid (name ++ "-encounter")
+
+                encounter =
+                    emptyAcuteIllnessEncounter participantId today 1 AcuteIllnessEncounterCHW Nothing
+            in
+            { participantId = participantId
+            , participant = participant_
+            , encounters = Dict.singleton encounterId { encounter | diagnosis = DiagnosisFeverOfUnknownOrigin }
+            , item =
+                AcuteIllnessFollowUpItem today
+                    "Patient"
+                    (Just encounterId)
+                    1
+                    { options = EverySet.singleton OneDay
+                    , resolutionDate = Nothing
+                    , diagnosis = Nothing
+                    }
+            }
+
+        run illnesses =
+            generateAcuteIllnessFollowUpEntries today
+                (Date.add Date.Days 1 today)
+                (List.map (\data -> ( ( data.participantId, personId ), data.item )) illnesses |> Dict.fromList)
+                { emptyModelIndexedDb
+                    | individualParticipants =
+                        List.map (\data -> ( data.participantId, RemoteData.Success data.participant )) illnesses
+                            |> Dict.fromList
+                    , acuteIllnessEncountersByParticipant =
+                        List.map (\data -> ( data.participantId, RemoteData.Success data.encounters )) illnesses
+                            |> Dict.fromList
+                }
+                |> List.map .participantId
+    in
+    describe "generateAcuteIllnessFollowUpEntries"
+        [ test "lists the follow up of an illness with no outcome" <|
+            \_ ->
+                run [ illness "open" participant ]
+                    |> Expect.equal [ toEntityUuid "open" ]
+        , test "drops an illness once its outcome is recorded" <|
+            \_ ->
+                run [ illness "closed" concluded ]
+                    |> Expect.equal []
+        , test "keeps another illness of the same person that is still open" <|
+            \_ ->
+                run [ illness "closed" concluded, illness "open" participant ]
+                    |> Expect.equal [ toEntityUuid "open" ]
+        , test "closing sets the end date, the concluded date and the outcome" <|
+            \_ ->
+                ( concluded.endDate, concluded.dateConcluded, concluded.outcome )
+                    |> Expect.equal
+                        ( Just today
+                        , Just today
+                        , Just (IndividualEncounterParticipant.AcuteIllness IndividualEncounterParticipant.OutcomeIllnessResolved)
+                        )
         ]
 
 
