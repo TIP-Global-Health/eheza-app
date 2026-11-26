@@ -579,7 +579,7 @@ B-578	1	PARKED	MED-HIGH			54	Prenatal: a pregnancy whose FIRST nurse encounter w
 B-579	2	IMPLEMENTED	MED-HIGH	2520	2521	54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
 B-580	3	IMPLEMENTED	MED	2544	2547	54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
 B-581	1	CLOSED	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
-B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
+B-582	3	IMPLEMENTED	MED-LOW	2591	2594	54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 B-584	4	IMPLEMENTED	LOW	2561	2564	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
 B-585		IMPLEMENTED		2516	2517	54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
