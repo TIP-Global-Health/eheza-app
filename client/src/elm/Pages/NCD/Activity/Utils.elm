@@ -24,7 +24,7 @@ import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsForm, ExaminationData, FamilyHistoryForm, MedicalHistoryData, MedicationHistoryForm, Msg(..), NextStepsData, SocialHistoryForm, SymptomReviewForm)
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
-import Pages.NCD.Utils exposing (diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
+import Pages.NCD.Utils exposing (diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefaultInitialPhase, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -1052,7 +1052,7 @@ nextStepsTasksCompletedFromTotal assembled data task =
             let
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.referral
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultInitialPhase data.referralForm
                         |> resolveReferralInputsAndTasks English
                             NCDEncounterPhaseInitial
                             assembled

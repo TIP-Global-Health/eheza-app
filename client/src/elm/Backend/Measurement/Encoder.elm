@@ -4189,6 +4189,7 @@ encodeReferralValue : ReferralValue -> List ( String, Value )
 encodeReferralValue value =
     ( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns )
         :: encodeEverySetNullable "reasons_for_non_referrals" value.nonReferralReasons encodeNonReferralSign
+        ++ encodeIfSet "phase_recorded" value.hospitalReferralPhase encodePhaseRecorded
         ++ [ ( "type", string "ncd_referral" ) ]
 
 

@@ -56,6 +56,8 @@ import Pages.NCD.Utils
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
         , toReferralValueWithDefault
+        , toReferralValueWithDefaultInitialPhase
+        , toReferralValueWithDefaultRecurrentPhase
         )
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
@@ -1284,6 +1286,7 @@ hospitalReferred : ReferralValue
 hospitalReferred =
     { referralSigns = EverySet.fromList [ ReferToHospital, ReferralFormHospital ]
     , nonReferralReasons = Nothing
+    , hospitalReferralPhase = Nothing
     }
 
 
@@ -1302,6 +1305,7 @@ hospitalNotReferred : ReferralValue
 hospitalNotReferred =
     { referralSigns = EverySet.singleton NoReferToFacilitySigns
     , nonReferralReasons = Just (EverySet.singleton (NonReferralReasonHospital NoAmbulance))
+    , hospitalReferralPhase = Nothing
     }
 
 
@@ -1312,6 +1316,7 @@ ancReferred : ReferralValue
 ancReferred =
     { referralSigns = EverySet.fromList [ ReferToANCServices, ReferralFormANCServices, AccompanyToANCServices ]
     , nonReferralReasons = Nothing
+    , hospitalReferralPhase = Nothing
     }
 
 
@@ -1322,6 +1327,7 @@ ancNotReferred : ReferralValue
 ancNotReferred =
     { referralSigns = EverySet.singleton NoReferToFacilitySigns
     , nonReferralReasons = Just (EverySet.singleton (NonReferralReasonANCServices ClientRefused))
+    , hospitalReferralPhase = Nothing
     }
 
 
@@ -1546,12 +1552,12 @@ hospitalNoInputs =
 -}
 savedAfterInitial : ReferralValue -> List Msg -> Maybe ReferralValue
 savedAfterInitial saved msgs =
-    toReferralValueWithDefault (Just saved) (initialFormAfter saved msgs)
+    toReferralValueWithDefaultInitialPhase (Just saved) (initialFormAfter saved msgs)
 
 
 savedAfterRecurrent : ReferralValue -> List RecurrentModel.Msg -> Maybe ReferralValue
 savedAfterRecurrent saved msgs =
-    toReferralValueWithDefault (Just saved) (recurrentFormAfter saved msgs)
+    toReferralValueWithDefaultRecurrentPhase (Just saved) (recurrentFormAfter saved msgs)
 
 
 hasSigns : List ReferToFacilitySign -> Maybe ReferralValue -> Bool
@@ -1936,6 +1942,7 @@ changedReferralAnswerTest =
             Just
                 { referralSigns = EverySet.fromList [ ReferToHospital, ReferralFormHospital ]
                 , nonReferralReasons = Nothing
+                , hospitalReferralPhase = Nothing
                 }
 
         changedToNo =

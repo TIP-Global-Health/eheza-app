@@ -1,4 +1,4 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, toReferralValueWithDefaultInitialPhase, toReferralValueWithDefaultRecurrentPhase, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -501,9 +501,31 @@ referralFormWithDefault form saved =
             )
 
 
+referralFormWithDefaultInitialPhase : ReferralForm -> Maybe ReferralValue -> ReferralForm
+referralFormWithDefaultInitialPhase =
+    referralFormWithDefault
+
+
+referralFormWithDefaultRecurrentPhase : ReferralForm -> Maybe ReferralValue -> ReferralForm
+referralFormWithDefaultRecurrentPhase =
+    referralFormWithDefault
+
+
 toReferralValueWithDefault : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
 toReferralValueWithDefault saved form =
     referralFormWithDefault form saved
+        |> toReferralValue
+
+
+toReferralValueWithDefaultInitialPhase : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
+toReferralValueWithDefaultInitialPhase saved form =
+    referralFormWithDefaultInitialPhase form saved
+        |> toReferralValue
+
+
+toReferralValueWithDefaultRecurrentPhase : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
+toReferralValueWithDefaultRecurrentPhase saved form =
+    referralFormWithDefaultRecurrentPhase form saved
         |> toReferralValue
 
 
@@ -524,6 +546,7 @@ toReferralValue form =
         (\signs ->
             { referralSigns = signs
             , nonReferralReasons = form.nonReferralReasons
+            , hospitalReferralPhase = Nothing
             }
         )
         referralSigns
