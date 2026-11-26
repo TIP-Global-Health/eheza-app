@@ -2,7 +2,7 @@ module Pages.Person.View exposing (view, viewCreateEditForm, viewSelectInput, vi
 
 import App.Model exposing (GPSCoordinates)
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
@@ -26,10 +26,12 @@ import Backend.Person.Utils
     exposing
         ( defaultIconForPerson
         , earliestChildBirthDate
+        , earliestChildScoreboardBirthDate
+        , earliestGroupChildBirthDate
         , educationLevelToInt
         , expectedAgeByPerson
         , generateFullName
-        , graduatingAgeInMonth
+        , groupTakesChild
         , hivStatusToString
         , isAdult
         , isPersonAnAdult
@@ -54,7 +56,7 @@ import Form.Input
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -421,13 +423,11 @@ viewOtherPerson language currentDate site isChw initiator db relationMainId ( ot
                                                 |> Maybe.withDefault True
 
                                         qualifiesByAge =
-                                            isAdult || List.member session.clinicType [ Sorwathe, Achi ] || childAgeCondition
+                                            isAdult || childAgeCondition
 
-                                        -- When clinic type is not Sorwathe or Achi, we expect child age
-                                        -- to be less than 26 month.
                                         childAgeCondition =
                                             person.birthDate
-                                                |> Maybe.map (\birthDate -> diffMonths birthDate currentDate < graduatingAgeInMonth)
+                                                |> Maybe.map (groupTakesChild session.clinicType currentDate)
                                                 |> Maybe.withDefault False
 
                                         alreadyParticipates =
@@ -621,7 +621,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -2 today
+                            , birthDateSelectorFrom = earliestChildScoreboardBirthDate today
                             , birthDateSelectorTo = Date.add Days -1 today
                             , title = Translate.People
                             }
@@ -707,14 +707,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
                                                 earliestBirthDate =
                                                     getSession sessionId db
-                                                        |> Maybe.map
-                                                            (\session ->
-                                                                if List.member session.clinicType [ Sorwathe, Achi ] then
-                                                                    defaultEarliestBirthDate
-
-                                                                else
-                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
-                                                            )
+                                                        |> Maybe.map (\session -> earliestGroupChildBirthDate session.clinicType currentDate)
                                                         |> Maybe.withDefault defaultEarliestBirthDate
                                             in
                                             ( earliestBirthDate, currentDate )

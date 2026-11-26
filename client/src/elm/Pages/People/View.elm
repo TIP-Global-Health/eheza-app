@@ -1,19 +1,18 @@
 module Pages.People.View exposing (view)
 
 import AssocList as Dict
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, groupTakesChild, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -189,13 +188,7 @@ viewSearchForm language currentDate site maybeVillageId isChw initiator relation
                         case initiator of
                             GroupEncounterOrigin sessionId ->
                                 Maybe.map2
-                                    (\session birthDate ->
-                                        if List.member session.clinicType [ Sorwathe, Achi ] then
-                                            True
-
-                                        else
-                                            diffMonths birthDate currentDate < graduatingAgeInMonth
-                                    )
+                                    (\session birthDate -> groupTakesChild session.clinicType currentDate birthDate)
                                     (getSession sessionId db)
                                     filteredPerson.birthDate
                                     |> Maybe.withDefault True
