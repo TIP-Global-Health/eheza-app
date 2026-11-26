@@ -1181,3 +1181,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the logged outcome-page button read "Subsequent Acute Illness Encounter … Uncomplicated Malaria", the previous view's text, and the click that followed went to the outcome page (PR #2602).
 - **Wrong conclusion:** the click opened the outcome page, so the read was right. Elm reuses the button node; a click a moment earlier would have started a subsequent encounter.
 - **Rule:** after switching the acute illness participant page's view, wait about a second before reading or clicking `.active-illnesses` buttons, and check the server's encounter count after the run.
+
+## `page.reload()` keeps the page you were on (met again)
+
+- **Symptom:** a reload helper waited 20 s for the Well Child encounter page after a reload on the Birth History form, and the hold script stopped half-way (PR #2603).
+- **Wrong conclusion:** a reload returns to the encounter page.
+- **Rule:** the same pit. After a reload, wait for the encounter page or the activity page, and press the activity's `.link-back` when it is the activity.

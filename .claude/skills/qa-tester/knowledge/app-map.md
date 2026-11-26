@@ -554,6 +554,9 @@ flag simply does not appear.
   (macrocephaly), 48 cm normal. Beyond ±3 a `div.ui.active.modal.danger-signs-popup` warns, and the
   reading saves only on its CONTINUE. The warning is kept on the visit (`field_encounter_warnings`;
   on the device the `well_child_encounter` row's `encounter_warnings`), not on the measurement.
+- Newborn exam Birth History (Pregnancy Summary, `.ui.form.pregnancy-summary`, card "BIRTH HISTORY" `.icon-task-history`): its four yes/no inputs have no name class, so `qa.form()` keeps one. Read them by position:
+  Apgar, birth length, complications, defects. Yes shows checkboxes (`.ui.checkbox.activity`, 7 complications, 16 defects, labels "HIV", "Maternal Hemorrhage", "ClubFoot"); `completePregnancySummary` leaves No / No at 9/9.
+- Server: `well_child_pregnancy_summary` with `field_delivery_complications` / `field_birth_defects` (`none`, `hiv`, `maternal-hemmorhage`, `club-foot`). The Well Child progress report's Child Scorecard tab shows "Birth Defect: Yes/No" from it.
 - Nurse ECD at 5 weeks: 2 yes/no questions; at 19 months 26, all No gives the "refer the child to a specialist" popup.
 - Nurse ECD at 24 months: 31 yes/no questions. All No gives an encounter-page popup ("Child is behind
   on ECD milestones…", CONTINUE) and the warning `warning-ecd-milestone-refer-to-specialist`.
