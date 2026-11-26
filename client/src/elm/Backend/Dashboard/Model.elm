@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , IsolationSign
         , MedicalCondition
         , Recommendation114
+        , ReferToFacilitySign
         , SendToHCSign
         , TestExecutionNote
         , TestResult
@@ -274,6 +275,7 @@ type alias PrenatalEncounterDataItem =
     , diagnoses : EverySet PrenatalDiagnosis
     , muac : Maybe Float
     , sendToHCSigns : EverySet SendToHCSign
+    , referToFacilitySigns : EverySet ReferToFacilitySign
     }
 
 

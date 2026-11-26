@@ -17,6 +17,7 @@ import Backend.Measurement.Encoder
         , encodeMedicalCondition
         , encodeNutritionSign
         , encodeRecommendation114
+        , encodeReferToFacilitySign
         , encodeSendToHCSign
         , encodeTestExecutionNote
         , encodeTestResult
@@ -327,6 +328,7 @@ encodePrenatalEncounterDataItem item =
         , ( "encounter_type", encodePrenatalEncounterType item.encounterType )
         , ( "diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault item.diagnoses) )
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
+        , ( "referrals", encodeEverySet encodeReferToFacilitySign item.referToFacilitySigns )
         ]
             ++ muac
 

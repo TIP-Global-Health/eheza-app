@@ -1193,6 +1193,10 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query->addField('send_to_hc', 'field_send_to_hc_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT send_to_hc.field_send_to_hc_value)", 'send_to_hc');
 
+  // Pull data of the facility referrals a nurse recorded during encounter.
+  $query->leftJoin('field_data_field_referrals', 'referrals', 'referrals.entity_id = prenatal_encounter.entity_id');
+  $query->addExpression("GROUP_CONCAT(DISTINCT referrals.field_referrals_value)", 'referrals');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
@@ -1214,6 +1218,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
       'send_to_hc' => explode(',', $row->send_to_hc),
+      'referrals' => empty($row->referrals) ? [] : explode(',', $row->referrals),
       'diagnoses' => explode(',', $row->prenatal_diagnoses),
     ];
 
