@@ -14,6 +14,7 @@ class HedleyRestfulPrenatalSendToHC extends HedleyRestfulPrenatalActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
+    'field_phase_recorded',
     'field_reason_not_sent_to_hc',
   ];
 

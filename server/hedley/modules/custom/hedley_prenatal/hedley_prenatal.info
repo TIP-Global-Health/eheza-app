@@ -315,6 +315,7 @@ features[field_instance][] = node-prenatal_send_to_hc-field_date_measured
 features[field_instance][] = node-prenatal_send_to_hc-field_deleted
 features[field_instance][] = node-prenatal_send_to_hc-field_nurse
 features[field_instance][] = node-prenatal_send_to_hc-field_person
+features[field_instance][] = node-prenatal_send_to_hc-field_phase_recorded
 features[field_instance][] = node-prenatal_send_to_hc-field_prenatal_encounter
 features[field_instance][] = node-prenatal_send_to_hc-field_reason_not_sent_to_hc
 features[field_instance][] = node-prenatal_send_to_hc-field_reasons_for_non_referrals

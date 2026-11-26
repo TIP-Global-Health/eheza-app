@@ -3185,6 +3185,7 @@ decodePrenatalReferralValue =
         |> optional "reason_not_sent_to_hc" (nullable decodeReasonForNonReferral) Nothing
         |> optional "referrals" (nullable (decodeEverySet decodeReferToFacilitySign)) Nothing
         |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeNonReferralSign)) Nothing
+        |> optional "phase_recorded" (nullable decodePhaseRecorded) Nothing
 
 
 decodeReferToFacilitySign : Decoder ReferToFacilitySign

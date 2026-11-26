@@ -4,6 +4,8 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (PersonId, PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Decoder exposing (decodePrenatalSendToHc)
+import Backend.Measurement.Encoder exposing (encodePrenatalSendToHC)
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
@@ -17,18 +19,23 @@ import Backend.Measurement.Model
         , MalariaTestValue
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , NonReferralSign(..)
         , PartnerHIVTestValue
+        , PhaseRecorded(..)
         , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , PrenatalMedicationDistributionValue
+        , PrenatalReferralValue
+        , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
+        , ReferToFacilitySign(..)
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , TestResult(..)
         , VitalsValue
         , emptyPrenatalMeasurements
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.PrenatalActivity.Model as PrenatalActivity
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
@@ -37,6 +44,9 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Json.Decode
+import Json.Encode
+import Maybe.Extra
 import Measurement.Model exposing (HIVResultForm, HIVTestUniversalForm, LaboratoryTask(..), PartnerHIVResultForm, PartnerHIVTestForm, emptyHIVResultForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm)
 import Measurement.Utils
     exposing
@@ -54,9 +64,10 @@ import Measurement.Utils
         , viewPartnerHIVTestForm
         )
 import Pages.Prenatal.Activity.Model as Initial
+import Pages.Prenatal.Activity.Types as InitialTypes
 import Pages.Prenatal.Activity.Update as ActivityUpdate
-import Pages.Prenatal.Activity.Utils exposing (generatePrenatalDiagnosesForNurse)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyMedicationDistributionForm)
+import Pages.Prenatal.Activity.Utils as InitialUtils exposing (generatePrenatalDiagnosesForNurse)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), ReferralForm, emptyMedicationDistributionForm, emptyReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model as Recurrent
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Update as RecurrentUpdate
@@ -74,7 +85,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
         , resolveNextStepsTasks
         , withCompletedTestsFromMeasurements
         )
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, resolveMedicationDistributionInputsAndTasks, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, resolveMedicationDistributionInputsAndTasks, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, toPrenatalReferralValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefaultRecurrentPhase)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -2173,6 +2184,608 @@ labsEntryLastResultByNurseTest =
         ]
 
 
+
+-- The hospital referral asked again by the lab results part.
+--
+-- At a nurse visit the exam and the lab results part share one Send to HC
+-- record. When the exam already answered the hospital referral, here for
+-- pyelonephritis, and a lab result later gives a diagnosis that needs a
+-- hospital referral too (a positive Hepatitis B, Rh-negative), the lab
+-- results part asks the hospital question again, for the new diagnosis. Its
+-- answer replaces only the hospital answer: the exam's answers for the mental
+-- health specialist, ARV and NCD services stay.
+--
+-- The scenarios go through the functions the app's forms and Save buttons
+-- use. The exam's Save stores toPrenatalReferralValueWithDefaultInitialPhase,
+-- the lab results' Save stores toPrenatalReferralValueWithDefaultRecurrentPhase,
+-- and each part's form is seeded from the stored record by its own
+-- referralFormWithDefault function. The visit also has a probable depression
+-- with a mental health specialist at the health centre, so the exam's Send to
+-- HC needs both the hospital and the specialist answered.
+
+
+{-| How the nurse answered the hospital question in one part of the visit.
+-}
+type HospitalAnswer
+    = NotReferred ReasonForNonReferral
+    | Referred
+
+
+{-| The exam's findings: one needs a hospital referral, the other the mental
+health specialist.
+-}
+examDiagnoses : List PrenatalDiagnosis
+examDiagnoses =
+    [ DiagnosisDepressionProbable, DiagnosisPyelonephritis ]
+
+
+{-| A finding that sends only to the mental health specialist, so the exam
+never asks the hospital question.
+-}
+examDiagnosesWithoutHospital : List PrenatalDiagnosis
+examDiagnosesWithoutHospital =
+    [ DiagnosisDepressionProbable ]
+
+
+{-| The exam's referral form as the nurse filled it. Every other place is
+answered: the specialist referred with a form, ARV referred with a form and
+accompanied, NCD not referred for lack of an ambulance. Nothing for the
+hospital means the exam did not ask the hospital question.
+-}
+examForm : Maybe HospitalAnswer -> ReferralForm
+examForm hospital =
+    let
+        ( referToHospital, referralFormHospital, hospitalReasons ) =
+            case hospital of
+                Just (NotReferred reason) ->
+                    ( Just False, Nothing, [ NonReferralReasonHospital reason ] )
+
+                Just Referred ->
+                    ( Just True, Just True, [] )
+
+                Nothing ->
+                    ( Nothing, Nothing, [] )
+    in
+    { emptyReferralForm
+        | referToHospital = referToHospital
+        , referralFormHospital = referralFormHospital
+        , referToMentalHealthSpecialist = Just True
+        , referralFormMentalHealthSpecialist = Just True
+        , accompanyToMentalHealthSpecialist = Just False
+        , referToARVProgram = Just True
+        , referralFormARVProgram = Just True
+        , accompanyToARVProgram = Just True
+        , referToNCDProgram = Just False
+        , facilityNonReferralReasons = Just (EverySet.fromList (NonReferralReasonNCDProgram NoAmbulance :: hospitalReasons))
+    }
+
+
+{-| What the exam's Save stores, on a visit with no Send to HC record yet.
+-}
+examSave : Maybe HospitalAnswer -> Maybe PrenatalReferralValue
+examSave hospital =
+    toPrenatalReferralValueWithDefaultInitialPhase Nothing (examForm hospital)
+
+
+{-| What the lab results' Save stores after the nurse answers the hospital
+question there, built the way the app builds it. "Referred" sets the referral
+and the form question on an untouched form. "Not referred" sets No on an
+untouched form; picking the reason then seeds the form from the stored record
+and swaps the reason the form shows for the picked one, as the
+SetFacilityNonReferralReason handler does.
+-}
+labResultsSave : HospitalAnswer -> Maybe PrenatalReferralValue -> Maybe PrenatalReferralValue
+labResultsSave answer saved =
+    case answer of
+        NotReferred reason ->
+            let
+                shown =
+                    referralFormWithDefaultRecurrentPhase { emptyReferralForm | referToHospital = Just False } saved
+
+                picked =
+                    NonReferralReasonHospital reason
+
+                reasons =
+                    Maybe.map
+                        (\set ->
+                            case getCurrentReasonForNonReferral NonReferralReasonHospital shown.facilityNonReferralReasons of
+                                Just current ->
+                                    EverySet.remove (NonReferralReasonHospital current) set
+                                        |> EverySet.insert picked
+
+                                Nothing ->
+                                    EverySet.insert picked set
+                        )
+                        shown.facilityNonReferralReasons
+                        |> Maybe.withDefault (EverySet.singleton picked)
+            in
+            toPrenatalReferralValueWithDefaultRecurrentPhase saved { shown | facilityNonReferralReasons = Just reasons }
+
+        Referred ->
+            toPrenatalReferralValueWithDefaultRecurrentPhase saved
+                { emptyReferralForm | referToHospital = Just True, referralFormHospital = Just True }
+
+
+{-| The lab results' Save after the nurse answered No to the hospital and
+picked no reason.
+-}
+labResultsSaveNoWithoutReason : Maybe PrenatalReferralValue -> Maybe PrenatalReferralValue
+labResultsSaveNoWithoutReason saved =
+    toPrenatalReferralValueWithDefaultRecurrentPhase saved { emptyReferralForm | referToHospital = Just False }
+
+
+{-| The visit, with its diagnoses and the stored Send to HC record.
+-}
+referralVisit : List PrenatalDiagnosis -> Maybe PrenatalReferralValue -> AssembledData
+referralVisit diagnoses stored =
+    testAssembled
+        { emptyPrenatalMeasurements
+            | mentalHealth = TestFixtures.wrapMeasurement currentDate { signs = Dict.empty, specialistAtHC = True }
+            , sendToHC = Maybe.andThen (TestFixtures.wrapMeasurement currentDate) stored
+        }
+        |> withDiagnoses diagnoses
+
+
+labSendToHCOffered : List PrenatalDiagnosis -> Maybe PrenatalReferralValue -> Bool
+labSendToHCOffered diagnoses stored =
+    resolveNextStepsTasks currentDate False (referralVisit diagnoses stored)
+        |> List.member NextStepsSendToHC
+
+
+labSendToHCCompleted : List PrenatalDiagnosis -> Maybe PrenatalReferralValue -> Bool
+labSendToHCCompleted diagnoses stored =
+    nextStepsTaskCompleted currentDate (referralVisit diagnoses stored) NextStepsSendToHC
+
+
+labNextStepsCompleted : List PrenatalDiagnosis -> Maybe PrenatalReferralValue -> Bool
+labNextStepsCompleted diagnoses stored =
+    activityCompleted currentDate False (referralVisit diagnoses stored) PrenatalActivity.RecurrentNextSteps
+
+
+examSendToHCCompleted : List PrenatalDiagnosis -> Maybe PrenatalReferralValue -> Bool
+examSendToHCCompleted diagnoses stored =
+    InitialUtils.nextStepsTaskCompleted currentDate (referralVisit diagnoses stored) InitialTypes.NextStepsSendToHC
+
+
+{-| The hospital question as a form shows it: whether she was referred, and
+the reason for not referring. Nothing for both is a question with no answer.
+-}
+hospitalQuestion : ReferralForm -> ( Maybe Bool, Maybe ReasonForNonReferral )
+hospitalQuestion form =
+    ( form.referToHospital
+    , getCurrentReasonForNonReferral NonReferralReasonHospital form.facilityNonReferralReasons
+    )
+
+
+{-| The lab results' form, as it opens on the stored record.
+-}
+labResultsFormShown : Maybe PrenatalReferralValue -> ReferralForm
+labResultsFormShown =
+    referralFormWithDefaultRecurrentPhase emptyReferralForm
+
+
+{-| The exam's form, as it opens on the stored record.
+-}
+examFormShown : Maybe PrenatalReferralValue -> ReferralForm
+examFormShown =
+    referralFormWithDefaultInitialPhase emptyReferralForm
+
+
+{-| The stored record after it is written to the device's database and read
+back, which is what a reload and a sync both do. Nothing when it cannot be
+read back.
+-}
+afterReload : Maybe PrenatalReferralValue -> Maybe PrenatalReferralValue
+afterReload stored =
+    Maybe.andThen (TestFixtures.wrapMeasurement currentDate) stored
+        |> Maybe.andThen
+            (Tuple.second
+                >> encodePrenatalSendToHC
+                >> Json.Encode.object
+                >> Json.Decode.decodeValue decodePrenatalSendToHc
+                >> Result.toMaybe
+            )
+        |> Maybe.map .value
+
+
+{-| Whether two stored sets hold the same signs, in any order. A missing set
+counts as an empty one.
+-}
+sameMembers : Maybe (EverySet a) -> Maybe (EverySet a) -> Bool
+sameMembers first second =
+    let
+        members =
+            Maybe.map EverySet.toList >> Maybe.withDefault []
+
+        containsAll xs ys =
+            List.all (\x -> List.member x ys) xs
+    in
+    containsAll (members first) (members second)
+        && containsAll (members second) (members first)
+
+
+{-| Whether the stored record still holds the exam's answers for every place
+other than the hospital, as examForm gave them: the referral signs, and the
+reasons for not referring.
+-}
+otherPlacesKept : Maybe PrenatalReferralValue -> ( Bool, Bool )
+otherPlacesKept stored =
+    let
+        notHospitalSign sign =
+            not <| List.member sign [ ReferToHospital, ReferralFormHospital ]
+
+        notHospitalReason reason =
+            case reason of
+                NonReferralReasonHospital _ ->
+                    False
+
+                _ ->
+                    True
+
+        examOtherSigns =
+            [ ReferToMentalHealthSpecialist
+            , ReferralFormMentalHealthSpecialist
+            , ReferToARVProgram
+            , ReferralFormARVProgram
+            , AccompanyToARVProgram
+            ]
+    in
+    ( Maybe.andThen .referToFacilitySigns stored
+        |> Maybe.map (EverySet.filter notHospitalSign)
+        |> sameMembers (Just (EverySet.fromList examOtherSigns))
+    , Maybe.andThen .facilityNonReferralReasons stored
+        |> Maybe.map (EverySet.filter notHospitalReason)
+        |> sameMembers (Just (EverySet.singleton (NonReferralReasonNCDProgram NoAmbulance)))
+    )
+
+
+{-| Whether the stored record reads back after a reload with the same
+referrals, reasons for not referring, and part that answered the hospital.
+-}
+readsBackTheSame : Maybe PrenatalReferralValue -> { readBack : Bool, referrals : Bool, reasons : Bool, phase : Bool }
+readsBackTheSame stored =
+    let
+        back =
+            afterReload stored
+
+        referrals =
+            Maybe.andThen .referToFacilitySigns
+
+        reasons =
+            Maybe.andThen .facilityNonReferralReasons
+
+        phase =
+            Maybe.andThen .hospitalReferralPhase
+    in
+    { readBack = Maybe.Extra.isJust back
+    , referrals = sameMembers (referrals stored) (referrals back)
+    , reasons = sameMembers (reasons stored) (reasons back)
+    , phase = phase stored == phase back
+    }
+
+
+{-| A Send to HC record with the hospital answered, in the given stored shape
+of the part that answered it. Nothing is a record saved before that part was
+stored.
+-}
+storedHospitalAnswer : HospitalAnswer -> Maybe PhaseRecorded -> Maybe PrenatalReferralValue
+storedHospitalAnswer answer phase =
+    let
+        ( signs, reasons ) =
+            case answer of
+                NotReferred reason ->
+                    ( EverySet.singleton NoReferToFacilitySigns
+                    , Just (EverySet.singleton (NonReferralReasonHospital reason))
+                    )
+
+                Referred ->
+                    ( EverySet.fromList [ ReferToHospital, ReferralFormHospital ], Nothing )
+    in
+    Just
+        { sendToHCSigns = Just EverySet.empty
+        , reasonForNotSendingToHC = Nothing
+        , referToFacilitySigns = Just signs
+        , facilityNonReferralReasons = reasons
+        , hospitalReferralPhase = phase
+        }
+
+
+{-| A record as a device stored it before the part that answered the hospital
+question was recorded: there is no phase\_recorded field at all.
+-}
+legacyStoredJson : List String -> List String -> Maybe PrenatalReferralValue
+legacyStoredJson referrals reasons =
+    Json.Encode.object
+        [ ( "person", Json.Encode.string "dummy-person" )
+        , ( "prenatal_encounter", Json.Encode.string "dummy-encounter" )
+        , ( "date_measured", Json.Encode.string "2020-06-01" )
+        , ( "deleted", Json.Encode.bool False )
+        , ( "referrals", Json.Encode.list Json.Encode.string referrals )
+        , ( "reasons_for_non_referrals", Json.Encode.list Json.Encode.string reasons )
+        , ( "type", Json.Encode.string "prenatal_send_to_hc" )
+        ]
+        |> Json.Decode.decodeValue decodePrenatalSendToHc
+        |> Result.toMaybe
+        |> Maybe.map .value
+
+
+hospitalReferralAskedAgainTest : Test
+hospitalReferralAskedAgainTest =
+    let
+        hepatitisB =
+            examDiagnoses ++ [ DiagnosisHepatitisBRecurrentPhase ]
+
+        rhesusNegative =
+            examDiagnoses ++ [ DiagnosisRhesusNegativeRecurrentPhase ]
+
+        examReferred =
+            examSave (Just Referred)
+
+        examNotReferred =
+            examSave (Just (NotReferred ClientRefused))
+    in
+    describe "the hospital referral at the lab results part, when the exam already answered it"
+        [ describe "When the exam answered the hospital referral and a lab result then gives a diagnosis that needs a hospital referral, the lab results Next Steps shows the hospital referral as a task to do"
+            [ test "exam referred to hospital, then a positive Hepatitis B: the lab results Send to HC is offered and still to do" <|
+                \_ ->
+                    ( labSendToHCOffered hepatitisB examReferred, labSendToHCCompleted hepatitisB examReferred )
+                        |> Expect.equal ( True, False )
+            , test "exam did not refer, client refused, then Rh-negative: the lab results Send to HC is offered and still to do" <|
+                \_ ->
+                    ( labSendToHCOffered rhesusNegative examNotReferred, labSendToHCCompleted rhesusNegative examNotReferred )
+                        |> Expect.equal ( True, False )
+            , test "the exam's answer synced before the lab result: the lab results Send to HC is still to do" <|
+                \_ ->
+                    let
+                        synced =
+                            afterReload examReferred
+                    in
+                    ( Maybe.Extra.isJust synced, labSendToHCCompleted hepatitisB synced )
+                        |> Expect.equal ( True, False )
+            , test "a record whose hospital answer is stored as given by the exam is still to do at the lab results part" <|
+                \_ ->
+                    storedHospitalAnswer Referred (Just PhaseInitial)
+                        |> labSendToHCCompleted hepatitisB
+                        |> Expect.equal False
+            , test "a record whose hospital answer is stored as given by the lab results part is completed there" <|
+                \_ ->
+                    storedHospitalAnswer (NotReferred NoAmbulance) (Just PhaseRecurrent)
+                        |> labSendToHCCompleted hepatitisB
+                        |> Expect.equal True
+            , test "the exam's Save stores its hospital answer as given by the exam" <|
+                \_ ->
+                    examReferred
+                        |> Maybe.andThen .hospitalReferralPhase
+                        |> Expect.equal (Just PhaseInitial)
+            , test "a lab result with no diagnosis that needs a hospital: the lab results part offers no Send to HC" <|
+                \_ ->
+                    labSendToHCOffered examDiagnoses examReferred
+                        |> Expect.equal False
+            ]
+        , describe "That task opens with the hospital question unanswered, not with the exam's answer"
+            [ test "exam referred to hospital: the lab results form opens with the hospital question unanswered" <|
+                \_ ->
+                    labResultsFormShown examReferred
+                        |> hospitalQuestion
+                        |> Expect.equal ( Nothing, Nothing )
+            , test "exam did not refer, client refused: the lab results form opens with no answer and no reason" <|
+                \_ ->
+                    labResultsFormShown examNotReferred
+                        |> hospitalQuestion
+                        |> Expect.equal ( Nothing, Nothing )
+            , test "what the nurse already chose in the lab results form is shown over the stored record" <|
+                \_ ->
+                    referralFormWithDefaultRecurrentPhase { emptyReferralForm | referToHospital = Just False } examReferred
+                        |> hospitalQuestion
+                        |> Expect.equal ( Just False, Nothing )
+            , test "the exam's own form still opens with the exam's hospital answer" <|
+                \_ ->
+                    examFormShown examReferred
+                        |> hospitalQuestion
+                        |> Expect.equal ( Just True, Nothing )
+            , test "the exam's own form still opens with the exam's reason for not referring" <|
+                \_ ->
+                    examFormShown examNotReferred
+                        |> hospitalQuestion
+                        |> Expect.equal ( Just False, Just ClientRefused )
+            ]
+        , describe "Next Steps in the lab results part shows as completed only after the nurse answers the hospital question there: referred, or not referred with a reason"
+            [ test "before the hospital question is answered there, the lab results Next Steps is not completed" <|
+                \_ ->
+                    labNextStepsCompleted hepatitisB examReferred
+                        |> Expect.equal False
+            , test "before the hospital question is answered there, after an exam that did not refer, the lab results Next Steps is not completed" <|
+                \_ ->
+                    labNextStepsCompleted rhesusNegative examNotReferred
+                        |> Expect.equal False
+            , test "referred there: the lab results Next Steps is completed" <|
+                \_ ->
+                    labResultsSave Referred examReferred
+                        |> labNextStepsCompleted hepatitisB
+                        |> Expect.equal True
+            , test "not referred there with a reason: the lab results Next Steps is completed" <|
+                \_ ->
+                    labResultsSave (NotReferred NoAmbulance) examReferred
+                        |> labNextStepsCompleted hepatitisB
+                        |> Expect.equal True
+            , test "after an exam that did not refer, referred there: the lab results Next Steps is completed" <|
+                \_ ->
+                    labResultsSave Referred examNotReferred
+                        |> labNextStepsCompleted rhesusNegative
+                        |> Expect.equal True
+            , test "after an exam that did not refer, No there without a reason: the exam's reason does not complete it" <|
+                \_ ->
+                    labResultsSaveNoWithoutReason examNotReferred
+                        |> labSendToHCCompleted rhesusNegative
+                        |> Expect.equal False
+            , test "after an exam that referred, No there without a reason: not completed" <|
+                \_ ->
+                    labResultsSaveNoWithoutReason examReferred
+                        |> labSendToHCCompleted hepatitisB
+                        |> Expect.equal False
+            , test "the lab results' Save stores its hospital answer as given by the lab results part" <|
+                \_ ->
+                    labResultsSave Referred examReferred
+                        |> Maybe.andThen .hospitalReferralPhase
+                        |> Expect.equal (Just PhaseRecurrent)
+            ]
+        , describe "Once answered there, the task stays completed after the visit is reopened, after a reload, and after the device syncs"
+            [ test "referred there, then reloaded or synced: still completed" <|
+                \_ ->
+                    labResultsSave Referred examReferred
+                        |> afterReload
+                        |> labSendToHCCompleted hepatitisB
+                        |> Expect.equal True
+            , test "not referred there with a reason, then reloaded or synced: still completed" <|
+                \_ ->
+                    labResultsSave (NotReferred ClientAlreadyInCare) examNotReferred
+                        |> afterReload
+                        |> labSendToHCCompleted rhesusNegative
+                        |> Expect.equal True
+            , test "the lab results' saved record reads back unchanged" <|
+                \_ ->
+                    labResultsSave (NotReferred NoAmbulance) examReferred
+                        |> readsBackTheSame
+                        |> Expect.equal { readBack = True, referrals = True, reasons = True, phase = True }
+            , test "the exam's saved record reads back unchanged" <|
+                \_ ->
+                    readsBackTheSame examNotReferred
+                        |> Expect.equal { readBack = True, referrals = True, reasons = True, phase = True }
+            , test "reopened after referring there: the form shows the lab results' answer" <|
+                \_ ->
+                    labResultsSave Referred examNotReferred
+                        |> labResultsFormShown
+                        |> .referToHospital
+                        |> Expect.equal (Just True)
+            , test "reopened after not referring there: the form shows the lab results' reason" <|
+                \_ ->
+                    labResultsSave (NotReferred NoAmbulance) examReferred
+                        |> labResultsFormShown
+                        |> hospitalQuestion
+                        |> Expect.equal ( Just False, Just NoAmbulance )
+            ]
+        , describe "Answering the hospital question in the lab results part keeps the exam's answers for the other places (mental health specialist, ARV services, NCD services)"
+            [ test "referred there: the exam's other answers are kept" <|
+                \_ ->
+                    labResultsSave Referred examReferred
+                        |> otherPlacesKept
+                        |> Expect.equal ( True, True )
+            , test "not referred there with a reason: the exam's other answers are kept" <|
+                \_ ->
+                    labResultsSave (NotReferred NoAmbulance) examReferred
+                        |> otherPlacesKept
+                        |> Expect.equal ( True, True )
+            , test "after an exam that did not refer, referred there: the exam's other answers are kept" <|
+                \_ ->
+                    labResultsSave Referred examNotReferred
+                        |> otherPlacesKept
+                        |> Expect.equal ( True, True )
+            , test "the exam stored its other answers in the first place" <|
+                \_ ->
+                    otherPlacesKept examReferred
+                        |> Expect.equal ( True, True )
+            ]
+        , describe "The exam's Next Steps stays completed after the hospital question is answered in the lab results part, and going back to it does not reopen the lab results task"
+            [ test "the exam's Send to HC is completed once the exam answered" <|
+                \_ ->
+                    examSendToHCCompleted hepatitisB examReferred
+                        |> Expect.equal True
+            , test "referred in the lab results part: the exam's Send to HC stays completed" <|
+                \_ ->
+                    labResultsSave Referred examNotReferred
+                        |> examSendToHCCompleted rhesusNegative
+                        |> Expect.equal True
+            , test "not referred in the lab results part with a reason: the exam's Send to HC stays completed" <|
+                \_ ->
+                    labResultsSave (NotReferred NoAmbulance) examReferred
+                        |> examSendToHCCompleted hepatitisB
+                        |> Expect.equal True
+            , test "the exam's form saved again unchanged: the lab results Send to HC stays completed" <|
+                \_ ->
+                    let
+                        afterLabResults =
+                            labResultsSave (NotReferred NoAmbulance) examReferred
+                    in
+                    toPrenatalReferralValueWithDefaultInitialPhase afterLabResults (examFormShown afterLabResults)
+                        |> labSendToHCCompleted hepatitisB
+                        |> Expect.equal True
+            , test "the exam's form saved again unchanged: the exam's Send to HC stays completed" <|
+                \_ ->
+                    let
+                        afterLabResults =
+                            labResultsSave Referred examReferred
+                    in
+                    toPrenatalReferralValueWithDefaultInitialPhase afterLabResults (examFormShown afterLabResults)
+                        |> examSendToHCCompleted hepatitisB
+                        |> Expect.equal True
+            ]
+        , describe "When the exam did not answer the hospital referral, the lab results part asks it and completes it as before"
+            [ test "no Send to HC record at all: the lab results Send to HC is offered and still to do" <|
+                \_ ->
+                    ( labSendToHCOffered [ DiagnosisHepatitisBRecurrentPhase ] Nothing
+                    , labSendToHCCompleted [ DiagnosisHepatitisBRecurrentPhase ] Nothing
+                    )
+                        |> Expect.equal ( True, False )
+            , test "no Send to HC record at all, referred there: completed" <|
+                \_ ->
+                    labResultsSave Referred Nothing
+                        |> labNextStepsCompleted [ DiagnosisHepatitisBRecurrentPhase ]
+                        |> Expect.equal True
+            , test "the exam answered only the specialist: the lab results Send to HC is still to do" <|
+                \_ ->
+                    examSave Nothing
+                        |> labSendToHCCompleted (examDiagnosesWithoutHospital ++ [ DiagnosisHepatitisBRecurrentPhase ])
+                        |> Expect.equal False
+            , test "the exam answered only the specialist, not referred there with a reason: completed, also after a reload" <|
+                \_ ->
+                    let
+                        stored =
+                            labResultsSave (NotReferred ClientUnableToAffordFees) (examSave Nothing)
+
+                        diagnoses =
+                            examDiagnosesWithoutHospital ++ [ DiagnosisRhesusNegativeRecurrentPhase ]
+                    in
+                    ( labNextStepsCompleted diagnoses stored, labNextStepsCompleted diagnoses (afterReload stored) )
+                        |> Expect.equal ( True, True )
+            , test "the exam answered only the specialist, referred there: the specialist answer is kept" <|
+                \_ ->
+                    labResultsSave Referred (examSave Nothing)
+                        |> otherPlacesKept
+                        |> Expect.equal ( True, True )
+            , test "the exam answered only the specialist, referred there: the exam's Send to HC stays completed" <|
+                \_ ->
+                    labResultsSave Referred (examSave Nothing)
+                        |> examSendToHCCompleted (examDiagnosesWithoutHospital ++ [ DiagnosisHepatitisBRecurrentPhase ])
+                        |> Expect.equal True
+            ]
+        , describe "A visit whose lab results Next Steps was completed before this release stays completed"
+            [ test "a record saved before the release, hospital referred: the lab results Next Steps stays completed" <|
+                \_ ->
+                    storedHospitalAnswer Referred Nothing
+                        |> labNextStepsCompleted [ DiagnosisHepatitisBRecurrentPhase ]
+                        |> Expect.equal True
+            , test "a record saved before the release, hospital not referred with a reason: the lab results Next Steps stays completed" <|
+                \_ ->
+                    storedHospitalAnswer (NotReferred ClientRefused) Nothing
+                        |> labNextStepsCompleted [ DiagnosisRhesusNegativeRecurrentPhase ]
+                        |> Expect.equal True
+            , test "a record a device stored before the release, read from the database: the lab results Next Steps stays completed" <|
+                \_ ->
+                    let
+                        stored =
+                            legacyStoredJson [ "none" ] [ "hospital-client-refused" ]
+                    in
+                    ( Maybe.Extra.isJust stored, labNextStepsCompleted [ DiagnosisHepatitisBRecurrentPhase ] stored )
+                        |> Expect.equal ( True, True )
+            , test "a record saved before the release with no hospital answer: still to do, as before" <|
+                \_ ->
+                    legacyStoredJson [ "mhs", "mhs-referral-form" ] []
+                        |> labSendToHCCompleted [ DiagnosisHepatitisBRecurrentPhase ]
+                        |> Expect.equal False
+            ]
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
@@ -2196,4 +2809,70 @@ all =
         , hivTaskResavedLabsEntryTest
         , labsEntryResultSavedGuardTest
         , labsEntryLastResultByNurseTest
+        , hospitalReferralAskedAgainTest
+        , hospitalReferralPhaseTest
+        ]
+
+
+hospitalReferralPhaseTest : Test
+hospitalReferralPhaseTest =
+    let
+        hepatitisB =
+            examDiagnoses ++ [ DiagnosisHepatitisBRecurrentPhase ]
+    in
+    describe "which part of the visit the hospital answer belongs to"
+        [ test "the exam changes its hospital answer after the lab results part answered: the lab results Send to HC is to do again" <|
+            \_ ->
+                let
+                    afterLabResults =
+                        labResultsSave (NotReferred NoAmbulance) (examSave (Just Referred))
+
+                    shown =
+                        examFormShown afterLabResults
+
+                    changedToReferred =
+                        { shown
+                            | referToHospital = Just True
+                            , referralFormHospital = Just True
+                            , facilityNonReferralReasons =
+                                Maybe.map (EverySet.remove (NonReferralReasonHospital NoAmbulance)) shown.facilityNonReferralReasons
+                        }
+                in
+                toPrenatalReferralValueWithDefaultInitialPhase afterLabResults changedToReferred
+                    |> labSendToHCCompleted hepatitisB
+                    |> Expect.equal False
+        , test "a lab results save that leaves the hospital question alone does not mark a record from before the release as answered there" <|
+            \_ ->
+                let
+                    specialistOnly =
+                        Just
+                            { sendToHCSigns = Nothing
+                            , reasonForNotSendingToHC = Nothing
+                            , referToFacilitySigns = Just (EverySet.singleton ReferToMentalHealthSpecialist)
+                            , facilityNonReferralReasons = Nothing
+                            , hospitalReferralPhase = Nothing
+                            }
+                in
+                toPrenatalReferralValueWithDefaultRecurrentPhase specialistOnly emptyReferralForm
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
+        , test "the exam saved again unchanged on a record from before the release: the lab results Send to HC stays completed" <|
+            \_ ->
+                let
+                    beforeRelease =
+                        storedHospitalAnswer Referred Nothing
+                in
+                toPrenatalReferralValueWithDefaultInitialPhase beforeRelease (examFormShown beforeRelease)
+                    |> labSendToHCCompleted hepatitisB
+                    |> Expect.equal True
+        , test "a lab results save that leaves the hospital question alone does not take over the hospital answer of a record from before the release" <|
+            \_ ->
+                toPrenatalReferralValueWithDefaultRecurrentPhase (storedHospitalAnswer Referred Nothing) emptyReferralForm
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
+        , test "an exam that refers only to the specialist does not record a hospital answer as the exam's" <|
+            \_ ->
+                examSave Nothing
+                    |> Maybe.andThen .hospitalReferralPhase
+                    |> Expect.equal Nothing
         ]

@@ -30,7 +30,7 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefaultRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefaultRecurrentPhase)
 import Pages.Utils exposing (nonAdministrationReasonToSign, saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
 
@@ -1030,7 +1030,7 @@ update id isLabTech db msg model =
                         |> Maybe.map
                             (.sendToHC
                                 >> getMeasurementValueFunc
-                                >> referralFormWithDefault model.nextStepsData.referralForm
+                                >> referralFormWithDefaultRecurrentPhase model.nextStepsData.referralForm
                             )
                         |> Maybe.withDefault model.nextStepsData.referralForm
 
@@ -1066,7 +1066,7 @@ update id isLabTech db msg model =
         SaveSendToHC personId saved nextTask ->
             ( model
             , Cmd.none
-            , saveMeasurementMsgs toPrenatalReferralValueWithDefault
+            , saveMeasurementMsgs toPrenatalReferralValueWithDefaultRecurrentPhase
                 model.nextStepsData.referralForm
                 saved
                 (Backend.PrenatalEncounter.Model.SaveSendToHC personId)

@@ -75,7 +75,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (Model, Msg(..), emptyPregnancyDatingForm)
 import Pages.Prenatal.Activity.Types exposing (ImmunisationTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultInitialPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefault)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultInitialPhase, referralFormWithDefaultInitialPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefaultInitialPhase)
 import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
@@ -3268,7 +3268,7 @@ update currentDate site id db msg model =
                         |> Maybe.map
                             (.sendToHC
                                 >> getMeasurementValueFunc
-                                >> referralFormWithDefault model.nextStepsData.referralForm
+                                >> referralFormWithDefaultInitialPhase model.nextStepsData.referralForm
                             )
                         |> Maybe.withDefault model.nextStepsData.referralForm
 
@@ -3304,7 +3304,7 @@ update currentDate site id db msg model =
         SaveSendToHC personId saved secondPhaseRequired nextTask ->
             ( model
             , Cmd.none
-            , saveMeasurementMsgs toPrenatalReferralValueWithDefault
+            , saveMeasurementMsgs toPrenatalReferralValueWithDefaultInitialPhase
                 model.nextStepsData.referralForm
                 saved
                 (Backend.PrenatalEncounter.Model.SaveSendToHC personId)
