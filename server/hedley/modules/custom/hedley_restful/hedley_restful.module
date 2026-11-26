@@ -347,6 +347,7 @@ function hedley_restful_copy_photo_to_person($measurement_id) {
 
   $measurements = hedley_restful_person_photo_measurements($person_wrapper->getIdentifier());
   if (empty($measurements[$measurement_id])) {
+    watchdog('hedley_restful', 'Photo measurement @nid is not of a bundle the person photo copy reads.', ['@nid' => $measurement_id], WATCHDOG_WARNING);
     return;
   }
 
@@ -383,12 +384,16 @@ function hedley_restful_copy_photo_to_person($measurement_id) {
  *   TRUE when the person's photo should be set from this measurement.
  */
 function hedley_restful_photo_becomes_person_photo(array $measurement, array $others) {
-  if (empty($measurement['has_photo']) || !empty($measurement['deleted'])) {
+  $usable = function (array $photo) {
+    return !empty($photo['has_photo']) && empty($photo['deleted']);
+  };
+
+  if (!$usable($measurement)) {
     return FALSE;
   }
 
   foreach ($others as $other) {
-    if (empty($other['has_photo']) || !empty($other['deleted'])) {
+    if (!$usable($other)) {
       continue;
     }
 
