@@ -345,6 +345,16 @@ function hedley_restful_copy_photo_to_person($measurement_id) {
     return;
   }
 
+  $measurement = [
+    'nid' => (int) $measurement_id,
+    'date' => NULL,
+    'deleted' => FALSE,
+    'has_photo' => TRUE,
+  ];
+  if (!hedley_restful_photo_becomes_person_photo($measurement, [])) {
+    return;
+  }
+
   try {
     $person_wrapper->field_photo->set($photo);
     $person_wrapper->save();
@@ -354,6 +364,25 @@ function hedley_restful_copy_photo_to_person($measurement_id) {
 
     throw $exception;
   }
+}
+
+/**
+ * Decides whether a photo measurement's photo becomes the person's photo.
+ *
+ * Each measurement is an array with 'nid' (int), 'date' (the date measured,
+ * 'Y-m-d'), 'deleted' (bool) and 'has_photo' (bool).
+ *
+ * @param array $measurement
+ *   The photo measurement just created or updated.
+ * @param array $others
+ *   The person's other photo measurements, of every photo bundle, without the
+ *   one above.
+ *
+ * @return bool
+ *   TRUE when the person's photo should be set from this measurement.
+ */
+function hedley_restful_photo_becomes_person_photo(array $measurement, array $others) {
+  return !empty($measurement['has_photo']);
 }
 
 /**
