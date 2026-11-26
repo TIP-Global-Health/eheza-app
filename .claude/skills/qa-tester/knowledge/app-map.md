@@ -142,6 +142,8 @@ flag simply does not appear.
   phase, which is not a download: let it through. The request times out at 30 s, so hold under 25 s.
   localStorage `syncSpeed` `{"idle":3000,"cycle":50,"offline":30000}`, then a reload, runs a cycle
   every ~3 s, so a GET is held within a few seconds.
+- **Cutting the tablet off from the server**: `page.context().route(/\/api\/sync/, r => flag ? r.abort() : r.continue())` with a flag in a Node global. Uploads and downloads both fail, saves stay in
+  `shardChanges`, and a reload still opens the app; the aborted requests show in `consoleErrors`. Unlike `context.setOffline` (pitfalls), this really stops the sync.
 - **Holding an upload in flight**: the same `context.route(/\/api\/sync/)` catches the main-thread `POST /api/sync`; hold the one whose
   `postData()` holds `"type":"<bundle>"` (`family_planning`, `nutrition_height`, `aheza_child`). A photo goes up as `POST /api/file-upload`, then
   its record carries `"photo": <fid>`; a record sent before its file has no `photo` key.
@@ -730,6 +732,10 @@ flag simply does not appear.
   `completed_tests` and `date_concluded`; the server fields are `field_performed_tests` and
   `field_date_concluded`.
 - Record Acute Illness Outcome: Existing Acute Illness → Record Acute Illness Outcome → the illness's button (its diagnosis) → outcome `select` → Save.
+  The outcome page is `.page-outcome.acute-illness` (`select`, first label Illness Resolved); Save lands on the main menu. The upload makes the server resolve the illness's
+  follow-ups. With PR #2602 the device also stores the concluded date, so the Acute Illness pane drops the illness at once; develop keeps it until that resolution downloads.
+  Clearing the follow-up's `field_date_concluded` on the server after a develop outcome gives an "illness closed by an older version" with an open follow-up.
+- TB and HIV Diagnostics "not diagnosed" close the illness: end date, `field_date_concluded` and outcome `not-dignosed` / `hiv-not-dignosed` (spelled so), then the main menu.
 - Withdrawing a test: reopen Laboratory, its tab, "performed today?" No, tick a `.why-not` reason,
   Save. `completeLaboratoryNurseForLab(page, { onlyTabs: ['HIV', 'Syphilis - RPR'] })` orders
   only those tabs, by their label text, and leaves the rest unanswered on the activity. To finish the visit,
@@ -803,7 +809,8 @@ flag simply does not appear.
     entry will show. The entry is the `well_child_next_visit` that Next Steps saves
     (`h.wellChild.completeNextSteps`); without Next Steps there is none.
   - **A record that reaches the server late** (a CHW device, one fixture): upload a follow-up today, set `qaDateOffset` to −5 days, open the participant page (Home Visit, Well Child Visit, Subsequent Antenatal, Existing Acute Illness → Subsequent, TB/HIV Encounter all offered), start the encounter, set the offset back to 0, sync. The server gets a higher nid with an earlier date, as from an offline device.
-  - Tapping YES on an entry sets that follow-up's `field_date_concluded`, which takes the entry off
+  - The CHW Dashboard's Case Management "Acute Illness" card counts the same entries as the Acute Illness pane (`generateAcuteIllnessFollowUpEntries`). The Akanduga pane lists entries in name order.
+- Tapping YES on an entry sets that follow-up's `field_date_concluded`, which takes the entry off
     the pane. Clearing it on the server and syncing lists the entry again.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and

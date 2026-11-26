@@ -1175,3 +1175,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a chain stopped early, the next run read a mode file the chain never wrote; `cat` failed quietly and the test would have run in its default mode (PR #2601, caught before test 4).
 - **Wrong conclusion:** files a chain creates exist once part of it ran.
 - **Rule:** write every small setting file before the first command that uses it, at the top of the chain, and check for it after a stopped chain.
+
+## Reading the illness buttons straight after "Record Acute Illness Outcome"
+
+- **Symptom:** the logged outcome-page button read "Subsequent Acute Illness Encounter … Uncomplicated Malaria", the previous view's text, and the click that followed went to the outcome page (PR #2602).
+- **Wrong conclusion:** the click opened the outcome page, so the read was right. Elm reuses the button node; a click a moment earlier would have started a subsequent encounter.
+- **Rule:** after switching the acute illness participant page's view, wait about a second before reading or clicking `.active-illnesses` buttons, and check the server's encounter count after the run.
