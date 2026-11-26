@@ -1157,3 +1157,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a re-run of a recorded chain was started with a trailing `&`, which keeps nothing waiting (PR #2594).
 - **Wrong conclusion:** none; a `run_in_background` waiter was started at once.
 - **Rule:** the same pit as "Waiting on a detached chain ends the run". Start the chain itself with `run_in_background: true`.
+
+## A `return` in a body file wrapped in `{ … }`
+
+- **Symptom:** a chained command "registered and ran the visit" in 9 s; only the registration had happened (PR #2601).
+- **Wrong conclusion:** wrapping each body file in a block keeps them apart, so every file runs.
+- **Rule:** a block scopes names, not control flow: a body file's `return` ends the whole command. Keep `return` out of any file that is not last in a chain.
+
+## Counting ticked choices that include the yes/no answer
+
+- **Symptom:** a recorded check "No alone: no reason ticked" failed with 1, though the screen showed no reason ticked; the test needed a continuation video (PR #2601).
+- **Wrong conclusion:** the form ticked a reason by itself.
+- **Rule:** `qa.state().choices` lists the yes/no radios too, so "(x) No" is one of them. Leave out `(x) Yes` / `(x) No` before counting ticked reasons.
+
+## A chain that writes a mode file only at its end
+
+- **Symptom:** after a chain stopped early, the next run read a mode file the chain never wrote; `cat` failed quietly and the test would have run in its default mode (PR #2601, caught before test 4).
+- **Wrong conclusion:** files a chain creates exist once part of it ran.
+- **Rule:** write every small setting file before the first command that uses it, at the top of the chain, and check for it after a stopped chain.

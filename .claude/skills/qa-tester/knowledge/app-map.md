@@ -51,6 +51,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   and `Class 'Ramsey\Uuid\Uuid' not found`, means the server's Composer libraries are missing. The
   user runs `composer install` (or `composer update <new package> --with-all-dependencies` when the
   lock lacks a package) in `server/www/sites/default/files/composer`, inside ddev.
+- A PR that adds a Features field instance: overlay its `server/` files and run `ddev drush cc all`; that alone created the instance
+  (`field_config_instance`), and `drush fr <module>.field_instance` then reported "already matches defaults". Restoring the files leaves the unused instance behind.
 - Re-pairing an already-paired device needs super user mode
   (`ddev drush vset hedley_super_user_mode 1`, back to 0 after).
 
@@ -309,7 +311,11 @@ flag simply does not appear.
   hypertension plus diabetes) to the hospital. The lab-results phase refers to the hospital when the result finds diabetes
   (250) beside hypertension. Server: `field_referrals` (`hospital`, `hospital-referral-form`, `anc`, `anc-referral-form`,
   `anc-accompany`), `field_reasons_for_non_referrals` (`anc-client-refused`). ANC Yes adds handed-form and accompany questions.
-- Stage 3 Medication Distribution asks for two medicines (Methyldopa and Amlodipine work); a pregnant woman gets Methyldopa only.
+- Stage 3 Medication Distribution says "choose two", yet Methyldopa alone plus the return question gives 2/2 and Save on, on develop and PR #2601 alike; a pregnant woman gets Methyldopa only.
+- Since #2601 `ncd_referral` also holds `field_phase_recorded` (`initial` / `recurrent`), as the prenatal record does. The lab results Referral then opens the hospital question unanswered after a first-part hospital answer.
+  The progress report's hypertension line reads that shared record, so after a lab results answer it shows that answer; the diabetes line never carries a referral phrase.
+- Lab results phase kept reachable: send blood sugar and creatinine to the lab, enter only the blood sugar. NCD Labs keeps the entry (creatinine owed), and Next Steps still appears.
+  Stage 2 (165/105) has no first-part Referral; a lab results 250 then asks the hospital. Fixture scripts: register, helpers, a lab filler, ~50 s per first part.
 - After the last lab result the NCD Labs entry closes, so the lab-results page cannot be reopened from Case Management;
   read its saved answers on the server or through the visit's own Next Steps.
 - The NCD participant page's "NCD Encounter" reopens today's open visit only once the person's encounters have loaded
