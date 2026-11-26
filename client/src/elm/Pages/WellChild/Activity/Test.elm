@@ -74,6 +74,7 @@ all =
         , resolveNextDateForMedicationVisitUnderSixMonthsTests
         , pregnancySummaryFormWithDefaultTests
         , pregnancySummaryChecklistTests
+        , pregnancySummaryOpenChecklistTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
         , dtpStandaloneSaveTests
@@ -1056,6 +1057,51 @@ pregnancySummaryFormWithDefaultTests =
                         |> pregnancySummaryMeasurementsOutOfRange SiteRwanda
                         |> Expect.equal [ MeasurementApgarFiveMinutes, MeasurementBirthLength ]
             ]
+        ]
+
+
+{-| Once the nurse has answered Yes, an empty checklist stays an open task,
+even over a record saved with items ticked, and Save stores nothing for it.
+-}
+pregnancySummaryOpenChecklistTests : Test
+pregnancySummaryOpenChecklistTests =
+    let
+        savedYes =
+            { expectedDateConcluded = Date.fromCalendarDate 2026 Time.Jan 10
+            , deliveryComplications = EverySet.singleton ComplicationHiv
+            , signs = EverySet.singleton NoPregnancySummarySigns
+            , apgarOneMin = Nothing
+            , apgarFiveMin = Nothing
+            , birthWeight = Nothing
+            , birthLength = Nothing
+            , birthDefects = EverySet.singleton DefectClubFoot
+            }
+
+        complicationsYesNothingTicked =
+            { emptyPregnancySummaryForm | deliveryComplicationsPresent = Just True }
+
+        defectsYesNothingTicked =
+            { emptyPregnancySummaryForm | birthDefectsPresent = Just True }
+    in
+    describe "Pregnancy Summary, a Yes with nothing ticked"
+        [ test "unticking every saved complication leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault complicationsYesNothingTicked (Just savedYes)
+                    |> .deliveryComplications
+                    |> Expect.equal Nothing
+        , test "unticking every saved defect leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault defectsYesNothingTicked (Just savedYes)
+                    |> .birthDefects
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the complications checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) complicationsYesNothingTicked
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the birth defects checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) defectsYesNothingTicked
+                    |> Expect.equal Nothing
         ]
 
 

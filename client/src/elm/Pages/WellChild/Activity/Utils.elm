@@ -271,20 +271,16 @@ pregnancySummaryFormWithDefault form saved =
                     savedBirthDefects =
                         EverySet.toList value.birthDefects
 
-                    -- The checklist under a Yes / No answer. "No" holds only
-                    -- the "none" entry. "Yes" over a saved "none" starts
-                    -- empty, so the checklist stays an open task.
+                    -- The checklist when the form holds none. "No" holds only
+                    -- the "none" entry. A "Yes" the nurse gave, or kept after
+                    -- unticking everything, stays an open task.
                     checklist present noneEntry savedList =
                         case present of
                             Just False ->
                                 Just [ noneEntry ]
 
                             Just True ->
-                                if listNotEmptyWithException noneEntry savedList then
-                                    Just savedList
-
-                                else
-                                    Nothing
+                                Nothing
 
                             Nothing ->
                                 Just savedList
@@ -344,9 +340,20 @@ toPregnancySummaryValueWithDefault saved form =
 toPregnancySummaryValue : PregnancySummaryForm -> Maybe PregnancySummaryValue
 toPregnancySummaryValue form =
     let
+        -- A "Yes" with nothing ticked gives no value, so it is never
+        -- stored as "none".
+        checklist present selected noneEntry =
+            case ( present, selected ) of
+                ( Just True, Nothing ) ->
+                    Nothing
+
+                _ ->
+                    Maybe.map EverySet.fromList selected
+                        |> Maybe.withDefault (EverySet.singleton noneEntry)
+                        |> Just
+
         deliveryComplications =
-            Maybe.map EverySet.fromList form.deliveryComplications
-                |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
+            checklist form.deliveryComplicationsPresent form.deliveryComplications NoDeliveryComplications
 
         signs =
             [ ifNullableTrue ApgarScores form.apgarScoresAvailable
@@ -356,17 +363,16 @@ toPregnancySummaryValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySummarySigns)
 
         birthDefects =
-            Maybe.map EverySet.fromList form.birthDefects
-                |> Maybe.withDefault (EverySet.singleton NoBirthDefects)
+            checklist form.birthDefectsPresent form.birthDefects NoBirthDefects
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
-        |> andMap (Just deliveryComplications)
+        |> andMap deliveryComplications
         |> andMap signs
         |> andMap (Just form.apgarOneMin)
         |> andMap (Just form.apgarFiveMin)
         |> andMap (Just form.birthWeight)
         |> andMap (Just form.birthLength)
-        |> andMap (Just birthDefects)
+        |> andMap birthDefects
 
 
 listNotEmptyWithException : a -> List a -> Bool
