@@ -651,6 +651,8 @@ B-650	4	READY	LOW		2601	B-614	NCD referral: changing a saved "not referred" hosp
 B-651	4	READY	LOW			QA-2585	WhatsApp progress report: the sent image loses the no-photo baby icon, and sometimes the Lato font, because the screensh
 B-652	3	READY	MED-LOW			QA-2594	Prenatal lab results (nurse): the hospital referral question opens with No already chosen when the exam's Referral answe
 B-653	3	READY	LOW		2594	74	Prenatal lab results (nurse): a hospital referral answer saved at lab results for one diagnosis also completes the Refer
+B-654	4	READY	LOW			75	E2E date helpers: "one month ago" is still this month on seven days a year, so the reporting spec's backdated encounters
+B-655	4	READY	LOW			75	HIV and Tuberculosis e2e: the Case Management follow-up check is skipped when the filter button is missing, so a vanishe
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
