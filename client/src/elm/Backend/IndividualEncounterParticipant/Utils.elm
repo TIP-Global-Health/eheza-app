@@ -1,13 +1,25 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, resolveMainParticipant, resolveOpenParticipant, resolveTodaysEncounterState, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
+module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, concludeParticipant, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, resolveMainParticipant, resolveOpenParticipant, resolveTodaysEncounterState, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
-import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterParticipant, IndividualEncounterParticipantOutcome, IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
 import Backend.PatientRecord.Utils
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+
+
+{-| Closes a participant on this date with this outcome. Case Management
+reads the concluded date to stop listing its follow-ups.
+-}
+concludeParticipant : NominalDate -> IndividualEncounterParticipantOutcome -> IndividualEncounterParticipant -> IndividualEncounterParticipant
+concludeParticipant currentDate outcome participant =
+    { participant
+        | endDate = Just currentDate
+        , dateConcluded = Just currentDate
+        , outcome = Just outcome
+    }
 
 
 individualEncounterTypeToString : IndividualEncounterType -> String
