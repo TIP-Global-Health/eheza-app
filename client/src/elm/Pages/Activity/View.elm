@@ -6,6 +6,7 @@ import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed)
@@ -13,11 +14,10 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import LocalData
-import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, summarizeForActivity)
 import Pages.Session.Model
-import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (filterDependentNoResultsMessage, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
@@ -42,7 +42,7 @@ could do our own mapping. The caller would have to pass in a tag for us to
 map with, which wouldn't be a problem.
 -}
 view :
-    Participant id value activity msg NominalDate
+    Participant PersonId Person activity msg NominalDate
     -> Language
     -> NominalDate
     -> ZScore.Model.Model
@@ -53,29 +53,15 @@ view :
     -> ( SessionId, EditableSession )
     -> Pages.Session.Model.Model
     -> ModelIndexedDb
-    -> Model id
-    -> ( Html (Msg id msg), Maybe id )
+    -> Model PersonId
+    -> ( Html (Msg PersonId msg), Maybe PersonId )
 view config language currentDate zscores site features isChw selectedActivity ( sessionId, session ) pages db model =
     let
+        summary =
+            summarizeForActivity config currentDate zscores features isChw selectedActivity session db
+
         participants =
-            session.checkedIn
-                |> LocalData.unwrap
-                    { completed = Dict.empty
-                    , pending = Dict.empty
-                    }
-                    (config.summarizeParticipantsForActivity currentDate zscores features selectedActivity session.offlineSession isChw db
-                        >> applyNameFilter
-                    )
-
-        applyNameFilter { pending, completed } =
-            { pending = Dict.filter filterParticipantNames pending
-            , completed = Dict.filter filterParticipantNames completed
-            }
-
-        filterParticipantNames _ participant =
-            participant
-                |> config.getName
-                |> matchFilter filter
+            filterParticipantsByName .name filter summary
 
         filter =
             normalizeFilter model.filter
@@ -108,32 +94,8 @@ view config language currentDate zscores site features isChw selectedActivity ( 
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        -- We compute this so that it's consistent with the tab
         selectedParticipant =
-            case model.selectedTab of
-                Completed ->
-                    model.selectedParticipant
-                        |> Maybe.andThen
-                            (\participant ->
-                                if Dict.member participant participants.completed then
-                                    Just participant
-
-                                else
-                                    Nothing
-                            )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.completed |> List.head))
-
-                Pending ->
-                    model.selectedParticipant
-                        |> Maybe.andThen
-                            (\participant ->
-                                if Dict.member participant participants.pending then
-                                    Just participant
-
-                                else
-                                    Nothing
-                            )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.pending |> List.head))
+            resolveChildToLoad model summary
 
         participantsHtml =
             let

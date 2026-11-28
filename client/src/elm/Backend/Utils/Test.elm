@@ -5,7 +5,7 @@ import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.Utils exposing (isPostInFlight, storedDiagnosesEqual)
+import Backend.Utils exposing (clearFinishedPost, isPostInFlight, storedDiagnosesEqual)
 import EverySet
 import Expect
 import Http
@@ -18,7 +18,42 @@ all : Test
 all =
     describe "Backend.Utils"
         [ isPostInFlightTests
+        , clearFinishedPostTests
         , storedDiagnosesEqualTests
+        ]
+
+
+clearFinishedPostTests : Test
+clearFinishedPostTests =
+    describe "clearFinishedPost"
+        [ test "a failed create is forgotten" <|
+            \_ ->
+                Dict.fromList [ ( "adult", Failure Http.NetworkError ) ]
+                    |> clearFinishedPost "adult"
+                    |> Expect.equal Dict.empty
+        , test "a successful create is forgotten" <|
+            \_ ->
+                Dict.fromList [ ( "adult", Success () ) ]
+                    |> clearFinishedPost "adult"
+                    |> Expect.equal Dict.empty
+        , test "a create still on its way is kept" <|
+            \_ ->
+                let
+                    dict : Dict String (WebData ())
+                    dict =
+                        Dict.fromList [ ( "adult", Loading ) ]
+                in
+                clearFinishedPost "adult" dict
+                    |> Expect.equal dict
+        , test "other keys are left alone" <|
+            \_ ->
+                let
+                    dict : Dict String (WebData ())
+                    dict =
+                        Dict.fromList [ ( "other", Failure Http.NetworkError ) ]
+                in
+                clearFinishedPost "adult" dict
+                    |> Expect.equal dict
         ]
 
 

@@ -17,6 +17,8 @@ define('HEDLEY_REPORTS_SCOPE_FULL', 'full');
 define('HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS', 'health_centers');
 
 const RDT_POSITIVE_VALUES = ['positive', 'positive-and-pregnant'];
+const HEDLEY_REPORTS_FBF_LAUNCH_DATE = '2020-06-15';
+const HEDLEY_REPORTS_MOTHER_FBF_ANY_UBUDEHE_DATE = '2024-10-13';
 
 /**
  * Implements hook_menu().
@@ -469,10 +471,7 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
-    // REVIEW: HEAD dropped HEDLEY_ACTIVITY_NUTRITION_BUNDLES from this
-    // trigger list; base re-added it. Keeping it here so report recalcs
-    // still fire on nutrition-measurement saves; remove if this branch
-    // intentionally moved that handling elsewhere.
+    // Nutrition signs carry edema, which the reports read.
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
@@ -591,40 +590,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
-          : NULL;
-        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
-          : NULL;
-        if (!empty($zscore_age)) {
-          if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-          }
-          else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-          }
-        }
+        $zscores_by_encounter = hedley_reports_add_weight_zscores($zscores_by_encounter, $encounter_id, $measurement);
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
-          : NULL;
-        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
-          : NULL;
-        if (!empty($zscore_age)) {
-          if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-          }
-          else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-          }
-        }
+        $zscores_by_encounter = hedley_reports_add_weight_zscores($zscores_by_encounter, $encounter_id, $measurement);
         break;
 
       case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
@@ -646,21 +617,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
-          : NULL;
-        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
-          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
-          : NULL;
-        if (!empty($zscore_age)) {
-          if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-          }
-          else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-          }
-        }
+        $zscores_by_encounter = hedley_reports_add_weight_zscores($zscores_by_encounter, $encounter_id, $measurement);
         break;
 
       case HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE:
@@ -1428,6 +1385,41 @@ function hedley_reports_pregnancy_outcome_mapping() {
     'still-pre-term' => 'd',
     'abortions' => 'e',
   ];
+}
+
+/**
+ * Adds a weight measurement's z-scores to the z-scores of its encounter.
+ *
+ * @param array $zscores_by_encounter
+ *   The z-scores collected so far, keyed by encounter ID.
+ * @param int $encounter_id
+ *   The ID of the encounter the measurement belongs to.
+ * @param object $measurement
+ *   The weight measurement node.
+ *
+ * @return array
+ *   The z-scores by encounter, with 'w' (weight-for-age) and 'u'
+ *   (weight-for-length) of this encounter set from the measurement, each
+ *   only when the measurement has it.
+ */
+function hedley_reports_add_weight_zscores(array $zscores_by_encounter, $encounter_id, $measurement) {
+  // Each z-score is stored when present, whether or not the other one is.
+  $zscores = [];
+  foreach (['w' => 'field_zscore_age', 'u' => 'field_zscore_length'] as $key => $field) {
+    if (!empty($measurement->{$field}[LANGUAGE_NONE][0]['value'])) {
+      $zscores[$key] = $measurement->{$field}[LANGUAGE_NONE][0]['value'];
+    }
+  }
+  if (empty($zscores)) {
+    return $zscores_by_encounter;
+  }
+
+  // Both values come from one weighing, replacing an earlier weighing's pair.
+  $encounter_zscores = $zscores_by_encounter[$encounter_id] ?? [];
+  unset($encounter_zscores['w'], $encounter_zscores['u']);
+  $zscores_by_encounter[$encounter_id] = $encounter_zscores + $zscores;
+
+  return $zscores_by_encounter;
 }
 
 /**
@@ -2590,38 +2582,17 @@ function hedley_reports_sixth_birthday($birth_date) {
  * @param string $type
  *   The type of the table data.
  * @param array $metrics
- *   The metrics to be converted.
+ *   The rates of each period, keyed by the period.
  *
  * @return array
- *   The formatted table data.
+ *   The table: its type, the periods, and the rates of each period.
  */
 function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
-  $result = [
+  return [
     'type' => $type,
-    'period' => [],
-    'stunting_moderate' => [],
-    'stunting_severe' => [],
-    'wasting_moderate' => [],
-    'wasting_severe' => [],
-    'underweight_moderate' => [],
-    'underweight_severe' => [],
-    'acute_malnutrition_mam' => [],
-    'acute_malnutrition_sam' => [],
+    'period' => array_map('strval', array_keys($metrics)),
+    'results' => array_values($metrics),
   ];
-
-  foreach ($metrics as $key => $values) {
-    $result['period'][] = (string) $key;
-    $result['stunting_moderate'][] = $values['stunting_moderate'];
-    $result['stunting_severe'][] = $values['stunting_severe'];
-    $result['wasting_moderate'][] = $values['wasting_moderate'];
-    $result['wasting_severe'][] = $values['wasting_severe'];
-    $result['underweight_moderate'][] = $values['underweight_moderate'];
-    $result['underweight_severe'][] = $values['underweight_severe'];
-    $result['acute_malnutrition_mam'][] = $values['acute_malnutrition_mam'];
-    $result['acute_malnutrition_sam'][] = $values['acute_malnutrition_sam'];
-  }
-
-  return $result;
 }
 
 /**
@@ -2775,15 +2746,14 @@ function hedley_reports_generate_yearly_incidence_data(array $encounters_by_mont
 /**
  * Generates prevalence nutrition metrics results.
  *
- * This function calculates the prevalence percentages for stunting, wasting,
- * and underweight categories based on the provided metrics.
+ * This function counts the children behind the prevalence of stunting,
+ * wasting, underweight and acute malnutrition.
  *
  * @param array $metrics
  *   An array containing nutritional metrics grouped by categories.
  *
  * @return array
- *   An array containing the calculated prevalence percentages for
- *   each category.
+ *   The rate of each category, as hedley_reports_count_children() returns.
  */
 function hedley_reports_generate_prevalence_nutrition_metrics_results(array $metrics) {
   $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
@@ -2792,14 +2762,14 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
   $acute_malnutrition_total = array_unique(array_merge($metrics['acute_malnutrition_mam'], $metrics['acute_malnutrition_sam'], $metrics['acute_malnutrition_normal']));
 
   return [
-    'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
-    'stunting_severe' => hedley_reports_calculate_percentage($metrics['stunting_severe'], $stunting_total),
-    'wasting_moderate' => hedley_reports_calculate_percentage($metrics['wasting_moderate'], $wasting_total),
-    'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
-    'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
-    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
-    'acute_malnutrition_mam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
-    'acute_malnutrition_sam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
+    'stunting_moderate' => hedley_reports_count_children($metrics['stunting_moderate'], $stunting_total),
+    'stunting_severe' => hedley_reports_count_children($metrics['stunting_severe'], $stunting_total),
+    'wasting_moderate' => hedley_reports_count_children($metrics['wasting_moderate'], $wasting_total),
+    'wasting_severe' => hedley_reports_count_children($metrics['wasting_severe'], $wasting_total),
+    'underweight_moderate' => hedley_reports_count_children($metrics['underweight_moderate'], $underweight_total),
+    'underweight_severe' => hedley_reports_count_children($metrics['underweight_severe'], $underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_count_children($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_count_children($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
   ];
 }
 
@@ -2856,45 +2826,33 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
   $acute_malnutrition_sam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_sam']), array_unique($previous_period_metric['acute_malnutrition_sam']));
 
   return [
-    'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
-    'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
-    'wasting_moderate' => hedley_reports_calculate_percentage(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
-    'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
-    'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
-    'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
-    'acute_malnutrition_mam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
-    'acute_malnutrition_sam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'stunting_moderate' => hedley_reports_count_children(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
+    'stunting_severe' => hedley_reports_count_children(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
+    'wasting_moderate' => hedley_reports_count_children(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
+    'wasting_severe' => hedley_reports_count_children(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
+    'underweight_moderate' => hedley_reports_count_children(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
+    'underweight_severe' => hedley_reports_count_children(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_count_children(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_count_children(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
   ];
 }
 
 /**
- * Calculates the percentage of the nominator over the total.
+ * Counts the children behind a rate.
  *
- * This function calculates the percentage value of the nominator divided
- * by the total. It returns the result as a string rounded to three
- * decimal places.
+ * The metric arrays hold one entry per encounter, so both sides are counted
+ * as distinct children. The report shows the percentage and these counts.
  *
  * @param array $nominator
- *   The subset of items for which the percentage is to be calculated.
+ *   The children with the condition, one entry per encounter.
  * @param array $total
- *   The total set of items used as the base for the percentage calculation.
+ *   The children measured, one entry per encounter.
  *
- * @return string
- *   The percentage value as a string, rounded to three decimal places.
+ * @return array
+ *   The rate as [count, total]. Example: [85, 496].
  */
-function hedley_reports_calculate_percentage(array $nominator, array $total) {
-  // The metric arrays hold one entry per encounter, so a child measured
-  // several times during the period appears several times. Count children on
-  // both sides: deduplicating only the total (as callers do) inflated the
-  // percentage, and could push it past 100%.
-  $nominator = array_unique($nominator);
-  $total = array_unique($total);
-
-  if (empty($total)) {
-    return "0%";
-  }
-  $result = (string) round((count($nominator) / count($total)) * 100, 3);
-  return "$result%";
+function hedley_reports_count_children(array $nominator, array $total) {
+  return [count(array_unique($nominator)), count(array_unique($total))];
 }
 
 /**
@@ -3487,6 +3445,68 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
 }
 
 /**
+ * Tells whether FBF activities are shown at a group session.
+ *
+ * At ACHI groups only children get them; mothers there are shown nothing.
+ *
+ * @param string $clinic_type
+ *   The group type, for example 'fbf' or 'pmtct'.
+ * @param \DateTime $start_date_obj
+ *   The session date.
+ *
+ * @return bool
+ *   TRUE at FBF and ACHI groups from the FBF launch date.
+ */
+function hedley_reports_fbf_activities_shown($clinic_type, DateTime $start_date_obj) {
+  return $start_date_obj >= new DateTime(HEDLEY_REPORTS_FBF_LAUNCH_DATE) && in_array($clinic_type, ['fbf', 'achi']);
+}
+
+/**
+ * Lists the activities expected for a mother at a group session.
+ *
+ * @param object $person
+ *   The mother's person node.
+ * @param array $measurements_by_type
+ *   The mother's measurements at the session, keyed by type.
+ * @param string $clinic_type
+ *   The group type, for example 'fbf' or 'pmtct'.
+ * @param \DateTime $start_date_obj
+ *   The session date.
+ *
+ * @return array
+ *   The expected activity types.
+ */
+function hedley_reports_nutrition_group_mother_expected_activities($person, array $measurements_by_type, $clinic_type, DateTime $start_date_obj) {
+  // The app shows no mother activities at ACHI groups.
+  if ($clinic_type == 'achi') {
+    return [];
+  }
+
+  $expected = ['family_planning'];
+
+  // Lactation (and possibly Mother FBF) activity are shown
+  // for sessions taking place at FBF clinics.
+  if (hedley_reports_fbf_activities_shown($clinic_type, $start_date_obj)) {
+    $expected[] = 'lactation';
+
+    // Mother FBF activity is shown if Lactation activity indicated
+    // that mother is breastfeeding. For sessions before 13 Oct 2024, the
+    // mother's Ubudehe must also be 1 or 2.
+    if (!empty($measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE])) {
+      $lactation_signs = array_column($measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE], 'value');
+      $any_ubudehe_date = new DateTime(HEDLEY_REPORTS_MOTHER_FBF_ANY_UBUDEHE_DATE);
+      $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'] ?? NULL;
+      $entitled = $start_date_obj >= $any_ubudehe_date || in_array($ubudehe, [1, 2]);
+      if (in_array('breastfeeding', $lactation_signs) && $entitled) {
+        $expected[] = 'mother_fbf';
+      }
+    }
+  }
+
+  return $expected;
+}
+
+/**
  * Generates completion data for a group nutrition encounter.
  *
  * Nutrition group encounter is done for adult+child pair, where for both
@@ -3586,6 +3606,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   }
 
   $measurements_ids = array_keys($result['node']);
+  // A fixed order, so the same session always gives the same data.
+  sort($measurements_ids);
   $measurements = node_load_multiple($measurements_ids);
   $measurements_by_participant = [];
   foreach ($measurements as $measurement) {
@@ -3594,8 +3616,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   }
 
   // Date on which 'Fbf' feature was launched.
-  $fbf_launch_date = '2020-06-15';
-  $fbf_launch_date_obj = new DateTime($fbf_launch_date);
+  $fbf_activities_shown = hedley_reports_fbf_activities_shown($clinic_type, $start_date_obj);
 
   // Processing measurements by participant type.
   $persons = node_load_multiple(array_keys($measurements_by_participant));
@@ -3611,24 +3632,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     if ($person_id == $adult_id) {
       // We do not expect to see activities for caregiver.
       if ($is_mother) {
-        $expected = ['family_planning'];
-
-        // Lactation (and possibly Mother FBF) activity are shown
-        // for sessions taking place at FBF and ACHI clinics.
-        if ($start_date_obj >= $fbf_launch_date_obj && in_array($clinic_type, ['fbf', 'achi'])) {
-          $expected[] = 'lactation';
-
-          // Mother FBF activity is shown if Lactation activity indicated
-          // that mother is breastfeeding, and mother Ubudehe is 1 or 2.
-          if (!empty($measurements_by_type['lactation'])) {
-            $lactation_sign = $measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE][0]['value'];
-            $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'];
-            if ($lactation_sign == 'breastfeeding' && in_array($ubudehe, [1, 2])) {
-              $expected[] = 'mother_fbf';
-            }
-          }
-        }
-
+        $expected = hedley_reports_nutrition_group_mother_expected_activities($person, $measurements_by_type, $clinic_type, $start_date_obj);
         $return['mother'] = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping_mother);
       }
     }
@@ -3691,7 +3695,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
 
       // Child FBF activity is shown for sessions taking
       // place at FBF and ACHI clinics.
-      if ($start_date_obj >= $fbf_launch_date_obj && in_array($clinic_type, ['fbf', 'achi'])) {
+      if ($fbf_activities_shown) {
         $expected[] = 'child_fbf';
       }
 
@@ -3715,7 +3719,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_acute_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -3761,13 +3766,13 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to CHW, since
@@ -3805,6 +3810,11 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $encounter_type = $encounter_data['encounter_type'];
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
@@ -3827,29 +3837,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
     $encounter_data['illness_diagnosis'] = $diagnosis;
 
-    // Acute illness module defines following logic:
-    // If first encounter(s) were taken by CHW, but then
-    // nurse ran and encounter, we consider that encounter of
-    // nurse as initial. All data collected by CHWs until that
-    // encounter should be ignored.
-    $initial_nurse_encounter_index = -1;
-    foreach ($previous_encounters_data as $ind => $data) {
-      if ($data['encounter_type'] == 'nurse-encounter') {
-        $initial_nurse_encounter_index = $ind;
-        break;
-      }
-    }
-
-    if ($initial_nurse_encounter_index == -1) {
-      $first_initial_with_subsequents = $previous_encounters_data;
-      $second_initial_with_subsequents = [];
-    }
-    else {
-      $first_initial_with_subsequents = array_slice($previous_encounters_data, 0, $initial_nurse_encounter_index + 1);
-      $second_initial_with_subsequents = array_slice($previous_encounters_data, $initial_nurse_encounter_index + 1);
-    }
-    $initial_with_subsequents = empty($second_initial_with_subsequents) ? $first_initial_with_subsequents : $second_initial_with_subsequents;
-    $encounter_data['initial_with_subsequents'] = $initial_with_subsequents;
+    $encounter_data['initial_with_subsequents'] = hedley_reports_acute_illness_initial_with_subsequents($previous_encounters_data);
 
     $fever_at_symptoms = FALSE;
     if (!empty($measurements_by_type['symptoms_general'])) {
@@ -3888,8 +3876,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -3935,6 +3922,29 @@ function hedley_reports_acute_illness_generate_expected_initial_activities(array
   }
 
   return $expected;
+}
+
+/**
+ * Resolves the earlier encounters that Acute Illness follow-up rules read.
+ *
+ * When a nurse takes over from CHWs, the nurse encounter is initial, and
+ * earlier CHW encounters are ignored.
+ *
+ * @param array $previous_encounters_data
+ *   The earlier encounters of the illness, oldest first.
+ *
+ * @return array
+ *   The encounters from the last initial nurse encounter on, or all of them.
+ */
+function hedley_reports_acute_illness_initial_with_subsequents(array $previous_encounters_data) {
+  $initial_index = 0;
+  foreach ($previous_encounters_data as $index => $data) {
+    if ($data['encounter_type'] == 'nurse-encounter') {
+      $initial_index = $index;
+    }
+  }
+
+  return array_slice($previous_encounters_data, $initial_index);
 }
 
 /**
@@ -3990,7 +4000,7 @@ function hedley_reports_acute_illness_add_expected_malaria_testing(array $encoun
     foreach ($initial_with_subsequents as $prev_encounter_data) {
       $prev_measurements_by_type = $prev_encounter_data['measurements_by_type'];
       if (!empty($prev_measurements_by_type['malaria_testing'])) {
-        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_rapid_test_result[LANGUAGE_NONE][0]['value'];
+        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_malaria_rapid_test[LANGUAGE_NONE][0]['value'];
         if (!empty($malaria_rapid_test_result)) {
           if (in_array($malaria_rapid_test_result, RDT_POSITIVE_VALUES)) {
             $diagnosed_with_malaria_previously = TRUE;
@@ -4032,11 +4042,11 @@ function hedley_reports_acute_illness_add_expected_covid_testing(array $encounte
 
   $total_symptoms_respiratory = hedley_reports_count_acute_illness_symptoms_respiratory($measurements_by_type['symptoms_respiratory']);
   $total_symptoms_gi = hedley_reports_count_acute_illness_symptoms_gi($measurements_by_type['symptoms_gi']);
+  $total_symptoms_general = hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
   if ($total_symptoms_gi > 0) {
     $symptoms_indicate_covid = $total_symptoms_respiratory > 0;
   }
   else {
-    $total_symptoms_general = hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
     $symptoms_indicate_covid = ($total_symptoms_general + $total_symptoms_respiratory + $total_symptoms_gi) > 1;
   }
 
@@ -4721,7 +4731,8 @@ function hedley_reports_count_acute_illness_signs(array $values) {
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_well_child($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -4789,13 +4800,13 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to pediatric care.
@@ -4831,12 +4842,19 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     $start_date_obj = $encounter_data['start_date_obj'];
 
     // Try to resolve age in months at a time encounter was performed.
-    $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+    $encounter_data['age_in_months'] = $birth_date_obj ? hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj) : NULL;
+    // The app's NCDA check counts whole months without the month-end rule.
+    $encounter_data['age_in_months_for_ncda'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
     [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($scoreboard_immunisations, $encounter_data);
@@ -4859,8 +4877,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -5034,12 +5051,8 @@ function hedley_reports_generate_vaccination_progress_data(array $immunisations_
 /**
  * Loads child-scoreboard immunisation history for a person.
  *
- * Performs the database work that
- * hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard()
- * used to repeat for every well-child encounter: resolves the child-scoreboard
- * participant, loads all its encounters and their immunisation measurements,
- * and returns the raw doses and dates per encounter, tagged with the encounter
- * start date. Callers filter this in memory by date cutoff.
+ * Covers all of the person's child-scoreboard participants. Returns the doses
+ * and dates of each encounter; callers filter them by date.
  *
  * @param int $person_id
  *   The ID of the person (child) whose scoreboard data is being loaded.
@@ -5064,23 +5077,21 @@ function hedley_reports_well_child_load_child_scoreboard_immunisations($person_i
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->propertyCondition('status', NODE_PUBLISHED);
 
-  $result = $query
-    ->range(0, 1)
-    ->execute();
+  $result = $query->execute();
 
   if (empty($result['node'])) {
     // No child-scoreboard participant for this person.
     return $encounters_immunisations;
   }
 
-  $participant_id = key($result['node']);
-  // Load all encounters of current participant.
+  $participant_ids = array_keys($result['node']);
+  // Load all encounters of those participants.
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'child_scoreboard_encounter')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_ids, 'IN')
     ->propertyOrderBy('nid')
     ->execute();
 
@@ -5360,7 +5371,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   }
   // Nurse SPV encounters.
   else {
-    if (hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
+    if (hedley_reports_ncda_expected($encounter_data['age_in_months_for_ncda'], $start_date_obj)) {
       $expected[] = 'well_child_ncda';
     }
   }
@@ -5465,7 +5476,7 @@ function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_
     return [];
   }
 
-  $age_in_months = ($interval->y * 12) + $interval->m;
+  $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
 
   $last_ecd_assessment_date = NULL;
   $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
@@ -5480,8 +5491,7 @@ function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_
   $age_in_months_at_last_assessment = NULL;
   if (!empty($last_ecd_assessment_date)) {
     $last_ecd_assessment_date_obj = new DateTime($last_ecd_assessment_date);
-    $interval = $last_ecd_assessment_date_obj->diff($birth_date_obj, TRUE);
-    $age_in_months_at_last_assessment = ($interval->y * 12) + $interval->m;
+    $age_in_months_at_last_assessment = hedley_reports_age_in_months_reached($birth_date_obj, $last_ecd_assessment_date_obj);
   }
 
   $grouped_ecd_signs = hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $age_in_months_at_last_assessment);
@@ -5783,7 +5793,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
       // All 3 doses of DTP were given, it has passed at least 28 days since
       // third dose, and, child is at last 18 months old.
       if (!empty($vaccination_progress['dtp']['dose-3'])) {
-        $age_in_months = ($interval->y * 12) + $interval->m;
+        $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
         $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
         $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
         $days_since_third_dose = $interval->days;
@@ -5864,8 +5874,7 @@ function hedley_reports_resolve_expected_immunisations(array $possible_immunisat
     $last_dose_date = $performed[$last_dose];
     $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
     $last_dose_date_obj = new DateTime($last_dose_date);
-    $next_dose_date_obj = clone $last_dose_date_obj;
-    $next_dose_date_obj->modify($interval_between_dosed);
+    $next_dose_date_obj = hedley_reports_add_interval($last_dose_date_obj, $interval_between_dosed);
     if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
       $six_weeks_old_date_obj = clone $birth_date_obj;
       $six_weeks_old_date_obj->modify('+6 weeks');
@@ -6069,8 +6078,7 @@ function hedley_reports_well_child_add_medication_activities(array $encounter_da
       $expected[] = $expected_activity;
     }
     else {
-      // The date belongs to the encounter it came from, so add to a copy.
-      $next_administration_date_obj = (clone $last_administration_date_obj)->add(new DateInterval('P6M'));
+      $next_administration_date_obj = hedley_reports_add_interval($last_administration_date_obj, '+6 months');
       if ($start_date_obj >= $next_administration_date_obj) {
         // Medication was administered previously more than 6 months
         // ago - add it as expected.
@@ -6246,7 +6254,8 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6292,13 +6301,13 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
@@ -6322,6 +6331,11 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     $expected = ['child_scoreboard_ncda'];
@@ -6369,8 +6383,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -6494,7 +6507,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     // All 3 doses of DTP were given, it has passed at least 28 days since
     // third dose, and, child is at last 18 months old.
     if (!empty($vaccination_progress['dtp']['dose-3'])) {
-      $age_in_months = ($interval->y * 12) + $interval->m;
+      $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
       $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
       $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
       $days_since_third_dose = $interval->days;
@@ -6517,12 +6530,8 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
 /**
  * Loads well-child immunisation history for a person.
  *
- * Performs the database work that
- * hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child()
- * used to repeat for every child-scoreboard encounter: resolves the well-child
- * participant, loads all its encounters and their immunisation measurements,
- * and returns the raw doses and dates per encounter, tagged with the encounter
- * start date. Callers filter this in memory by date cutoff.
+ * Covers all of the person's well-child participants. Returns the doses and
+ * dates of each encounter; callers filter them by date.
  *
  * @param int $person_id
  *   The ID of the person (child) whose well-child data is being loaded.
@@ -6547,23 +6556,21 @@ function hedley_reports_child_scoreboard_load_well_child_immunisations($person_i
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->propertyCondition('status', NODE_PUBLISHED);
 
-  $result = $query
-    ->range(0, 1)
-    ->execute();
+  $result = $query->execute();
 
   if (empty($result['node'])) {
     // No well-child participant for this person.
     return $encounters_immunisations;
   }
 
-  $participant_id = key($result['node']);
-  // Load all encounters of current participant.
+  $participant_ids = array_keys($result['node']);
+  // Load all encounters of those participants.
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'well_child_encounter')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_ids, 'IN')
     ->propertyOrderBy('nid')
     ->execute();
 
@@ -6723,7 +6730,8 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6788,13 +6796,13 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -6812,6 +6820,11 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -6842,8 +6855,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7293,7 +7305,8 @@ function hedley_reports_ncd_add_labs_results_activities(array &$expected, array 
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7323,13 +7336,13 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7347,6 +7360,11 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7432,8 +7450,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7443,7 +7460,8 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7474,13 +7492,13 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7498,6 +7516,11 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7582,8 +7605,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7593,7 +7615,8 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
  * @param object $participant
  *   The participant node object representing pregnancy.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_prenatal($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7685,14 +7708,14 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   // Assembling needed data for each encounter.
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // If encounter type field is empty, we default to 'nurse'.
     if (empty($encounter->field_prenatal_encounter_type)) {
       $encounter_type = 'nurse';
@@ -7738,6 +7761,11 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7844,8 +7872,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -8083,9 +8110,12 @@ function hedley_reports_prenatal_add_medication_activities(array $encounter_data
           $expected_activities[] = 'prenatal_calcium';
         }
 
+        $measurements_by_type = $encounter_data['measurements_by_type'];
         if (
           ($ega_in_weeks >= 24) &&
-          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mebendazole')
+          !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
+          !hedley_reports_prenatal_mebendazole_distributed($measurements_by_type) &&
+          !hedley_reports_prenatal_mebendazole_reported($measurements_by_type)
         ) {
           $expected_activities[] = 'prenatal_mebendazole';
         }
@@ -8162,8 +8192,7 @@ function hedley_reports_prenatal_add_immunisation_activities(array $encounter_da
 
   $last_dose_date = $performed[$last_dose];
   $last_dose_date_obj = new DateTime($last_dose_date);
-  $next_dose_date_obj = clone $last_dose_date_obj;
-  $next_dose_date_obj->modify($interval_between_dosed);
+  $next_dose_date_obj = hedley_reports_add_interval($last_dose_date_obj, $interval_between_dosed);
 
   // If encounter started after the date when immunisation was supposed
   // to be administered, adding it as expected.
@@ -9425,7 +9454,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
     }
   }
   // Second option - patient reported not getting any medicine from PMTCT.
-  $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+  $medication_measurement = $encounter_data['measurements_by_type']['medication'] ?? NULL;
   if (!empty($medication_measurement)) {
     $treatments = $medication_measurement->field_hiv_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
@@ -9460,7 +9489,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
     ['anemia', 'anemia-initial']
   );
   if ($moderate_anemia_diagnosed) {
-    $treatments = $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
+    $treatments = empty($medication_measurement->field_anemia_treatment[LANGUAGE_NONE]) ? [] : $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
       $referred = FALSE;
       foreach ($treatments as $treatment) {
@@ -9489,66 +9518,16 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
       $start_date_obj = $encounter_data['start_date_obj'];
       $lmp_date_obj = new DateTime($lmp_date);
       $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
-      if ($ega_in_weeks >= 24) {
-        $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
-        $prescribed = FALSE;
-        foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
-          // First option.
-          $medication_measurement = $previous_encounter_data['measurements_by_type']['medication'];
-          if (!empty($medication_measurement)) {
-            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-            if (!empty($medications)) {
-              foreach ($medications as $sign) {
-                if ($sign['value'] == 'deworming-pill') {
-                  $prescribed = TRUE;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (!$prescribed) {
-            // Second option - only check if not prescribed by first option.
-            $medication_distribution_measurement = $previous_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
-            if (!empty($medication_distribution_measurement)) {
-              $prescribed_medications = $medication_distribution_measurement->field_prescribed_medication[LANGUAGE_NONE];
-              if (!empty($prescribed_medications)) {
-                foreach ($prescribed_medications as $prescribed_medication) {
-                  if ($prescribed_medication['value'] == 'mebendezole') {
-                    $prescribed = TRUE;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          // If prescribed by first or second option, no point of checking
-          // additional encounters.
-          if ($prescribed) {
-            break;
-          }
-        }
-
-        // Now we check that Mebendazole was prescribed at current encounter.
-        if (!$prescribed) {
-          $medication_measurement = $encounter_data['measurements_by_type']['medication'];
-          if (!empty($medication_measurement)) {
-            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-            if (!empty($medications)) {
-              foreach ($medications as $sign) {
-                if ($sign['value'] == 'mebendezole') {
-                  $prescribed = TRUE;
-                  break;
-                }
-              }
-            }
-          }
-        }
-
-        // Finally, since Mebendazole was not prescribed at current,
-        // we know it's required.
-        if (!$prescribed) {
+      if (
+        $ega_in_weeks >= 24 &&
+        !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
+        !hedley_reports_prenatal_mebendazole_administered($encounter_data['measurements_by_type'])
+      ) {
+        // Required only when this visit's Treatment Review answer exists and
+        // does not include Mebendazole.
+        $signs = empty($medication_measurement->field_medication[LANGUAGE_NONE]) ? [] : $medication_measurement->field_medication[LANGUAGE_NONE];
+        $medications = array_column($signs, 'value');
+        if (!empty($medications) && !in_array('mebendezole', $medications)) {
           return TRUE;
         }
       }
@@ -9569,7 +9548,6 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
 
   // Vitamin A medication set.
   if ($encounter_type == 'nurse-postpartum') {
-    $medication_measurement = $encounter_data['measurements_by_type']['medication'];
     if (!empty($medication_measurement)) {
       $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
       if (!empty($medications)) {
@@ -10065,6 +10043,95 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
 }
 
 /**
+ * Checks if Mebendazole was given, or reported received, at an earlier visit.
+ *
+ * Given in Medication or Next Steps, or reported in Treatment Review.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ *
+ * @return bool
+ *   TRUE if so at any earlier nurse encounter; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_given_previously(array $encounter_data) {
+  foreach ($encounter_data['previous_nurse_encounters_data'] as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    if (
+      hedley_reports_prenatal_mebendazole_administered($measurements_by_type) ||
+      hedley_reports_prenatal_mebendazole_distributed($measurements_by_type) ||
+      hedley_reports_prenatal_mebendazole_reported($measurements_by_type)
+    ) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if the Medication activity of a visit handed over Mebendazole.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole was administered; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_administered(array $measurements_by_type) {
+  return hedley_reports_prenatal_medication_distributed_today(['measurements_by_type' => $measurements_by_type], 'prenatal_mebendazole');
+}
+
+/**
+ * Checks if Next Steps medication distribution of a visit gave Mebendazole.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole was distributed; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_distributed(array $measurements_by_type) {
+  $measurement = $measurements_by_type['prenatal_medication_distribution'];
+  if (empty($measurement) || empty($measurement->field_prescribed_medication[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_prescribed_medication[LANGUAGE_NONE] as $medication) {
+    if ($medication['value'] == 'mebendezole') {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if, in Treatment Review of a visit, Mebendazole was reported received.
+ *
+ * A deworming pill, asked about by an older version of the question, counts.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole or a deworming pill was reported; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_reported(array $measurements_by_type) {
+  $measurement = $measurements_by_type['medication'];
+  if (empty($measurement) || empty($measurement->field_medication[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_medication[LANGUAGE_NONE] as $sign) {
+    if (in_array($sign['value'], ['mebendezole', 'deworming-pill'])) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
  * Checks if a specific medication was distributed during previous encounters.
  *
  * This function iterates over previous nurse encounters to determine if a
@@ -10243,7 +10310,7 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         $mandatory_activities[] = 'last_menstrual_period';
         $mandatory_activities[] = 'pregnancy_testing';
       }
-      if (hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
+      if (!hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
         $mandatory_activities[] = 'prenatal_health_education';
       }
       break;
@@ -10721,6 +10788,60 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
 }
 
 /**
+ * Whole months from birth, as the app's age checks count them.
+ *
+ * A month is reached on its month-end day: born 31 March,
+ * 6 months on 30 September.
+ *
+ * @param DateTime $birth_date_obj
+ *   The birth date.
+ * @param DateTime $date_obj
+ *   The date to count to.
+ *
+ * @return int
+ *   The age in months.
+ */
+function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime $date_obj) {
+  [$birth_year, $birth_month, $birth_day] = array_map('intval', explode('-', $birth_date_obj->format('Y-n-j')));
+  [$year, $month, $day] = array_map('intval', explode('-', $date_obj->format('Y-n-j')));
+
+  $whole_months = ($year - $birth_year) * 12 + $month - $birth_month - ($day < $birth_day ? 1 : 0);
+
+  $next_anniversary = hedley_reports_add_interval($birth_date_obj, '+' . ($whole_months + 1) . ' months')->format('Y-m-d');
+
+  return $next_anniversary === $date_obj->format('Y-m-d') ? $whole_months + 1 : $whole_months;
+}
+
+/**
+ * Adds an interval such as '+6 months' to a copy of a date.
+ *
+ * Months and years stop on a shorter month's last day: 2025-08-31 plus 6
+ * months is 2026-02-28.
+ *
+ * @param DateTime $date_obj
+ *   The date to start from. It is not changed.
+ * @param string $interval
+ *   A relative format accepted by DateTime::modify().
+ *
+ * @return DateTime
+ *   The moved date.
+ */
+function hedley_reports_add_interval(DateTime $date_obj, $interval) {
+  $result = clone $date_obj;
+  if (!preg_match('/^\+(\d+) (month|year)s?$/', $interval, $matches)) {
+    $result->modify($interval);
+    return $result;
+  }
+
+  $months = $matches[2] == 'year' ? 12 * $matches[1] : $matches[1];
+  $day = (int) $date_obj->format('j');
+  $result->modify('first day of this month')->modify('+' . $months . ' months');
+  $result->setDate((int) $result->format('Y'), (int) $result->format('n'), min($day, (int) $result->format('t')));
+
+  return $result;
+}
+
+/**
  * Resolve the age in months for patient at the time of a specific encounter.
  *
  * @param object $encounter
@@ -10847,6 +10968,70 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
   }
 
   return implode(',', $expected) . '|' . implode(',', $completed);
+}
+
+/**
+ * Checks whether completion data was already generated for an encounter.
+ *
+ * @param object $encounter
+ *   The encounter node.
+ *
+ * @return bool
+ *   TRUE if the encounter has completion data.
+ */
+function hedley_reports_completion_data_is_set($encounter) {
+  return !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value']);
+}
+
+/**
+ * Stores completion data on a node, saving it only when the data changed.
+ *
+ * An unchanged node gets no new revision, so devices do not download it again.
+ *
+ * @param object $node
+ *   The encounter node, or the attendance node for group sessions.
+ * @param mixed $completion_data
+ *   The completion data to store.
+ */
+function hedley_reports_save_completion_data($node, $completion_data) {
+  $encoded = json_encode($completion_data);
+  $is_unchanged = function ($node) use ($encoded) {
+    return isset($node->field_reports_data[LANGUAGE_NONE][0]['value']) && $node->field_reports_data[LANGUAGE_NONE][0]['value'] === $encoded;
+  };
+
+  if ($is_unchanged($node)) {
+    return;
+  }
+
+  // The node was loaded before the data was built, so reload it to keep
+  // edits made since, as the person save does.
+  entity_get_controller('node')->resetCache([$node->nid]);
+  $node = node_load($node->nid);
+  if (!$node || $is_unchanged($node)) {
+    return;
+  }
+
+  $node->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded;
+  node_save($node);
+}
+
+/**
+ * Checks whether any of the encounters still needs completion data.
+ *
+ * @param array $encounters
+ *   The encounter nodes.
+ *
+ * @return bool
+ *   TRUE if at least one encounter has no completion data.
+ */
+function hedley_reports_completion_data_missing(array $encounters) {
+  foreach ($encounters as $encounter) {
+    if (!hedley_reports_completion_data_is_set($encounter)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 /**

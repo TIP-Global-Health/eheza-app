@@ -1,4 +1,4 @@
-module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw, decodePrenatalDataItem)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
@@ -18,6 +18,7 @@ import Backend.Measurement.Decoder
         , decodeIsolationSign
         , decodeMedicalCondition
         , decodeRecommendation114
+        , decodeReferToFacilitySign
         , decodeSendToHCSign
         , decodeTestExecutionNote
         , decodeTestResult
@@ -326,6 +327,7 @@ decodePrenatalEncounterDataItem =
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "muac" (nullable decodeFloat) Nothing
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> optional "referrals" (map EverySet.fromList (decodeListDroppingUnknown decodeReferToFacilitySign)) EverySet.empty
 
 
 decodeNCDDataItem : Decoder NCDDataItem

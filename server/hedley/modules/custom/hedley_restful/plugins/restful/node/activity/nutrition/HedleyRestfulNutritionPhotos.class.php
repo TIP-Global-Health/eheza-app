@@ -70,7 +70,7 @@ class HedleyRestfulNutritionPhotos extends HedleyRestfulNutritionActivityBase {
    */
   public function createEntity() {
     $view_entity = parent::createEntity();
-    $this->copyImageToPerson($view_entity);
+    hedley_restful_copy_photo_to_person($view_entity[0]['id']);
 
     return $view_entity;
   }
@@ -80,42 +80,9 @@ class HedleyRestfulNutritionPhotos extends HedleyRestfulNutritionActivityBase {
    */
   public function patchEntity($entity_id) {
     $view_entity = parent::patchEntity($entity_id);
-    $this->copyImageToPerson($view_entity);
+    hedley_restful_copy_photo_to_person($view_entity[0]['id']);
 
     return $view_entity;
-  }
-
-  /**
-   * Add latest measurement photo as the Person's profile avatar.
-   *
-   * @param array $view_entity
-   *   The photo entity RESTful view.
-   *
-   * @throws \Exception
-   *   If there was an error saving the person entity.
-   */
-  protected function copyImageToPerson(array $view_entity) {
-    $entity_id = $view_entity[0]['id'];
-
-    $wrapper = entity_metadata_wrapper($this->entityType, $entity_id);
-    if (!$wrapper || !is_object($wrapper)) {
-      return;
-    }
-
-    $person_wrapper = $wrapper->field_person;
-    if (!$person_wrapper || !is_object($person_wrapper)) {
-      return;
-    }
-
-    try {
-      $person_wrapper->field_photo->set($wrapper->field_photo->value());
-      $person_wrapper->save();
-    }
-    catch (Exception $exception) {
-      watchdog('error', $exception->getMessage());
-
-      throw $exception;
-    }
   }
 
 }

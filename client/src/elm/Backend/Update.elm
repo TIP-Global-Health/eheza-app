@@ -12,7 +12,6 @@ import Backend.AcuteIllnessEncounter.Update
 import Backend.ChildScoreboardActivity.Utils
 import Backend.ChildScoreboardEncounter.Model
 import Backend.ChildScoreboardEncounter.Update
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
@@ -34,8 +33,6 @@ import Backend.Measurement.Model
         ( BloodSmearResult(..)
         , ChildMeasurements
         , HistoricalMeasurements
-        , LaboratoryTest(..)
-        , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
         , WellChildSymptom(..)
@@ -51,7 +48,6 @@ import Backend.Measurement.Utils
         , testPerformedByExecutionNote
         )
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
-import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
@@ -62,7 +58,7 @@ import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), PatchPersonInitator(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
+import Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, graduatingAgeInMonth, groupTakesChildOfAnyAge)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
@@ -88,7 +84,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
+import Backend.Utils exposing (clearFinishedPost, everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -98,7 +94,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
 import Measurement.Utils exposing (bloodSmearResultSet)
 import Pages.AcuteIllness.Activity.Model
@@ -118,7 +114,6 @@ import Pages.ChildScoreboard.Activity.Utils
 import Pages.ChildScoreboard.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
-import Pages.GlobalCaseManagement.Utils
 import Pages.NCD.RecurrentActivity.Utils
 import Pages.NCD.Utils
 import Pages.NextSteps.Model
@@ -2367,132 +2362,133 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     else
                         []
 
-                processWellChildECDRevision encounterId after =
-                    encounterId
-                        |> Maybe.andThen
-                            (\id ->
-                                Pages.WellChild.Encounter.Utils.generateAssembledData site id after
-                                    |> RemoteData.toMaybe
-                                    |> Maybe.map
-                                        (\assembledAfter ->
-                                            let
-                                                warningsList =
-                                                    assembledAfter.person.birthDate
-                                                        |> Maybe.map
-                                                            (\birthDate ->
-                                                                let
-                                                                    ageWeeks =
-                                                                        Date.diff Weeks birthDate currentDate
+                wellChildECDWarningMsgs id assembledAfter =
+                    let
+                        warningsList =
+                            assembledAfter.person.birthDate
+                                |> Maybe.map
+                                    (\birthDate ->
+                                        let
+                                            ageWeeks =
+                                                Date.diff Weeks birthDate currentDate
 
-                                                                    ageMonths =
-                                                                        Date.diff Months birthDate currentDate
-                                                                in
-                                                                Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
-                                                                    |> List.filterMap
-                                                                        (\sign ->
-                                                                            if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
-                                                                                if ageMonths >= 6 then
-                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                            ageMonths =
+                                                ageInMonthsReached birthDate currentDate
+                                        in
+                                        Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
+                                            |> List.filterMap
+                                                (\sign ->
+                                                    if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
+                                                        if ageMonths >= 6 then
+                                                            Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
-                                                                                else if ageWeeks >= 14 then
-                                                                                    Just Pages.WellChild.Encounter.Model.ChildBehind
+                                                        else if ageWeeks >= 14 then
+                                                            Just Pages.WellChild.Encounter.Model.ChildBehind
 
-                                                                                else
-                                                                                    Nothing
+                                                        else
+                                                            Nothing
 
-                                                                            else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
-                                                                                if ageMonths >= 6 then
-                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                                    else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
+                                                        if ageMonths >= 6 then
+                                                            Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
-                                                                                else
-                                                                                    Nothing
+                                                        else
+                                                            Nothing
 
-                                                                            else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
-                                                                                -- Signs will be displayed until child is 13 months old.
-                                                                                if ageMonths == 12 then
-                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
+                                                    else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
+                                                        -- Signs will be displayed until child is 13 months old.
+                                                        if ageMonths == 12 then
+                                                            Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
-                                                                                else if ageMonths >= 9 then
-                                                                                    Just Pages.WellChild.Encounter.Model.ChildBehind
+                                                        else if ageMonths >= 9 then
+                                                            Just Pages.WellChild.Encounter.Model.ChildBehind
 
-                                                                                else
-                                                                                    Nothing
-
-                                                                            else
-                                                                                Nothing
-                                                                        )
-                                                            )
-                                                        |> Maybe.withDefault []
-
-                                                warning =
-                                                    if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
-                                                        WarningECDMilestoneReferToSpecialist
-
-                                                    else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
-                                                        WarningECDMilestoneBehind
+                                                        else
+                                                            Nothing
 
                                                     else
-                                                        NoECDMilstoneWarning
+                                                        Nothing
+                                                )
+                                    )
+                                |> Maybe.withDefault []
 
-                                                setPopUpStateMsg popupType =
-                                                    Pages.WellChild.Encounter.Model.PopupECD popupType
-                                                        |> Pages.WellChild.Encounter.Model.DialogWarning
-                                                        |> Just
-                                                        |> Pages.WellChild.Encounter.Model.SetDialogState
-                                                        |> App.Model.MsgPageWellChildEncounter id
-                                                        |> App.Model.MsgLoggedIn
+                        warning =
+                            if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
+                                WarningECDMilestoneReferToSpecialist
 
-                                                popUpMsg =
-                                                    case warning of
-                                                        WarningECDMilestoneReferToSpecialist ->
-                                                            [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
+                            else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
+                                WarningECDMilestoneBehind
 
-                                                        WarningECDMilestoneBehind ->
-                                                            [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
+                            else
+                                NoECDMilstoneWarning
 
-                                                        _ ->
-                                                            []
+                        setPopUpStateMsg popupType =
+                            Pages.WellChild.Encounter.Model.PopupECD popupType
+                                |> Pages.WellChild.Encounter.Model.DialogWarning
+                                |> Just
+                                |> Pages.WellChild.Encounter.Model.SetDialogState
+                                |> App.Model.MsgPageWellChildEncounter id
+                                |> App.Model.MsgLoggedIn
 
-                                                setEncounterWarningMsg =
-                                                    Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
-                                                        |> Backend.Model.MsgWellChildEncounter id
-                                                        |> App.Model.MsgIndexedDb
-                                            in
-                                            setEncounterWarningMsg :: popUpMsg
-                                        )
-                            )
-                        |> Maybe.withDefault []
+                        popUpMsg =
+                            case warning of
+                                WarningECDMilestoneReferToSpecialist ->
+                                    [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
 
-                processWellChildImmunisationRevision encounterId after =
+                                WarningECDMilestoneBehind ->
+                                    [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
+
+                                _ ->
+                                    []
+
+                        setEncounterWarningMsg =
+                            Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
+                                |> Backend.Model.MsgWellChildEncounter id
+                                |> App.Model.MsgIndexedDb
+                    in
+                    setEncounterWarningMsg :: popUpMsg
+
+                refreshWellChildNextVisitOnRevision encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , withWellChildAssembledData encounterId newModel refreshWellChildNextVisitMsgs
+                    )
+
+                withWellChildAssembledData encounterId after toMsgs =
                     Maybe.andThen
                         (\id ->
                             Pages.WellChild.Encounter.Utils.generateAssembledData site id after
                                 |> RemoteData.toMaybe
-                                |> Maybe.andThen
-                                    (\assembledAfter ->
-                                        Maybe.map
-                                            (\( measurementId, measurement ) ->
-                                                let
-                                                    immunisationDate =
-                                                        Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
-
-                                                    asapImmunisationDate =
-                                                        Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
-
-                                                    value =
-                                                        measurement.value
-                                                in
-                                                [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
-                                                    (Just measurementId)
-                                                    { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
-                                                    |> Backend.Model.MsgWellChildEncounter id
-                                                    |> App.Model.MsgIndexedDb
-                                                ]
-                                            )
-                                            assembledAfter.measurements.nextVisit
-                                    )
+                                |> Maybe.map (toMsgs id)
                         )
                         encounterId
+                        |> Maybe.withDefault []
+
+                refreshWellChildNextVisitMsgs id assembledAfter =
+                    Maybe.andThen
+                        (\( measurementId, measurement ) ->
+                            let
+                                refreshed =
+                                    Pages.WellChild.Activity.Utils.refreshNextVisitValue currentDate site assembledAfter measurement.value
+                            in
+                            -- Saved only when a date changes.
+                            if refreshed == measurement.value then
+                                Nothing
+
+                            else
+                                Just
+                                    [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
+                                        (Just measurementId)
+                                        refreshed
+                                        |> Backend.Model.MsgWellChildEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        )
+                        assembledAfter.measurements.nextVisit
                         |> Maybe.withDefault []
 
                 processTuberculosisRevisionAndNavigateToProgressReport encounterId =
@@ -2588,8 +2584,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                                         updatedEditable =
                                                                             Success
                                                                                 { editableSession
-                                                                                    | update = NotAsked
-                                                                                    , offlineSession = updatedOffline
+                                                                                    | offlineSession = updatedOffline
                                                                                     , checkedIn = LocalData.setRecalculate editableSession.checkedIn
                                                                                     , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
                                                                                     , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
@@ -3402,129 +3397,50 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildECDRevision data.encounterId newModel
+                                withWellChildAssembledData data.encounterId
+                                    newModel
+                                    (\id assembled -> wellChildECDWarningMsgs id assembled ++ refreshWellChildNextVisitMsgs id assembled)
                         in
                         ( newModel
                         , Cmd.none
                         , extraMsgs
                         )
+
+                    [ WellChildAlbendazoleRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildBCGImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildDTPImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildHPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildIPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                    [ WellChildMebendezoleRevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildMRImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildOPVImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildPCV13ImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ WellChildRotarixImmunisationRevision _ data ] ->
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
-                            extraMsgs =
-                                processWellChildImmunisationRevision data.encounterId newModel
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                    [ WellChildVitaminARevision _ data ] ->
+                        refreshWellChildNextVisitOnRevision data.encounterId
 
                     [ NCDRandomBloodSugarTestRevision _ data ] ->
                         let
@@ -3863,6 +3779,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
+        ResetPostRelationshipRequest personId ->
+            ( { model | postRelationship = clearFinishedPost personId model.postRelationship }
+            , Cmd.none
+            , []
+            )
+
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
@@ -4130,9 +4052,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
+                    Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
-            ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
+            ( { model
+                | sessionRequests = Dict.insert sessionId subModel model.sessionRequests
+                , editableSessions =
+                    Dict.update sessionId
+                        (Maybe.map (RemoteData.map (\editable -> { editable | saveRequests = subModel })))
+                        model.editableSessions
+              }
             , Cmd.map (MsgSession sessionId) subCmd
             , appMsgs
             )
@@ -4276,7 +4204,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     (Dict.get clinicId
                                                         >> Maybe.andThen
                                                             (\clinic ->
-                                                                if List.member clinic.clinicType [ Sorwathe, Achi ] then
+                                                                if groupTakesChildOfAnyAge clinic.clinicType then
                                                                     Nothing
 
                                                                 else
@@ -8851,8 +8779,13 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         -- we can use the diganoses set for the encounter.
                         assembledAfter.encounter.diagnoses
 
+                    -- With no visit to report to, the regenerated set is stored on this visit.
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                        if isJust originData then
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
+
+                        else
+                            Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
@@ -8943,7 +8876,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =
@@ -8972,7 +8905,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =
@@ -9039,18 +8972,22 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
+                let
+                    testExecuted =
+                        testPerformedByExecutionNote executionNote
+                in
                 if
-                    -- We allow Vitals recheck only during initial encounter.
-                    -- At subsequent encounter, no need to retake blood preasure.
+                    -- Blocks only scheduling; a recheck scheduled earlier can still be removed.
                     (test == Backend.Measurement.Model.TestVitalsRecheck)
-                        && (not <| List.isEmpty assembled.nursePreviousEncountersData)
+                        && testExecuted
+                        && (not <| Pages.Prenatal.Utils.vitalsRecheckAllowed assembled)
                 then
                     []
 
                 else
                     labsResultsTestAddedMsgs currentDate
                         test
-                        (testPerformedByExecutionNote executionNote)
+                        testExecuted
                         assembled.measurements.labsResults
                         (savePrenatalLabsResultsMsg id assembled.participant.person)
             )
@@ -9071,68 +9008,11 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        let
-                            ( performedTests, completedTests ) =
-                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
-
-                            updatedValue =
-                                (\value ->
-                                    let
-                                        -- Since lab results can be entered right away (at poit of care),
-                                        -- or at latter stage (after test was ordered at lab), we
-                                        -- update both performed and completed tests.
-                                        -- Since data structure is EverySet, it will not create duplicacies.
-                                        updatedPerformedTests =
-                                            EverySet.insert test performedTests
-
-                                        updatedCompletedTests =
-                                            EverySet.insert test completedTests
-
-                                        allLabsCompleted =
-                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
-
-                                        updatedTestsWithFollowUp =
-                                            -- Mark tests which results were entered by Lab Tech, and got
-                                            -- follow up questions that will have to be completed by nurse.
-                                            if isLabTech && List.member test [ TestHIV, TestSyphilis, TestPartnerHIV ] then
-                                                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
-                                                    |> Maybe.withDefault (Just <| EverySet.singleton test)
-
-                                            else
-                                                value.testsWithFollowUp
-
-                                        reviewState =
-                                            if isLabTech && isNothing value.reviewState && allLabsCompleted then
-                                                -- For lab technician, request review if all labs were
-                                                -- completed, and review state was not set previously.
-                                                Just LabsResultsReviewRequested
-
-                                            else if not isLabTech && allLabsCompleted then
-                                                -- For nurse, set review state to completed,
-                                                -- if all labs were completed.
-                                                Just LabsResultsReviewCompleted
-
-                                            else
-                                                value.reviewState
-
-                                        resolutionDate =
-                                            if not isLabTech && allLabsCompleted then
-                                                currentDate
-
-                                            else
-                                                value.resolutionDate
-                                    in
-                                    { value
-                                        | performedTests = updatedPerformedTests
-                                        , completedTests = updatedCompletedTests
-                                        , testsWithFollowUp = updatedTestsWithFollowUp
-                                        , reviewState = reviewState
-                                        , resolutionDate = resolutionDate
-                                    }
-                                )
-                                    results.value
-                        in
-                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        [ savePrenatalLabsResultsMsg id
+                            assembled.participant.person
+                            (Just resultsId)
+                            (Pages.Prenatal.RecurrentActivity.Utils.labsResultsValueOnResultSaved currentDate isLabTech assembled results test)
+                        ]
                     )
                     assembled.measurements.labsResults
             )
@@ -9159,7 +9039,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                             }
                         )
                             assembled_.encounter
@@ -9209,7 +9089,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesFromOwnResults assembled_
                                 }
                             )
                                 assembled_.encounter
@@ -9225,14 +9105,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     if List.isEmpty pendingActivities then
                         Maybe.map
                             (\( resultsId, results ) ->
-                                let
-                                    value =
-                                        results.value
-                                in
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    { value | resolutionDate = currentDate }
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage
@@ -9347,60 +9223,14 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
-                Maybe.map
+                Maybe.andThen
                     (\( resultsId, results ) ->
-                        if
-                            EverySet.member test results.value.completedTests
-                                && EverySet.member test results.value.performedTests
-                        then
-                            -- Do not update value if we have it set up properly already.
-                            []
-
-                        else
-                            let
-                                ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
-
-                                updatedValue =
-                                    (\value ->
-                                        let
-                                            -- Since lab results can be entered right away (at poit of care),
-                                            -- or at latter stage (after test was ordered at lab), we
-                                            -- update both performed and completed tests.
-                                            -- Since data structure is EverySet, it will not create duplicacies.
-                                            updatedPerformedTests =
-                                                EverySet.insert test performedTests
-
-                                            updatedCompletedTests =
-                                                EverySet.insert test completedTests
-
-                                            resolutionDate =
-                                                -- When all performed tests are completed, and Next Steps are either
-                                                -- completed, or not required, setting today as resolution date.
-                                                if
-                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
-                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            assembled
-                                                            Backend.NCDActivity.Model.RecurrentNextSteps
-                                                then
-                                                    currentDate
-
-                                                else
-                                                    value.resolutionDate
-                                        in
-                                        { value
-                                            | performedTests = updatedPerformedTests
-                                            , completedTests = updatedCompletedTests
-                                            , resolutionDate = resolutionDate
-                                        }
-                                    )
-                                        results.value
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        Pages.NCD.RecurrentActivity.Utils.labsResultsValueWithResult currentDate assembled test results.value
+                            |> Maybe.map (saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId))
                     )
                     assembled.measurements.labsResults
             )
-        |> Maybe.withDefault []
+        |> Maybe.Extra.toList
 
 
 saveNCDLabsResultsMsg :
@@ -9603,8 +9433,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateFollowUpAssessment childId followUpId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
@@ -9635,8 +9464,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveNutrition nutritionId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateNutritionAssessment childId nutritionId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
@@ -10133,7 +9961,9 @@ makeEditableSession sessionId db =
         RemoteData.map
             (\offline ->
                 { offlineSession = offline
-                , update = NotAsked
+                , saveRequests =
+                    Dict.get sessionId db.sessionRequests
+                        |> Maybe.withDefault Backend.Session.Model.emptyModel
                 , checkedIn = previousCheckedIn
                 , summaryByParticipant = previousSummaryByParticipant
                 , summaryByActivity = previousSummaryByActivity

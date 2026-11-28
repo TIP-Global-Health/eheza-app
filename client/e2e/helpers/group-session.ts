@@ -2,7 +2,7 @@ import { Page, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { WAIT, formInput, selectByLabel, setDate } from './common';
+import { WAIT, formInput, selectByLabel, setDate, uploadTestPhoto } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -512,7 +512,7 @@ export async function navigateBackToAttendance(page: Page) {
  * Activities are rendered as clickable divs in a grid, each with
  * the activity name as text (e.g., "Height", "MUAC", "Weight").
  */
-async function openActivity(page: Page, activityName: string) {
+export async function openActivity(page: Page, activityName: string) {
   // Dismiss any overlay that might be blocking (e.g., nutrition warning).
   await dismissOverlay(page);
 
@@ -628,6 +628,18 @@ export async function completeNutritionSigns(page: Page) {
   await label.scrollIntoViewIfNeeded();
   await label.click({ force: true });
   await page.waitForTimeout(WAIT.formInteraction);
+  await saveActivity(page);
+}
+
+/**
+ * Complete the Photo activity for a child.
+ * Uploads a minimal test image via the dropzone.
+ */
+export async function completePhoto(page: Page) {
+  await openActivity(page, 'Photo');
+  await uploadTestPhoto(page);
+  // Save stays disabled until the app has received the uploaded photo.
+  await page.locator('#save-form:not(.disabled)').waitFor({ timeout: 15000 });
   await saveActivity(page);
 }
 

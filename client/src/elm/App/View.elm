@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, getSessionPages)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
@@ -108,7 +108,6 @@ import Pages.Prenatal.RecurrentEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Router exposing (pageToFragment)
-import Pages.Session.Model
 import Pages.Session.View
 import Pages.StockManagement.Model
 import Pages.StockManagement.View
@@ -573,12 +572,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     PersonPage id initiator ->
-                        Pages.Person.View.view model.language currentDate isChw initiator id model.indexedDb
+                        Pages.Person.View.view model.language currentDate site isChw initiator id model.indexedDb
                             |> flexPageWrapper configured.config model
 
                     PersonsPage relation initiator ->
                         Pages.People.View.view model.language
                             currentDate
+                            site
                             healthCenterId
                             model.villageId
                             isChw
@@ -641,6 +641,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate
+                            site
                             ( healthCenterId, model.villageId )
                             isChw
                             encounterType
@@ -652,6 +653,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     FamilyEncounterParticipantsPage encounterType ->
                         Pages.FamilyEncounterParticipants.View.view model.language
                             currentDate
+                            site
                             ( healthCenterId, model.villageId )
                             isChw
                             encounterType
@@ -668,6 +670,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Relationship.View.view model.language
                             currentDate
+                            site
                             ( healthCenterId, model.villageId )
                             isChw
                             initiator
@@ -681,8 +684,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     SessionPage sessionId subPage ->
                         let
                             sessionPages =
-                                Dict.get sessionId loggedInModel.sessionPages
-                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
+                                getSessionPages sessionId loggedInModel
                         in
                         Pages.Session.View.view
                             model.language
@@ -990,7 +992,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.ncdEncounterPages
                                     |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
                         in
-                        Pages.NCD.Encounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.NCD.Encounter.View.view model.language currentDate site id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1010,7 +1012,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.ncdRecurrentEncounterPages
                                     |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
                         in
-                        Pages.NCD.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.NCD.RecurrentEncounter.View.view model.language currentDate site id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1091,7 +1093,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.tuberculosisEncounterPages
                                     |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
                         in
-                        Pages.Tuberculosis.Encounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.Tuberculosis.Encounter.View.view model.language currentDate site id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1101,7 +1103,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.tuberculosisActivityPages
                                     |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
                         in
-                        Pages.Tuberculosis.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.Tuberculosis.Activity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -1137,7 +1139,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.hivEncounterPages
                                     |> Maybe.withDefault Pages.HIV.Encounter.Model.emptyModel
                         in
-                        Pages.HIV.Encounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.HIV.Encounter.View.view model.language currentDate site id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHIVEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1147,7 +1149,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.hivActivityPages
                                     |> Maybe.withDefault Pages.HIV.Activity.Model.emptyModel
                         in
-                        Pages.HIV.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.HIV.Activity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHIVActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -1189,6 +1191,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.TraceContact.View.view model.language
                             currentDate
+                            site
                             traceContactId
                             model.indexedDb
                             page_

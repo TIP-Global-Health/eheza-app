@@ -350,7 +350,7 @@ viewContent language currentDate site features initiator db model assembled =
         , Html.Attributes.id "report-content"
         ]
     <|
-        viewPersonInfoPane language currentDate assembled.person
+        viewPersonInfoPane language currentDate site assembled.person
             :: (derivedContent
                     ++ [ Html.map MsgReportToWhatsAppDialog
                             (Components.ReportToWhatsAppDialog.View.view

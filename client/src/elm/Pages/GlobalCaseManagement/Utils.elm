@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
+module Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -697,6 +697,13 @@ labsResultsTestData currentDate results =
         )
 
 
+{-| Whether every performed test is completed.
+-}
+allLabsCompleted : EverySet LaboratoryTest -> EverySet LaboratoryTest -> Bool
+allLabsCompleted performedTests completedTests =
+    EverySet.isEmpty <| EverySet.diff performedTests completedTests
+
+
 resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients
 resolveUniquePatientsFromFollowUps limitDate followUps =
     let
@@ -727,13 +734,20 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
 
 filterFollowUpsOfResidents : List PersonId -> FollowUpMeasurements -> FollowUpMeasurements
 filterFollowUpsOfResidents residents followUps =
-    { followUps
-        | nutritionGroup = filterByParticipant residents followUps.nutritionGroup
-        , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
-        , wellChild = filterByParticipant residents followUps.wellChild
-        , acuteIllness = filterByParticipant residents followUps.acuteIllness
-        , prenatal = filterByParticipant residents followUps.prenatal
-        , nextVisit = filterByParticipant residents followUps.nextVisit
+    -- Every field is listed, so a new kind of follow up must be placed here.
+    { nutritionGroup = filterByParticipant residents followUps.nutritionGroup
+    , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
+    , acuteIllness = filterByParticipant residents followUps.acuteIllness
+    , prenatal = filterByParticipant residents followUps.prenatal
+    , wellChild = filterByParticipant residents followUps.wellChild
+    , tuberculosis = filterByParticipant residents followUps.tuberculosis
+    , hiv = filterByParticipant residents followUps.hiv
+    , nextVisit = filterByParticipant residents followUps.nextVisit
+
+    -- Shown to nurses and lab technicians only, who are not bound to a village.
+    , traceContacts = followUps.traceContacts
+    , prenatalLabs = followUps.prenatalLabs
+    , ncdLabs = followUps.ncdLabs
     }
 
 

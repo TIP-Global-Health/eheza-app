@@ -27,7 +27,7 @@ import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
 import Pages.Prenatal.Encounter.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, secondPhaseRequired)
+import Pages.Prenatal.Encounter.Utils exposing (emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, secondPhaseRequired)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
@@ -200,7 +200,7 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
 
                             highSeverityAlertsData =
                                 allHighSeverityAlerts
-                                    |> List.filterMap (generateHighSeverityAlertData language currentDate isChw assembled)
+                                    |> List.filterMap (generateHighSeverityAlertData language isChw assembled)
 
                             recurringHighSeverityAlertsData =
                                 allRecurringHighSeverityAlerts
@@ -497,7 +497,7 @@ viewActionButton : Language -> String -> List PrenatalActivity -> List PrenatalA
 viewActionButton language buttonColor pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
     let
         enabled =
-            if emergencyReferalRequired assembled then
+            if emergencyReferralRequired assembled then
                 List.member NextSteps completedActivities
 
             else

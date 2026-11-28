@@ -1,8 +1,8 @@
-module Pages.Prenatal.Participant.Model exposing (Model, Msg(..), ShownPregnancy, emptyModel)
+module Pages.Prenatal.Participant.Model exposing (ChwVisitButtons, Model, Msg(..), ShownPregnancy, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Model
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType)
 import Pages.Page exposing (Page)
 
 
@@ -17,6 +17,18 @@ type alias ShownPregnancy =
     { sessionId : IndividualEncounterParticipantId
     , encounters : List ( PrenatalEncounterId, PrenatalEncounter )
     , keptForPostpartumVisit : Bool
+    }
+
+
+{-| State of the three CHW visit buttons. An enabled button opens
+`visitToResume` when there is one, and starts a new visit otherwise.
+-}
+type alias ChwVisitButtons =
+    { visitToResume : Maybe PrenatalEncounterId
+    , firstVisitEnabled : Bool
+    , subsequentVisitType : PrenatalEncounterType
+    , subsequentVisitEnabled : Bool
+    , postpartumVisitEnabled : Bool
     }
 
 

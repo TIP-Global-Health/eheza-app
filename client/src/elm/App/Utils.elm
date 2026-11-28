@@ -1,9 +1,11 @@
-module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, getLoggedInModel, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
+module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, getLoggedInModel, getSessionPages, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
 
 import App.Model exposing (LoggedInModel, Model, Msg(..), RollbarErrorSource(..), SubModelReturn)
-import Backend.Entities exposing (HealthCenterId)
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId, SessionId)
 import Error.Model exposing (Error, ErrorType(..))
 import Maybe.Extra
+import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Task
 
@@ -14,6 +16,14 @@ getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
     getLoggedInModel model
         |> Maybe.map2 Tuple.pair model.healthCenterId
+
+
+{-| The page state of a group session, kept per session while logged in.
+-}
+getSessionPages : SessionId -> LoggedInModel -> Pages.Session.Model.Model
+getSessionPages sessionId loggedIn =
+    Dict.get sessionId loggedIn.sessionPages
+        |> Maybe.withDefault Pages.Session.Model.emptyModel
 
 
 {-| Returns the logged in model, if we're logged in, whether or not a health

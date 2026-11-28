@@ -8236,6 +8236,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_referral-field_phase_recorded'.
+  $field_instances['node-ncd_referral-field_phase_recorded'] = array(
+    'bundle' => 'ncd_referral',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'The part of the encounter that last answered the hospital referral.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_phase_recorded',
+    'label' => 'Phase Recorded',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-ncd_referral-field_reasons_for_non_referrals'.
   $field_instances['node-ncd_referral-field_reasons_for_non_referrals'] = array(
@@ -10751,6 +10788,7 @@ function hedley_ncd_field_default_field_instances() {
   t('PH');
   t('Performed tests');
   t('Person');
+  t('Phase Recorded');
   t('Protein');
   t('Reasons for non referrals');
   t('Recommended Treatment');

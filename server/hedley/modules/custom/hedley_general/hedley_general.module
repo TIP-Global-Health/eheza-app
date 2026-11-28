@@ -711,3 +711,107 @@ function hedley_general_build_elm_app($page, array $data) {
   // Return the HTML markup for the Elm application.
   return '<div id="' . $app_id . '"></div>';
 }
+
+/**
+ * The location list file of a site.
+ *
+ * @param string $site
+ *   The site name, such as 'rwanda'.
+ *
+ * @return string
+ *   The path of the site's geolocations CSV.
+ */
+function hedley_general_geolocations_file($site) {
+  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
+
+  return $migrate_dir . '/csv/geolocations_' . strtolower($site) . '.csv';
+}
+
+/**
+ * Reads the locations of one row of a location list file.
+ *
+ * @param array $row
+ *   A row of the input file.
+ * @param int $columns
+ *   The number of locations a row holds.
+ *
+ * @return array
+ *   The locations the row names, with the spacing around them removed. A row
+ *   naming a location but not the one below it describes the levels above, so
+ *   reading stops at the first it leaves out.
+ */
+function hedley_general_geo_row(array $row, $columns) {
+  $locations = [];
+
+  foreach (array_slice($row, 0, $columns) as $location) {
+    $location = trim($location);
+
+    if ($location === '') {
+      break;
+    }
+
+    $locations[] = $location;
+  }
+
+  return $locations;
+}
+
+/**
+ * The key for a path of locations, from the province down.
+ *
+ * Case is ignored. Each location is escaped, so one path's key never reads as
+ * another's.
+ *
+ * @param array $path
+ *   The locations, from the province down.
+ *
+ * @return string
+ *   The key for that path.
+ */
+function hedley_general_geo_path_key(array $path) {
+  $escaped = [];
+  foreach ($path as $location) {
+    $escaped[] = rawurlencode(drupal_strtolower($location));
+  }
+
+  return implode('/', $escaped);
+}
+
+/**
+ * The keys of every location on this site's location list.
+ *
+ * Each province, district, sector, cell and village has the key that
+ * hedley_general_geo_path_key() gives the path leading to it.
+ *
+ * @return array|null
+ *   The keys, as array keys, or NULL when the site has no location list.
+ */
+function hedley_general_geo_path_keys() {
+  $keys = &drupal_static(__FUNCTION__);
+
+  if (!isset($keys)) {
+    $keys = FALSE;
+    $site = variable_get('hedley_general_site_name', '');
+    $file = empty($site) ? FALSE : hedley_general_geolocations_file($site);
+    $handler = $file && is_readable($file) ? fopen($file, 'r') : FALSE;
+
+    if ($handler) {
+      $keys = [];
+      while ($row = fgetcsv($handler)) {
+        $locations = hedley_general_geo_row($row, 5);
+        for ($length = 1; $length <= count($locations); $length++) {
+          $keys[hedley_general_geo_path_key(array_slice($locations, 0, $length))] = TRUE;
+        }
+      }
+      fclose($handler);
+    }
+
+    // An empty list would refuse every village, so it counts as no list.
+    if ($file && empty($keys)) {
+      $keys = FALSE;
+      watchdog('hedley_general', 'The location list @file cannot be read or is empty, so village addresses are not checked.', ['@file' => $file], WATCHDOG_WARNING);
+    }
+  }
+
+  return $keys === FALSE ? NULL : $keys;
+}

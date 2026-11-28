@@ -132,7 +132,8 @@ to driving through the Chrome extension are in `chrome-extension.md`.
   meant to be.
 - **Wrong conclusion:** the click ran and the app did something else.
 - **Rule:** `"ok"` and `"error"` are the first lines of every reply. Never filter them out;
-  trim only the end.
+  trim only the end. A range such as `/"log"/,$p` prints nothing when the run logged nothing,
+  and the checks go with it: save the reply to a file and print `ok`, `error`, `value` and `checks`.
 
 ## Planning several rows on one fixture without checking how they interact
 
@@ -218,7 +219,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** straight after closing the progress report, a script found no History card in To Do, switched to Completed, and then failed there.
 - **Wrong conclusion:** the activity moved to Completed, or the app lost it.
-- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`.
+- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`. The same holds for a dialog: an `isVisible({ timeout })` check missed the END ENCOUNTER? modal, leaving the visit open. `waitFor` the button you must press.
 
 ## A check over an empty collection passes
 
@@ -248,7 +249,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** after `page.goto('/')` as CHW, waiting for `.wrap-cards` times out on a "VILLAGE" screen.
 - **Wrong conclusion:** the sign-in was lost or the app hung.
-- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load.
+- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load. `h.acuteIllness.navigateToParticipantPage` calls `page.goto('/')` when the main menu is not showing, so it runs into this too (a dead 10 s video on PR #2457).
 
 ## Playwright's `page.clock` stalls the app
 
@@ -286,11 +287,234 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
 - **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
 
-## `page.reload()` keeps the current screen
+## Opening a To Do activity after coming back from the Completed tab
 
-- **Symptom:** after `page.reload()` on Device Status, waiting for `.wrap-cards` timed out after 60 s.
-- **Wrong conclusion:** the app did not load.
-- **Rule:** a reload keeps the URL's hash, so the app reopens the same screen. Follow it with `page.goto('/')` before waiting for the main menu.
+- **Symptom:** `completePregnancyDating` failed waiting for `.icon-task-pregnancy-dating`, though Pregnancy Dating was still to do.
+- **Wrong conclusion:** the PR removed the activity, or dating was already saved.
+- **Rule:** the encounter page keeps the tab it last showed. After opening an activity from Completed and pressing back, it is still on Completed. Click `#pending-tab` before a helper opens a To Do card.
+
+## Chromium hands back a cached location fix
+
+- **Symptom:** after `setGeolocation` to a new position, the registration form still showed the previous one.
+- **Wrong conclusion:** the app kept a stale reading in memory.
+- **Rule:** Chromium returns its last fix while it is younger than the request's `maximumAge` (60 s on the PR, 10 min before). Wait past that age, or restart the driver, between positions. Your own `getCurrentPosition` probe also refreshes the cache.
+
+## `context.setOffline(true)` does not stop the app's sync
+
+- **Symptom:** persons registered "offline" were on the server minutes later, and their downloaded copies replaced the tablet's.
+- **Wrong conclusion:** the tablet stayed offline, so local-only state would last.
+- **Rule:** the sync still ran. Do not plan a scenario on keeping a record local; treat any record as downloaded within about a minute of upload.
+
+## `page.reload()` keeps the page you were on
+
+- **Symptom:** after a sync check on Device Status, `page.reload()` then waiting for `.wrap-cards` timed out after 60 s, and the dead minute landed on the recording.
+- **Wrong conclusion:** the app failed to load after the reload.
+- **Rule:** a reload keeps the hash route. To reload onto the main menu, `page.goto('/')` first, then `page.reload()`.
+
+## Reading button text with `innerText`
+
+- **Symptom:** a check on the location picker's buttons expected "Nyange Health Center" and got "NYANGE HEALTH CENTER".
+- **Wrong conclusion:** the picker shows a different name.
+- **Rule:** `innerText` returns text as CSS draws it, and the app's buttons are uppercased by CSS. Read labels with `textContent` (`allTextContents()`) to compare with the data.
+
+## `$` in a grep pattern for an Elm name is an anchor
+
+- **Symptom:** `grep -c "Pages\$NCD\$Utils\$labsResultsWithTestAdded" Main.js` printed 0, although develop's bundle holds that function.
+- **Wrong conclusion:** the bundle is mangled, or gulp serves a different build.
+- **Rule:** Elm's compiled names contain `$`, which grep reads as end of line. Search them with `grep -F` (fixed string).
+
+## Holding the download across a save that does not diagnose
+
+- **Symptom:** a develop control held the download across the CHW Vitals save and showed "no popup, stored none" — but without a hold the diagnosis only arrives at the Acute Findings save.
+- **Wrong conclusion:** develop reproduces the defect.
+- **Rule:** before timing anything around a save, run the flow once and note which save brings the popup. Hold across that one; e2e comments name the activity, not the tab.
+
+## A main tree whose develop is far behind origin
+
+- **Symptom:** local `develop` was 110 commits behind `origin/develop`, and the PR touched files that origin had also changed.
+- **Wrong conclusion:** overlaying only the PR's files gives the PR's build.
+- **Rule:** compare `git diff --name-only HEAD origin/develop -- client/`. If it is not empty, overlay those files from `origin/develop` first (also the develop control), then the PR's. Restore all of them after.
+
+## Dismissing a modal, then a helper that checks for it
+
+- **Symptom:** after my own Continue click, `completePriorTreatment` failed hovering the same modal's Continue.
+- **Wrong conclusion:** a second popup appeared.
+- **Rule:** the modal fades out while `isVisible` still says yes. After dismissing, `waitFor({ state: 'hidden' })` before calling a helper that dismisses popups itself.
+
+## A local-time `Date` handed to the date picker
+
+- **Symptom:** an ultrasound entered as 3 October was stored as 2 October, and the EDD moved by a day.
+- **Wrong conclusion:** the form or the encounter's date shifted it.
+- **Rule:** driver scripts run in Node on the host's time zone, while the page runs in UTC. `new Date(2026, 9, 3)` is 2 October in UTC. Build dates as `new Date('2026-10-03T12:00:00Z')` or `Date.now() - n * 864e5`.
+
+## A fixture "at another health centre" registered at Nyange
+
+- **Symptom:** women registered while signed in at Muhondo carried `hc: 4` (Nyange) in their records.
+- **Wrong conclusion:** the record reads the wrong shard.
+- **Rule:** `registerAdult` always picks Nyange as Registering Health Center. For another centre, re-shard on the server (app-map, Dashboards) or fill the select by hand.
+
+## Moving a visit across a birthday
+
+- **Symptom:** a woman registered "aged 41" had no `age` risk after her visit was moved back a day.
+- **Wrong conclusion:** the age rule is off by one.
+- **Rule:** `registerAdult` sets the birth date to today minus N years, so moving any visit earlier makes her N−1. Register one year older than the age wanted at the moved visit.
+
+## Recording admin pages with the Chrome extension
+
+- **Symptom:** a GIF of four Time filter states showed two; zoomed and scaled screenshots were not captured.
+- **Wrong conclusion:** the GIF is the evidence for every state checked.
+- **Rule:** check values in Chrome if asked, but record admin pages with the QA driver. Its browser opens them after a `drush uli` link (app-map, Dashboards).
+
+## Evidence below the fold of a recorded form
+
+- **Symptom:** checks on a Lab Results tab passed, but the video's frame showed only the tab's header and date; the answer under test sat below the 1024 px viewport.
+- **Wrong conclusion:** the recording is the evidence for what the checks read.
+- **Rule:** the activity pages scroll an inner container, so `scrollIntoView` does not move them. After opening the tab, `page.mouse.move(400, 900)` then `page.mouse.wheel(0, 900)`. Check one frame per test before the next row changes its data.
+
+## Changing a fixture before its recordings are checked
+
+- **Symptom:** a server edit for a later row changed the record an earlier row's video showed. Re-recording that row meant undoing the edit, syncing, recording, and editing again.
+- **Wrong conclusion:** a row is done once its checks pass.
+- **Rule:** a row is done when its frame shows the evidence. Check frames before any step that changes the shared fixture.
+
+## Restoring the main tree after a develop overlay
+
+- **Symptom:** `git checkout HEAD -- <overlaid files>` failed on one path and restored nothing.
+- **Wrong conclusion:** the tree is back on `develop`.
+- **Rule:** a file new on `origin/develop` does not exist in HEAD, and one bad path aborts the whole checkout. Remove those files, then check the rest out, and confirm `git status` lists only the user's own changes.
+
+## Taking a fixed id from memory into a check
+
+- **Symptom:** a cold-worker registration "failed" its shard check: expected Nyange `5f89c5f3-…`, got `725a9a6f-…`.
+- **Wrong conclusion:** the save went to the wrong health centre.
+- **Rule:** `725a9a6f-…` was Nyange; the uuid in app-map was stale. Before checking a stored id, read it from the server (`field_uuid` of the nid) in the same run. A failed check that created a record means a re-run under a new name.
+
+## Clicking an activity card straight after the save that returned to the encounter
+
+- **Symptom:** a loop reopening Pregnancy Dating from Completed timed out on the card's click in its second round. The same click worked a second later.
+- **Wrong conclusion:** the activity left Completed, or the save broke the page.
+- **Rule:** after `saveActivity`, wait about a second, click the tab you want (`#completed-tab`) explicitly, then the card.
+
+## Enabling a feature by a flag name that nothing reads
+
+- **Symptom:** `drush vget hedley_admin_feature` listed `stock_management_enabled: 1`, so the flag looked on.
+- **Wrong conclusion:** Stock Management is enabled; a missing card would be a bug.
+- **Rule:** an old variable can outlive a rename. Check the name against `hedley_admin_get_available_features()`
+  before trusting a flag, and set the name listed there.
+
+## Judging a race from the final state of one develop run
+
+- **Symptom:** a develop control for "the second save overwrites the first" ended with the record correct, so develop looked fine.
+- **Wrong conclusion:** the defect does not reproduce locally. The two saves did disagree; arrival order decided which one stood, and that run happened to land the correct one last.
+- **Rule:** when a fix is about two saves of one record, read each save, not the final state: the server's `node_revision` rows (with the `field_revision_*` tables) or the upload rows in `shardChanges`.
+
+## Reading the upload queue after a fast sync took it
+
+- **Symptom:** a check on the `shardChanges` rows added by a save found none, three seconds after the save.
+- **Wrong conclusion:** the save queued nothing.
+- **Rule:** with `syncSpeed` idle at 5 s, rows upload and leave the queue within seconds. Read the server revisions instead, or check the queue in the same command, straight after the save.
+
+## Picking a lab test whose result brings Next Steps
+
+- **Symptom:** a control meant to end the recurrent phase on the last lab result stopped on the encounter page with Next Steps to do.
+- **Wrong conclusion:** the phase-end save does not happen on develop.
+- **Rule:** an HIV result at the recurrent phase brings HIV health education into Next Steps, so the phase ends on that save, not on the result. Read `expectNextStepsTask` before choosing the tests. Syphilis, Hepatitis B and Hemoglobin (12) results bring none.
+
+## Assuming the recurrent vitals recheck is dropped on a later day
+
+- **Symptom:** a check that Examination is not offered the day after the first visit failed.
+- **Wrong conclusion:** the PR offers it wrongly. The recheck is expected whenever the first-visit BP was marginal, whatever the day.
+- **Rule:** take a screen's expectations from its `expect…` function, not from a nearby rule on the labs entry (`labsResultsTestData` is the one that looks at the day).
+
+## Posting attached videos next to text
+
+- **Symptom:** `gh pr comment --attach` (2.103) turned each `![](file.mp4)` into a `[name.mp4](url)` link under the caption line, and the comment held no `<video>`.
+- **Wrong conclusion:** the upload failed, or videos cannot be posted.
+- **Rule:** after posting, count `<video` in the comment's `body_html`. A player needs the bare URL alone in its own paragraph: rewrite each link to a blank line, the URL, a blank line, then PATCH the comment.
+
+## Setting a Drupal date field through the wrapper with a timestamp
+
+- **Symptom:** `$w->field_date_concluded->set(strtotime('+35 days'))` stored `2026-12-06 02:00:00`, not midnight like the app's saves.
+- **Wrong conclusion:** the server edit stored the date the tablet will read as given.
+- **Rule:** the wrapper converts the timestamp with the site's time zone. For a fixture, set the raw value (`$node->field_date_concluded[LANGUAGE_NONE][0]['value'] = gmdate('Y-m-d 00:00:00', …)`, `node_save`) and read it back.
+
+## A server edit of a labs entry before the tablet's save reached the server
+
+- **Symptom:** none here, but the tablet's queued save of the entry would have replaced the edit on upload.
+- **Wrong conclusion:** the entry on the server is the one the tablet just saved.
+- **Rule:** before editing an entry on the server, poll it until it shows the tablet's last save (its completed tests or date), then edit, then wait for the tablet's `shards` row to show the edit.
+
+## A helper that skips a tab it was given no value for
+
+- **Symptom:** `completeNutritionAssessment(page, { height, weight })` for a 3-year-old returned on the MUAC tab, Save off, the activity still To Do.
+- **Wrong conclusion:** the helper finished the activity.
+- **Rule:** the helper fills only the tabs it has options for. Read the reply's tabs, and pass every value the child's age brings (MUAC from 6 months; head circumference under 36 months, for a CHW visit too). Falling in again cost two continuation videos on PR #2455.
+
+## Drafting the PR report with the Write tool in a subagent
+
+- **Symptom:** Write refused the drafted `report.md` as a "report file" in a watch-mode subagent.
+- **Wrong conclusion:** the report cannot be posted from a subagent.
+- **Rule:** write the post script's input with a Bash heredoc in the scratchpad; it is tool input, not a report file.
+
+## Expecting develop's defect exactly as the issue words it
+
+- **Symptom:** the issue said a rejected character "stays in the box"; on develop the box dropped it and kept the digits after it (`724/50-17` became `7245017`).
+- **Wrong conclusion:** the control does not reproduce the defect, or the build is wrong.
+- **Rule:** an issue's account of the symptom can be off in detail. Record what develop actually shows; the control proves the defect when the searched ID cannot be found, whatever the box shows.
+
+## Sharing a scratchpad folder with an earlier run
+
+- **Symptom:** the scratchpad's `qa/` folder already held another PR's `report.md`, `recordings.md` and scripts.
+- **Wrong conclusion:** the files there belong to this run.
+- **Rule:** keep each run's scripts and drafts in `scratchpad/qa<pr>/`, so a post never picks up another PR's report.
+
+## Pairing videos with captions by hand
+
+- **Symptom:** the drafted recordings comment put the upload video under "test 4", whose video was the other-charts comparison.
+- **Wrong conclusion:** the captions match the files because the names look alike.
+- **Rule:** list the files the draft attaches (`grep -o 'qa-<pr>-[a-z0-9-]*\.mp4'`), numbered, and read each against its caption before posting.
+
+## Showing a downloaded file by leaving the page
+
+- **Symptom:** a CSV opened with `page.goto('file://…')` started a second download instead; shown with `page.setContent`, it flashed for a millisecond in the video, out of order.
+- **Wrong conclusion:** the video shows the file's contents.
+- **Rule:** keep the same document while recording. Put the file's text in a fixed `div` overlay with `page.evaluate`, scroll that, then remove it.
+
+## Checking a report the moment it is chosen
+
+- **Symptom:** a check that Demographics "still loads" at a health-centre scope failed: the page showed only the date inputs.
+- **Wrong conclusion:** the PR broke the other reports at that scope.
+- **Rule:** most Statistical Queries reports render only after a date range is set (`h.reports.setDateRange`); Nutrition needs none. Read the page before asserting on it.
+
+## A probe that runs the whole scenario spends the fixture
+
+- **Symptom:** a script meant to check that a Case Management entry was listed also pressed YES, unrecorded. It created the encounter the develop control was meant to show, and the entry vanished.
+- **Wrong conclusion:** the probe changed nothing, so the recorded run could follow.
+- **Rule:** a probe stops before the first action that writes. Undoing one costs server edits: mark the stray encounter `field_deleted` 1, and clear the follow-up's `field_date_concluded`, which YES sets.
+
+## A shell loop of recordings that carries on after a failed setup
+
+- **Symptom:** a navigation step failed for the first child, and the loop still recorded both children's scenarios, producing two dead 10-second videos.
+- **Wrong conclusion:** each iteration checks its own result.
+- **Rule:** end each setup command in a loop with `|| break`, and check its `ok` before starting the recording.
+
+## Building a fixture on a build that would mishandle it
+
+- **Symptom:** on develop, opening a child's open CHW visit through the participant page would have created a new visit, because the fixture's second participant was the one develop picks.
+- **Wrong conclusion:** fixture steps run the same on any build.
+- **Rule:** finish every fixture step that goes through the screen under test before adding the server-side data that triggers the defect. If that order is impossible, hide the data for a while (`field_deleted` 1, sync), then restore it.
+
+## Waiting on gulp with `pgrep -f` on the compiler's command line
+
+- **Symptom:** a Monitor waiting until `pgrep -f "elm make …/Main.elm"` found nothing never ended, though Main.js had long been rebuilt. A `pkill -f` to stop those monitors then killed its own shell (exit 144).
+- **Wrong conclusion:** gulp was still compiling.
+- **Rule:** `pgrep -f` / `pkill -f` match the waiting script's own command line. Look for the compiler as `ps -eo pid,cmd | grep "[/]usr/bin/elm make"`, and judge the build by a name in `client/serve/Main.js` (`grep -cF`).
+
+## Encounter-reading helpers that leave the Completed tab open
+
+- **Symptom:** after a scripted read of both encounter tabs, `completeDangerSigns` failed waiting for `.icon-task-danger-signs`; a second take of the preparation video was needed.
+- **Wrong conclusion:** Danger Signs was not offered.
+- **Rule:** the same pit as "Opening a To Do activity after coming back from the Completed tab", met again by a reader script. Any script that clicks `#completed-tab` ends by clicking `#pending-tab`.
 
 ## A screen that looks the same with no data at all
 
@@ -309,3 +533,657 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
 - **Wrong conclusion:** the scenario ran as planned.
 - **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).
+
+## Taking "the week 20 line" as one comparison
+
+- **Symptom:** a diabetes control entered a sugar result at 20 w 1 d for a 19 w 5 d visit, and develop stored `diabetes`, the same as the PR would.
+- **Wrong conclusion:** develop does not show the defect for diabetes.
+- **Rule:** the lines differ: hypertension splits at `< 20` / `>= 20`, diabetes at `<= 20` / `> 20`. Read each rule's comparison and put the entry day past it (21 w 1 d). A shifted clock can place the visit itself on any day.
+
+## Building a fixture's dates from Node while the page clock is shifted
+
+- **Symptom:** none here; a visit created at a +3-day page offset would have read 3 days older than planned.
+- **Wrong conclusion:** `Date.now() - n days` in a driver script is the page's today.
+- **Rule:** driver scripts run on the real clock. With `qaDateOffset` set, add the offset (read it from the page's localStorage) to any date a form is given.
+
+## Pairing videos with captions by hand (met again)
+
+- **Symptom:** two preparation captions in the drafted recordings comment named each other's videos.
+- **Wrong conclusion:** none: the numbered listing of attached files caught it before posting.
+- **Rule:** keep running that listing; when develop and PR fixtures share a name pattern, the numbers in the file names do not follow the caption order.
+
+## Planning a reproduction from the entry's mechanism alone
+
+- **Symptom:** a B-548 scenario built on "only the first pending child is loaded" saw the correct behaviour: tapping a child loads that child's data through `Pages/Activity/Update.elm` (`SetSelectedParticipant`), which the entry never read.
+- **Wrong conclusion:** the reproduction failed, so the defect is not real. A narrower case (child shown without a tap) did reproduce.
+- **Rule:** before planning, read every path that can load the data — the page's `Fetch.elm` and the out-messages of its `Update.elm` — and aim the defect scenario at the case none of them covers.
+
+## One long scripted command that writes data and reports only at its end
+
+- **Symptom:** a develop oracle run saved four group weights, then failed on its last step; the reply held no values, and the fixture could not run again.
+- **Wrong conclusion:** a failure costs only a re-run.
+- **Rule:** a script that writes returns nothing if a later step fails. `qa.log` each step's values as soon as it reads them, or end the command before the next write.
+
+## Taking a tap as proof the child's data is loaded
+
+- **Symptom:** on develop, a tapped child's request log showed the child's fetch, so the child looked loaded; its Nutrition save then gave no assessment and Weight showed no previous value.
+- **Wrong conclusion:** the tapped child is loaded, as the issue and the backlog entry said.
+- **Rule:** the tap's fetch is one-shot and loads one level. Judge loading by a screen it changes (Weight's "Previous measurement"), not by a request.
+
+## A global set in an earlier driver command
+
+- **Symptom:** a new request listener never recorded anything; an older `globalThis.__reqlog` from an exploring command already existed, so the guard skipped installing it.
+- **Wrong conclusion:** the page made no such requests.
+- **Rule:** globals live as long as the driver. Give a new listener a new global name, or remove the old one.
+
+## Reading the group assessment from the `nutrition` node
+
+- **Symptom:** after popups showed "Moderately underweight", every group `nutrition` node's `field_nutrition_assesment` was empty on both builds.
+- **Wrong conclusion:** the save dropped the assessment, so the PR broke it.
+- **Rule:** the group engine updates that node only when the assessment changes with the save. Read the `follow_up` node, and compare with develop on a loaded child before blaming the change.
+
+## Taking the encounter id from the end of an activity URL
+
+- **Symptom:** after a Nutrition save, the script's read of the encounter's stored indicator returned null, and the control needed a second command.
+- **Wrong conclusion:** the save stored no indicator.
+- **Rule:** an activity page's route is `#prenatal-activity/<uuid>/examination`, so `split('/').pop()` gives `examination`. Take the id with a uuid regex.
+
+## Running the skill from a main tree behind origin
+
+- **Symptom:** the main tree's `develop` was five commits behind `origin/develop`, and two of them changed this skill (hold-row rules, the report's first line).
+- **Wrong conclusion:** the SKILL.md loaded at the start is the current one.
+- **Rule:** at Step 2, `git diff HEAD origin/develop -- .claude/skills/qa-tester/` and follow any newer rules for the run.
+
+## A server-built person the tablet cannot decode jams the whole health centre
+
+- **Symptom:** after `h.familyNutrition.addChildViaDrush`, `syncAndWait` timed out with Nyange on "Status: Downloading", Remaining 0 / 0. The same download went out every 30 s and got a 200 back.
+- **Wrong conclusion:** the server is slow, or the PR broke sync.
+- **Rule:** read Device Status › Error log first. It said `mode_of_delivery` "svd is not a recognized ModeOfDelivery": the helper writes `svd`, a value the client does not know. Every device syncing that centre stalls until the node is fixed (set `svd-no-episiotomy`, `node_save`). After any server-built record, sync once and check the Error log before going on.
+
+## Un-picking the last NCDA ANC month answers the question No
+
+- **Symptom:** a boundary script picked month 1, un-picked it, and the next check found no month grid at all; the answer read No.
+- **Wrong conclusion:** the tap missed and hit "No", or the PR broke the grid.
+- **Rule:** every NCDA host's `ToggleANCVisitDate` sets the answer to No when the picked set becomes empty. Keep one month picked while testing pick and un-pick of others.
+
+## Tagging form inputs with ids, then clicking them after a re-render
+
+- **Symptom:** a generic NCDA filler collected every unanswered yes/no, set an id on each, and its second click waited 10 s for an id that was gone.
+- **Wrong conclusion:** the question disappeared.
+- **Rule:** an answer can reveal a question and Elm rebuilds the nodes, dropping ids it did not set. Answer one question, then scan the form again.
+
+## Looping over a fixed number of growth charts
+
+- **Symptom:** a recorded loop over charts 1–4 timed out for a 6½-year-old, leaving a dead 10 s tail; the child had to be registered again and re-recorded.
+- **Wrong conclusion:** the report failed to draw a chart.
+- **Rule:** the chart count depends on age: four under 60 months, three after (app-map). Loop over the `svg` elements that hold `line.st18`, not a fixed list of indexes.
+
+## Planning a Burundi row in an unattended run
+
+- **Symptom:** `ddev drush vset hedley_general_site_name burundi` was refused as a change to a shared resource, and setting `site` in the test browser's `syncInfoGeneral` (directly, then from an init script) still read `rwanda` after the reload.
+- **Wrong conclusion:** a device-only edit stands in for the server setting.
+- **Rule:** the running app writes `syncInfoGeneral` back, so the site follows the server. A watch run that needs Burundi reports the row as blocked, unless whoever started it already set the server variable, with approval (`drush vget` reads `burundi`, and the device's `syncInfoGeneral.site` confirms it after a fresh pairing). Do not fake the sync reply to get past it.
+
+## An attachment upload that fails part-way leaves a posted comment
+
+- **Symptom:** `gh pr comment --attach` ended with HTTP 408 on one video, yet the comment existed, with one player and raw `client/qa-recordings/…` paths for the rest.
+- **Wrong conclusion:** a failed command posted nothing.
+- **Rule:** after a failure, read the PR's comments. Post again in full, check every video has its `<video`, then delete only the partial comment your own command made.
+
+## Installing a page hook before the fixture finishes
+
+- **Symptom:** a request-watching hook set with `page.evaluate` read as undefined a step later: `Cannot set properties of undefined`.
+- **Wrong conclusion:** the evaluate call failed, or the app removed the global.
+- **Rule:** registering a family reloads the page (the attendance and relationship pages navigate away), and a reload wipes `window`. Install page hooks after the last fixture step, right before the scenario.
+
+## Repeating a tap inside a multi-step form
+
+- **Symptom:** the group NCDA has six steps, and repeating every Save tap would have advanced two steps at once and skipped a step.
+- **Wrong conclusion:** the double-tap scenario cannot be run on that form.
+- **Rule:** repeat the tap when the save's request leaves, not on every click: in the `XMLHttpRequest.send` wrapper, on the POST of the type under test, click the last clicked button once.
+
+## Waiting for a download at the default sync speed
+
+- **Symptom:** a server edit did not change an open page in over three minutes, against the backlog entry's prediction.
+- **Wrong conclusion:** a download does not cause the defect.
+- **Rule:** the default loop runs every 10 minutes. Set `syncSpeed` idle 3000 first, and check the device's `shards` row and `lastFetchedRevisionId` before reading the result.
+
+## Expecting a diagnosis's name to show every part of its meaning
+
+- **Symptom:** a check that a positive-and-pregnant follow-up's popup names pregnancy failed, on the right build with the right data.
+- **Wrong conclusion:** the PR shows the wrong diagnosis.
+- **Rule:** the English label of `DiagnosisMalariaUncomplicatedAndPregnant` is the same as plain uncomplicated malaria. The stored `acute_illness_diagnosis` tells them apart; read `Translate.elm` before writing a check on a label, and prefer the stored value.
+
+## Assuming a child's first visit goes the way an adult's does
+
+- **Symptom:** `completePriorTreatment` timed out waiting for the encounter page on a nurse's 5-month-old with a cold.
+- **Wrong conclusion:** the helper is broken, or the page did not save.
+- **Rule:** when the diagnosis brings a next step, the save that completes it opens Next Steps behind the popup, before Prior Treatment is done. Do Next Steps first and read `Pages/AcuteIllness/Activity/Utils.elm`'s first-encounter order before chaining helpers.
+
+## A substring that also matches longer names, and a name below the fold
+
+- **Symptom:** `.follow-up-entry` picked with "Qa2493P1" matched P10–P12 in a list of a dozen entries, and the entries asked about sat below the 1024 px view of the video.
+- **Wrong conclusion:** the recording shows the entries it reads.
+- **Rule:** match with a regex that ends the name (`/Qa2493P1(?!\d)/`) and scroll the list before the frame you rely on.
+
+## A long chain of driver commands in one Bash call
+
+- **Symptom:** a shell call chaining three recorded controls and two capture loops returned "moved to the background after 180s", with its output cut off.
+- **Wrong conclusion:** the driver hung, or the rest of the chain did not run. It kept running.
+- **Rule:** keep each Bash call under three minutes, or write every result to a file (`> res-<name>.json`) and read those files; never rely on the printed output of a long chain.
+
+## Ending a recording on a long Case Management list
+
+- **Symptom:** every recorded row ended with the filter just pressed, and the checked name sat far below the 1024 px view in the Home Visit list (16 QA entries in front of it).
+- **Wrong conclusion:** a passing `qa.check` makes the video the evidence for that row. It showed only other people's entries.
+- **Rule:** finish a recorded list check by scrolling the entry into view and holding a second or two, and look at the last frame before the next fixture. Case Management lists keep every past run's entries, so the row under test is rarely above the fold.
+
+## Restarting the driver fresh before the develop fixtures uploaded
+
+- **Symptom:** a develop control (37 weeks, dipstick read at the visit) was missing from the server's diagnoses query; the other controls were there.
+- **Wrong conclusion:** the save failed, or develop drops the encounter.
+- **Rule:** `qa.sh start --fresh` throws the old profile away, queued uploads included. Before restarting to load the PR build, `syncAndWait` and confirm Remaining for Upload: 0.
+
+## A Next Steps page that opens behind a diagnosis popup
+
+- **Symptom:** `qa.click('.icon-back')` on prenatal Next Steps timed out: "`<div class="overlay">` intercepts pointer events".
+- **Wrong conclusion:** the page hung, or the save broke.
+- **Rule:** prenatal Next Steps (visit and Lab Results) opens behind a "Patient shows signs of …" popup whenever a diagnosis is made, emergency or not. Press its CONTINUE before any other click.
+
+## Taking "the last row of a type" as the fixture's record
+
+- **Symptom:** a probe of the newest `core_physical_exam` and `vitals` rows showed a normal abdomen and 120/80, against a fixture saved with tenderness and 165/115.
+- **Wrong conclusion:** the form did not save what was entered.
+- **Rule:** `shards` holds every Nyange patient, in no useful order. Find the person by label, then filter rows by `person`.
+
+## Filling the dipstick result by its option labels
+
+- **Symptom:** a filler that chose "+1" in every select holding a "+1" option also set glucose to +1.
+- **Wrong conclusion:** none here; the diagnoses happened not to depend on it, but the control did not match the PR fixture.
+- **Rule:** prenatal Urine Dipstick protein and glucose selects have the same options (0, +1 … +4). Pick each select by its position (protein, pH, glucose) or its label.
+
+## Reading the service worker's cache by a bare path
+
+- **Symptom:** a check that the browser runs the PR build read `caches.match('/Main.js')` and got "no cache entry".
+- **Wrong conclusion:** the page is not running a cached build, or the overlay never reached the browser.
+- **Rule:** the precache key carries `?__WB_REVISION__=<hash>`. Walk every cache's keys for `Main.js` and test that body for the overlay's name.
+
+## Waiting on a result file inside one long Bash call (met again)
+
+- **Symptom:** a `timeout 600 … until [ -s file ]` wait was moved to the background after 180 s, its summary lost.
+- **Wrong conclusion:** none here, but the same pit as "A long chain of driver commands in one Bash call".
+- **Rule:** cap each wait at about 175 s and repeat it, or rely on the background task's completion notice.
+
+## Expecting both immunisation answers to stay on screen after "will receive today? Yes"
+
+- **Symptom:** a develop control's check that DTP showed "prior to today? No" and "today? Yes" failed: only the today question was left.
+- **Wrong conclusion:** develop dropped the first answer.
+- **Rule:** the form hides "prior to today?" once "will receive today?" is Yes. Read the form builder's conditions before scripting a check; also, `qa.form().save` reads `enabled` / `disabled`, not `active`.
+
+## A compound shell loop refused by the safety check
+
+- **Symptom:** one Bash call that registered a fixture and ran three recorded tests in a `for` loop with nested `$( … )` was refused as an unreadable `rm` command, though it held no `rm`.
+- **Wrong conclusion:** the command ran, or a workaround is needed.
+- **Rule:** keep driver calls plain: write small runner scripts (`run.sh <name> <prelude> <files…>`) into the scratchpad once, then call them one test per Bash call.
+
+## Picking a Next Steps tab by its icon
+
+- **Symptom:** a develop control's reader found no Medication Distribution tab after the recheck, so the helper saved the form before its text was read.
+- **Wrong conclusion:** develop offers no medication there. It offered Methyldopa; reopening the saved form from Completed showed it.
+- **Rule:** the recurrent Medication Distribution tab carries no `icon-next-steps-treatment`. Pick Next Steps tabs by label text, and read a form before the step that saves it.
+
+## Starting a waiter on a background driver run
+
+- **Symptom:** while a recorded visit ran in the background, two `until … grep` waiters each hit the Bash limit and became background tasks of their own.
+- **Wrong conclusion:** waiting in a foreground loop is how to get the result.
+- **Rule:** the same pit as "A long chain of driver commands in one Bash call". A run started with `run_in_background` sends its own notice; wait for it and start no waiter.
+
+## Overlaying a stacked PR's files onto a develop that moved on
+
+- **Symptom:** the PR's branch was cut before develop merged another PR that changed the same two Elm files.
+- **Wrong conclusion:** checking the PR's files out over develop gives the PR's build, and develop is its control.
+- **Rule:** build both trees with `git merge-tree --write-tree origin/develop origin/<branch>` (and the parent branch for a stacked PR), check the files out from those trees, and use develop plus the parent as the control.
+
+## `endPrenatalEncounter` returning on a disabled End Encounter
+
+- **Symptom:** the next day's Subsequent Antenatal button stayed disabled; the earlier visit's `field_scheduled_date` end was still NULL.
+- **Wrong conclusion:** the helper ended the visit, so the later visit can start.
+- **Rule:** the helper force-clicks End Encounter, so a disabled button passes silently. Check the stored end; end a fixture visit with `backdatePrenatalEncounter(name, days)` after upload.
+
+## `completeTreatmentReview` answers Yes to missed doses and adverse events
+
+- **Symptom:** on a later visit's Hypertension Medication tab, a hospital-referral question appeared and Save stayed off; the helper timed out.
+- **Wrong conclusion:** Treatment Review is broken.
+- **Rule:** the helper says Yes to every question. Answer `missed-doses` and `adverse-events` No by hand, and re-scan the form after each answer.
+
+## Reading a checkbox's state from the wrapper class
+
+- **Symptom:** a check that "Hypertension before pregnancy" was ticked failed, though the screen showed it ticked.
+- **Wrong conclusion:** the click missed.
+- **Rule:** Medical History's `.ui.checkbox` wrapper carries no `checked` class. Read `qa.state().choices` (`(x) …`).
+
+## Giving `qa.sh record start` a name with the prefix
+
+- **Symptom:** the video came out as `qa-2511-qa-2511-test1-….mp4`.
+- **Wrong conclusion:** none; the file had to be renamed.
+- **Rule:** the driver adds `qa-<pr>-` itself; pass only `test<n>-<name>`.
+
+## A name regex that ends with `(?!\w)` on a Case Management entry
+
+- **Symptom:** "Buhara TB pane lists X" failed, though the logged entry read "E2ETest Qa2515XThis monthTuberculosis Follow up".
+- **Wrong conclusion:** the pane does not list X.
+- **Rule:** an entry's `textContent` runs the name straight into the next cell ("…XThis month"). End a name match with `(?!\d)`, as "A substring that also matches longer names" says, not `(?!\w)`.
+
+## A control script that assumes the role an earlier script left
+
+- **Symptom:** the develop control for the CHW's Case Management requests ran as the nurse, and every pane differed from the PR's.
+- **Wrong conclusion:** develop's panes differ from the PR's.
+- **Rule:** the last PR script signed in the nurse, and the build update kept that session. Start every control script with its own `qa.signIn`, and read `session` in the reply before comparing.
+
+## Opening the CHW Dashboard without server statistics
+
+- **Symptom:** a recorded dashboard row waited 60 s on "CHW SNAPSHOT" with a spinner, leaving a dead video.
+- **Wrong conclusion:** the dashboard is broken on this build.
+- **Rule:** app-map already says it needs the health centre's statistics. Before recording, run `hedley_stats_calculate_stats_for_health_center(4)`, sync, and reload.
+
+## Clicking a main-menu card by its text
+
+- **Symptom:** `qa.click('PARTICIPANT DIRECTORY')` returned ok and the page stayed on the main menu.
+- **Wrong conclusion:** the click navigated; the next step then waits on the wrong page.
+- **Rule:** the card's handler is on its icon. Click `.icon-task-participant-directory` (as the helpers click `.icon-task-clinical`), and check the URL before going on.
+
+## A form loop that picks "the first tab not completed"
+
+- **Symptom:** the Medication script saved Fefol twice and MMS twice; the log showed the same tab answered again after its save.
+- **Wrong conclusion:** the save did not take, or the app asks again.
+- **Rule:** the active tab never carries `completed` (app-map, Controls), and after some saves the app leaves a saved tab active. Track the tabs the script has saved by name, not by class.
+
+## `ddev` run from the scratchpad
+
+- **Symptom:** `ddev mysql < file.sql` failed with `unknown command "mysql" for "ddev"`.
+- **Wrong conclusion:** ddev or the database is down.
+- **Rule:** ddev finds its project from the working directory. Prefix every ddev call with `cd /var/www/html/ihangane &&`.
+
+## Logging in to Drupal a second time in one driver session
+
+- **Symptom:** a second report recording failed at once: `input[name="name"]` never appeared on `/user/login`.
+- **Wrong conclusion:** the admin site is broken.
+- **Rule:** the driver keeps the Drupal session. Open `/user/login` and call `h.reports.drupalLogin` only when the name field is visible.
+
+## Waiting for an element that was already showing before the click
+
+- **Symptom:** on develop, a check that the banner came back after a second failed Save read 0, though the video showed it.
+- **Wrong conclusion:** the second save did not fail, or the banner went for good.
+- **Rule:** the stale banner was still there when `waitFor` ran, so the wait returned at once and the count fell in the Loading moment, when the banner is hidden. When the element can already be there before the action, wait for the change: pause past the request first, or wait for it to go away and then come back.
+
+## Planning a row on the browser Back button
+
+- **Symptom:** the first plan held a hold row for reaching the Relationship page with `page.goBack()`.
+- **Wrong conclusion:** the Back route is a user path the change must not alter.
+- **Rule:** the user closed B-544 because the tablets have no Back button. Read the backlog item behind a "residual" before planning a row on it, and reach pages only through the app's own arrows and buttons.
+
+## A develop control run in the session that filled the form
+
+- **Symptom:** on develop, a Treatment Review saved Yes / No / No and changed in the same session showed "Why not?", "How many doses?" and the adverse events unanswered, Save off, as the PR should.
+- **Wrong conclusion:** develop does not have the defect. After a reload, develop showed 7/7 with Save on and stored `none` / 0 / `none`.
+- **Rule:** a page keeps its form, dirty flags included, after a save. For a fix about reopening a saved record, reload the app before reopening, on both builds, as a nurse coming back later would.
+
+## Finding the "How many doses?" select by `select.form-input`
+
+- **Symptom:** `selectOption` on `select.form-input` timed out on the treatment review, leaving a dead 10 s tail and a re-recorded video. `qa.form().selects` was empty too.
+- **Wrong conclusion:** the select was not shown.
+- **Rule:** `viewCustomSelectListInput` draws a select without the `form-input` class. Use `.ui.form select` and read its `inputValue()`.
+
+## Pressing a disabled Save inside `.actions` (met again)
+
+- **Symptom:** a develop control ended with a 10 s hover timeout on "Save", which was disabled.
+- **Wrong conclusion:** none; app-map already says `.actions` takes the pointer from a disabled button.
+- **Rule:** before a scripted save, read the button's `active` class and save only when it is there.
+
+## Looking for the Wait task while other Next Steps tasks are open
+
+- **Symptom:** a later-visit borderline reading's Next Steps listed only "Next ANC Visit", on the build that schedules the recheck.
+- **Wrong conclusion:** no recheck was scheduled. The toggle check "borderline: Wait offered" would have failed on the PR.
+- **Rule:** prenatal Next Steps hides Wait until it is the only open task (`showWaitTask`). Save the other tasks first, or read the labs record's `performed_tests`.
+
+## `completeNextSteps` after earlier hypertension with a higher reading
+
+- **Symptom:** the helper stopped on Medication Distribution, Save disabled, "Methyldopa twice a day" ticked; a `.actions` hover timeout ended the control.
+- **Wrong conclusion:** the save is broken.
+- **Rule:** at 150 / 95 after earlier hypertension the page recommends a higher dose, and Save stays off until that option (or a reason) is ticked. Tick the option the page names before calling the helper.
+
+## Reading encounter cards by `.card .label`
+
+- **Symptom:** the recurrent page read "To Do (3)" with an empty card list; older scratch scripts had logged "left []" the same way.
+- **Wrong conclusion:** the page drew no activities.
+- **Rule:** the card label is plain text inside `.card`; read `page.locator('.card').allTextContents()`, and compare its count with the tab header.
+
+## A progress Monitor that matches `consoleErrors`
+
+- **Symptom:** a Monitor on `Error` lines fired once per driver command, since every reply prints `consoleErrors: None`.
+- **Wrong conclusion:** the chain was failing.
+- **Rule:** for a fixture chain, wait with a capped `until grep -qE 'DONE|^ERROR'` loop instead, and read the summaries after.
+
+## Registering a fixture holds its people for five minutes
+
+- **Symptom:** none here; caught while planning. Registering families opens each person's and relationship page, which asks for those people's data.
+- **Wrong conclusion:** only the pages the scenario opens decide what the five-minute forget drops.
+- **Rule:** for a scenario about data forgotten five minutes after its page, reload the app after building the fixture (`page.goto('/')` + `reload`), then re-enter the screen. Otherwise every registered person is forgotten together.
+
+## A group form showing its typed value after a download changed the record
+
+- **Symptom:** after a server edit of a weight (9.5 → 9.6) was downloaded, the child's Weight form still showed 9.5; the device record read 9.6.
+- **Wrong conclusion:** the download did not reach the session.
+- **Rule:** the same pit as "A develop control run in the session that filled the form": a form typed into in this app run keeps that value. Read the device record, or reload and reopen, before judging a downloaded value.
+
+## Re-running a FAIL that the issue settled, not the code
+
+- **Symptom:** a PR came back to QA with no new commits; the developer had changed the issue's criteria so the failed row's behaviour became intended.
+- **Wrong conclusion:** re-run the row against the old expectation, or against the old report alone.
+- **Rule:** compare the PR's head with the last run's, and the issue's `updatedAt` and text. The new criterion is the oracle: the hold row becomes a fix row, and each new criterion gets its own row.
+
+## Reusing a video name on a re-run
+
+- **Symptom:** the re-run's upload video was about to be recorded as `qa-<pr>-upload-device-status-pr-build.mp4`, the earlier run's file.
+- **Wrong conclusion:** the earlier run's videos are only on GitHub now, so local names can be reused.
+- **Rule:** the ledger cites local paths. Give every re-run video a new name (`rerun-…`, or the new row number).
+
+## Waiting on a detached chain ends the run
+
+- **Symptom:** the run started a chain as `(./chain.sh > out 2>&1 &)` and ended its turn to wait. Monitors watched it. The harness then sent `[handback-send-enforce] … Call SubagentHandback now`.
+- **Wrong conclusion:** the caller ordered a stop. The run killed the chain and handed back `ready` with no PR results (PR #2535, 2026-11-16).
+- **Rule:** start every long chain with the Bash tool's `run_in_background: true`; Monitors alone do not keep a run waiting. That message means "your turn ended without a report", not "stop".
+
+## A foreground wait on a background chain (met again)
+
+- **Symptom:** an `until grep … DONE` loop on a `run_in_background` chain's log hit the Bash default 120 s timeout and became a background task of its own.
+- **Wrong conclusion:** a capped loop is a safe way to wait.
+- **Rule:** the same pit as "Starting a waiter on a background driver run". Once a chain runs with `run_in_background`, start no waiter; end the turn and act on its completion notice.
+
+## Reading a form in the same tick as the click
+
+- **Symptom:** on develop, a counter read straight after switching back to RUTF said 2/9, and one read after the last answer said 9/10 while Save already read active.
+- **Wrong conclusion:** the form counts tasks wrongly, or Save turns on early.
+- **Rule:** when not recording, `qa.click` does not pause, so the read can come before Elm redraws. Wait about 400 ms before `qa.form()` or a counter read.
+
+## A "not covered" line that states behaviour nobody ran
+
+- **Symptom:** the first posted report said an edit back to RUTF "still brings back the saved water answer", worked out from the code; no scenario ran it.
+- **Wrong conclusion:** reading the code is enough for one sentence in the report.
+- **Rule:** the report states only what a scenario showed. Name an unrun path as not run, and replace a posted report with `--update` when one slips through.
+
+## Waiting for the prenatal participant page by the woman's name
+
+- **Symptom:** a recorded preparation waited 10 s for `div.page-participant.individual.prenatal` with `hasText` the woman's name, then failed, leaving a dead video.
+- **Wrong conclusion:** the page had not opened.
+- **Rule:** the prenatal participant page shows only "Select Antenatal Visit" and the buttons, no name. Wait for the page class alone, and tell women apart by the search you came through.
+
+## Tapping CHW Subsequent Antenatal by hand
+
+- **Symptom:** after a scripted tap on Subsequent Antenatal, the back-arrow click timed out: "`<div class="overlay">` intercepts pointer events".
+- **Wrong conclusion:** the encounter page hung.
+- **Rule:** a CHW visit without nurse visits opens behind a "has not yet been seen at the health center" notice. `startPrenatalEncounter` presses its OK; a hand-written tap must press it too.
+
+## Waiting on a Monitor ends the run (met again)
+
+- **Symptom:** after starting a Monitor for gulp's rebuild, the run ended its turn to wait, and the harness sent `[handback-send-enforce]` (PR #2543).
+- **Wrong conclusion:** a Monitor keeps a subagent waiting like a background Bash job does.
+- **Rule:** the same pit as "Waiting on a detached chain ends the run". In a subagent, wait for gulp with a capped foreground `until grep -qF … Main.js` loop (under 175 s, repeated), or a `run_in_background` Bash wait, never a Monitor alone.
+
+## Matching encounter card labels with a mixed-case regex
+
+- **Symptom:** a recorded check "Next Steps still To Do" failed, though the logged To Do list read `["NEXT STEPS"]`; test 1 had to be re-recorded on a new fixture (PR #2547).
+- **Wrong conclusion:** the PR left Next Steps out of To Do.
+- **Rule:** encounter card labels are uppercase in `textContent` itself, not only by CSS. Match card and tab labels with a case-insensitive regex (`/next steps/i`), and read the logged values before trusting a failed check.
+
+## A name regex that ends with `(?!\w)` on a Participant Directory row (met again)
+
+- **Symptom:** two report readings timed out finding `span.patient-record` in the row for "Qa2549Y"; the row's text runs on as "Qa2549YDOB: …" (PR #2549).
+- **Wrong conclusion:** the person is not in the directory.
+- **Rule:** the same pit as "A name regex that ends with `(?!\w)` on a Case Management entry". End every name match with `(?!\d)`.
+
+## Guessing a reason label from a sibling form
+
+- **Symptom:** a script ticking "Lack of stock" in prenatal Next Steps › Medication Distribution timed out; that form says "Out of Stock" (PR #2549).
+- **Wrong conclusion:** the "Why not?" list did not appear.
+- **Rule:** the Medication activity and Medication Distribution word their reasons differently. Take labels from the view code or `qa.state().choices`.
+
+## A chain that carries on after a failed test leaves the visit unrecoverable in place
+
+- **Symptom:** after test 5 failed on its Next Steps step, the chain ran the next tests and signed in the CHW, so the resumed script found neither the page nor the woman.
+- **Wrong conclusion:** the half-finished visit is lost.
+- **Rule:** reopen it as the nurse (`qa.signIn` first) through Subsequent Antenatal, which reopens today's open visit, and record the rest as a continuation video.
+
+## Proving a lab tab is absent with a frame of the tab bar
+
+- **Symptom:** the hold row "blood sugar not offered at the reporting visit" passed on the logged tab list, but the video's frame showed only the first five Laboratory tabs (PR #2551).
+- **Wrong conclusion:** the frame is the evidence for the absent tab.
+- **Rule:** the Laboratory tab bar scrolls sideways and cuts off at about five tabs. To show an absence on video, scroll the bar to its end (`.link-section` last, `scrollIntoView`) and hold before the frame; otherwise say the list was read from the page.
+
+## Tapping the encounter button as soon as the participant page draws
+
+- **Symptom:** after a reload, `navigateToParticipantPage` then a tap on "NCD Encounter" opened a new, empty encounter instead of the visit already open that day (PR #2555, develop control).
+- **Wrong conclusion:** the button reopens today's open visit, so the tap is safe at once.
+- **Rule:** the page acts on the encounters it has loaded, and right after a full load it has none (the B-195 lag). Wait about 5 s on the participant page, then check the URL's encounter id. Hide a stray encounter with `field_deleted` 1 and sync.
+
+## A form filler that clicks a checkbox already ticked
+
+- **Symptom:** a Medication Distribution filler at the NCD lab-results phase left Save off; Methyldopa read unticked after the script "ticked" it.
+- **Wrong conclusion:** the save is broken, or the option was never offered.
+- **Rule:** both phases of an NCD visit share one Medication Distribution record, so the visit's choice opens ticked, and a click unticks it. Tick only boxes whose `input` is not `isChecked()`.
+
+## A filler with a page guard, run from the wrong page
+
+- **Symptom:** a Laboratory filler returned at once, saving nothing; the encounter still showed LABORATORY in To Do.
+- **Wrong conclusion:** none here; the log showed no tab answered.
+- **Rule:** a script that stops when it is not on the activity page must open that activity itself first. Read the log for each tab's answers before going on.
+
+## Evidence below the fold of a recorded form (met again)
+
+- **Symptom:** the handed-form and accompany questions, unanswered after ANC Yes, sat under the 1024 px frame in test 1's video (PR #2555); only the checks read them.
+- **Wrong conclusion:** none; the report says the follow-ups were read from the page.
+- **Rule:** the same pit. After an answer that reveals questions, `page.mouse.move(400, 900)` and `wheel(0, 500)` before the shot, as test 2 then did.
+
+## A hold row whose checks pass while its logged state differs
+
+- **Symptom:** test 11 (new registration, village unpicked) passed every check on the PR: the same single "village is a required field" as develop after Save (PR #2556).
+- **Wrong conclusion:** the row is "same as develop". The logged select classes showed Village already red before Save on the PR, and not on develop.
+- **Rule:** a hold row compares the whole logged state of both builds, not only the checks. Diff the two runs' logs line by line; any extra class or value is the change's doing.
+
+## Expecting a person edit to land on `#person/<uuid>`
+
+- **Symptom:** none here; the develop control showed the URL first. A check written for `#person/<uuid>$` would have failed every PR save.
+- **Wrong conclusion:** the save did not go through.
+- **Rule:** a saved edit from the Participant Directory lands on `#person/<uuid>/directory`. Run the develop control before writing URL checks.
+
+## Expecting Next Steps to reopen on the tab that sent you away, after a reload
+
+- **Symptom:** a develop control reloaded on the Enroll Newborn form, saved, and timed out waiting for `.form.newborn-enrolment`; Next Steps showed Health Education (PR #2557). The PR's own reload e2e test failed the same way.
+- **Wrong conclusion:** the save did not return to Next Steps, or the task is gone.
+- **Rule:** a reload resets the Next Steps page, so it opens on its first tab. Open the task's tab by its label before reading it.
+
+## Concatenated body files that declare the same `const`
+
+- **Symptom:** a recorded test chaining three body files failed at once with "Identifier 'mS' has already been declared", leaving a 0.2 s video.
+- **Wrong conclusion:** none; but a recording was spent.
+- **Rule:** body files that run together in one command share one function scope. Give each file's variables distinct names, or wrap each body in a block.
+
+## Running a `drush scr` script from the scratchpad
+
+- **Symptom:** `ddev drush scr <scratchpad>/lost.php` failed four times with only `exit status 1` (PR #2556 re-test).
+- **Wrong conclusion:** the script or the person lookup is broken.
+- **Rule:** ddev runs drush in its container, which sees only the project. Copy the script into `client/qa-recordings/.driver/` and pass `/var/www/html/client/qa-recordings/.driver/<file>`.
+
+## Reopening Lab Results through Case Management after its last save
+
+- **Symptom:** a proof-2 script waited 10 s for the woman's ANC Labs entry right after her only Lab Results save, and left a dead video (PR #2559).
+- **Wrong conclusion:** the entry or the save was lost.
+- **Rule:** a nurse's lab save that completes every performed test closes the entry that day. Read the result back through the visit (participant page → visit → Reports) or the server, not Case Management.
+
+## A setup and a recording chained in one foreground Bash call (met again)
+
+- **Symptom:** register, a 100 s recorded preparation and a 40 s test in one call passed the 120 s limit and moved to the background (PR #2559).
+- **Wrong conclusion:** none; its completion notice came, but the same pit as "A long chain of driver commands in one Bash call".
+- **Rule:** any chain with a recorded preparation goes in `run_in_background` from the start.
+
+## Dropping a photo the moment its form opens
+
+- **Symptom:** the first `uploadTestPhoto` on a group child's Photo form did not take, and raised "Cannot read properties of null (reading 'files')"; the second drop worked (PR #2565, three fixtures).
+- **Wrong conclusion:** the PR's sync change breaks the photo widget.
+- **Rule:** the app binds the Dropzone about 500 ms after the form opens (`waitForElement`), the same moment `openActivity` returns. A drop before that lands on the hidden input left by the registration form's Dropzone. Wait a second after opening any photo form.
+
+## A hold counter left from an earlier command
+
+- **Symptom:** "record upload in flight" passed at once, the scenario opened the child page before any upload, and `st.release()` then failed.
+- **Wrong conclusion:** the upload was held as planned.
+- **Rule:** the same pit as "A global set in an earlier driver command". Reset every counter a scenario checks (`heldCount = 0`) at the top of that scenario.
+
+## Saving a photo at a fast sync speed on an individual visit
+
+- **Symptom:** with `syncSpeed` idle 3000, a develop Nutrition photo reached the server without its image although nothing was held.
+- **Wrong conclusion:** the hold row fails, or the photo upload is broken.
+- **Rule:** a cycle runs every 3 s, so a save often lands in the gap between the photo and record uploads, which drops the image on every build (B-610's short window). For a photo meant to go up whole, save just after a cycle's statistics GET.
+
+## Blaming the build for a 404 on a new profile photo
+
+- **Symptom:** recorded PR runs showed a 404 for `styles/person-photo/…/<new image>` straight after the sync; unrecorded develop runs did not.
+- **Wrong conclusion:** the PR's server change breaks the photo copy.
+- **Rule:** a recorded run with develop's server files showed the same 404, and the image loaded moments later. Before calling an error the PR's, rerun with only the suspect half swapped back and the same recording settings.
+
+## Expecting no diagnosis before the woman's own follow-up is answered
+
+- **Symptom:** a check "no HIV diagnosis before answering" failed on row 7, the woman's own lab-tech Positive; `hiv-recurrent` was already stored (PR #2559 re-test).
+- **Wrong conclusion:** the PR records a diagnosis from an unanswered question.
+- **Rule:** her own Positive result diagnoses HIV by itself, on develop too; only the partner's result waits for the ARV answer. Take each check's expected value from the issue or develop, not by analogy with a sibling test.
+
+## A redirect after `cd` into the main tree
+
+- **Symptom:** server query output (`> server-labs.txt`) landed in the main tree as an untracked file, where the `Stop` hook could pick it up.
+- **Wrong conclusion:** the scratchpad holds every file the run writes.
+- **Rule:** a relative redirect writes to the current directory. After `cd /var/www/html/ihangane`, give output files their full scratchpad path, and check `git status` before the turn ends.
+
+## Running the post script from the scratchpad
+
+- **Symptom:** `post-qa-report.sh 2570 report.md`, run with the scratchpad as the working directory, failed with "not a git repository" (PR #2570).
+- **Wrong conclusion:** the report file or `gh` is broken.
+- **Rule:** the script calls `git`. Run it from `/var/www/html/ihangane`, and pass the draft by its full scratchpad path.
+
+## A row whose evidence is stored on a visit no screen in the video shows
+
+- **Symptom:** a lab-history row that stopped after Laboratory passed its checks on visit A's stored diagnoses, but no frame showed them (PR #2570, row 3).
+- **Wrong conclusion:** device and server reads stand in for the video.
+- **Rule:** a later visit's progress report lists each earlier visit's own diagnoses ("Malaria on 08/11/2026 - no treatment recorded"). Record that report, or the patient record's, as the row's last step.
+
+## Writing an expected count from a guess
+
+- **Symptom:** the first develop check "province list full" expected 6 options and failed on 4 (PR #2571).
+- **Wrong conclusion:** none; the run stopped on its own check.
+- **Rule:** the local Rwanda province list is the blank option plus three. Read a list's real contents on develop first, then check against that reading.
+
+## Leaving a group page by `.wrap-cards`
+
+- **Symptom:** a loop pressing back "until the main menu" stopped on the session's Activities page, and the next click waited 10 s for Participant Directory (PR #2571).
+- **Wrong conclusion:** the back arrow does not reach the menu.
+- **Rule:** the Activities page also draws `.wrap-cards`. Stop on `.icon-task-participant-directory` being visible.
+
+## A name regex on a Participant Directory row (met again)
+
+- **Symptom:** `(?!\d|[A-Z])` after "Qa2571PN" matched nothing: the row runs on as "Qa2571PNDOB:" (PR #2571, after-repair video re-recorded).
+- **Wrong conclusion:** the person did not download.
+- **Rule:** match the row by its name element's exact text, `filter({ has: page.getByText('E2ETest ' + who, { exact: true }) })`.
+
+## Matching Immunization History rows by the vaccine's short name
+
+- **Symptom:** test 1's check "BCG row lists 05/02/2026" failed with `undefined`; the logged rows held the right dates (PR #2585, re-recorded).
+- **Wrong conclusion:** the pane does not list the dose.
+- **Rule:** the report's rows use full names ("BCG Bacilius Calmette - Guérin Vaccine (BCG)", "Oral Polio Vaccine (OPV)"), unlike the form's tabs ("BCG", "OPV"). Match with `includes('(BCG)')`, or read the logged rows before writing the check.
+
+## A "not covered" line that states behaviour nobody ran (met again)
+
+- **Symptom:** the first posted report said the Child Scorecard tab marked the no-dose child behind every month; only the first child's tab was read (PR #2585).
+- **Wrong conclusion:** a reading from one fixture holds for another.
+- **Rule:** the same pit. Before posting, tie every sentence to a log line of the fixture it names; replace with `--update` when one slips through.
+
+## Concatenated body files that declare the same `const` (met again)
+
+- **Symptom:** a recorded test chaining the visit body and the correction body failed at once on `nv`, leaving a 0.2 s video (PR #2587).
+- **Wrong conclusion:** none; the video was deleted and the test re-run.
+- **Rule:** the same pit. Wrap every body file after the first in `{ … }` before chaining it.
+
+## Reading many same-class yes/no answers with `qa.form()`
+
+- **Symptom:** after an ECD fill with the first answer No, `qa.form()` logged a single answer "Yes" (PR #2587).
+- **Wrong conclusion:** the No did not take. The ECD questions all share the class `form-input yes-no`, so `qa.form()` keeps only the last one.
+- **Rule:** for forms whose questions carry no name class (ECD), read the stored record (`well_child_ecd` `ecd_signs` in `shards`) or the screenshot.
+
+## `h.common.setDate` clicking last month's cell with the same number
+
+- **Symptom:** a develop child entered as 26/09/2024 was stored as 25/09/2024. The September 2024 grid starts on Monday 26 August, and that cell is greyed out (PR #2592).
+- **Wrong conclusion:** the form or the save changed the date.
+- **Rule:** the helper clicks the first cell showing the day's number. A greyed-out cell from the month before takes no click, so the date stays on the picker's earliest day. Pick the cell after the grid's first "1", and read `.date-input` back before saving.
+
+## Fixture names that start with another fixture's name (met again)
+
+- **Symptom:** a Participants-page card picked by "Qb2592DevFbfMom" opened the card of "Qb2592DevFbfMomB". Adding `$` to the regex then matched nothing, because the cards shorten names (PR #2592).
+- **Wrong conclusion:** the first mother has no child in the session.
+- **Rule:** the same pit as "A substring that also matches longer names". Give fixtures names that are not the start of another name (`…MomA`, `…MomB`).
+
+## A develop control that writes data a later hold row reads
+
+- **Symptom:** the PR's group search listed a child that develop's search had not, the Child Scorecard child that a develop control registered after that search (PR #2592).
+- **Wrong conclusion:** the PR widens the search.
+- **Rule:** run every develop hold read before any develop control that registers people, and give each control's people a name the hold rows' search does not match.
+
+## Clicking `button.active` for the Next Steps Referral Save (met again)
+
+- **Symptom:** the first develop fixture timed out after the referral answers, on `button.ui.fluid.primary.button.active` "Save" (PR #2593).
+- **Wrong conclusion:** the form was incomplete, though it read 2/2.
+- **Rule:** the same pit as "`qa.form()` calls a Save button disabled when it has neither class". Prenatal Next Steps Saves (Referral, Next ANC Visit) carry neither class: click `:not(.disabled)`.
+
+## Taking `.wrap-cards` as the main menu (met again)
+
+- **Symptom:** a registration chain after a lab results read failed at once waiting for `.icon-task-clinical`; the guard "main menu shows" had passed on the prenatal recurrent encounter page (PR #2594). Two dead videos were recorded before the chain stopped.
+- **Wrong conclusion:** the page was on the main menu, so registration could start.
+- **Rule:** the same pit as "Leaving a group page by `.wrap-cards`": the recurrent encounter page draws it too. Test for `.icon-task-clinical`, and stop a chain on a failed setup before its recording starts.
+
+## Reading a form reopened in the session that typed into it (met again)
+
+- **Symptom:** after the exam changed the hospital answer, the lab results Referral showed the answer typed there earlier (2/2, Save on) while its card read To Do; the exam form showed its own earlier typing, not the stored record (PR #2594).
+- **Wrong conclusion:** the PR keeps a taken-back answer in the form.
+- **Rule:** the same pit as "A develop control run in the session that filled the form". Judge reopened forms after a reload; plan a reload read for every row that saves one part and reopens another.
+
+## Starting a chain with `&` (met again)
+
+- **Symptom:** a re-run of a recorded chain was started with a trailing `&`, which keeps nothing waiting (PR #2594).
+- **Wrong conclusion:** none; a `run_in_background` waiter was started at once.
+- **Rule:** the same pit as "Waiting on a detached chain ends the run". Start the chain itself with `run_in_background: true`.
+
+## A `return` in a body file wrapped in `{ … }`
+
+- **Symptom:** a chained command "registered and ran the visit" in 9 s; only the registration had happened (PR #2601).
+- **Wrong conclusion:** wrapping each body file in a block keeps them apart, so every file runs.
+- **Rule:** a block scopes names, not control flow: a body file's `return` ends the whole command. Keep `return` out of any file that is not last in a chain.
+
+## Counting ticked choices that include the yes/no answer
+
+- **Symptom:** a recorded check "No alone: no reason ticked" failed with 1, though the screen showed no reason ticked; the test needed a continuation video (PR #2601).
+- **Wrong conclusion:** the form ticked a reason by itself.
+- **Rule:** `qa.state().choices` lists the yes/no radios too, so "(x) No" is one of them. Leave out `(x) Yes` / `(x) No` before counting ticked reasons.
+
+## A chain that writes a mode file only at its end
+
+- **Symptom:** after a chain stopped early, the next run read a mode file the chain never wrote; `cat` failed quietly and the test would have run in its default mode (PR #2601, caught before test 4).
+- **Wrong conclusion:** files a chain creates exist once part of it ran.
+- **Rule:** write every small setting file before the first command that uses it, at the top of the chain, and check for it after a stopped chain.
+
+## Reading the illness buttons straight after "Record Acute Illness Outcome"
+
+- **Symptom:** the logged outcome-page button read "Subsequent Acute Illness Encounter … Uncomplicated Malaria", the previous view's text, and the click that followed went to the outcome page (PR #2602).
+- **Wrong conclusion:** the click opened the outcome page, so the read was right. Elm reuses the button node; a click a moment earlier would have started a subsequent encounter.
+- **Rule:** after switching the acute illness participant page's view, wait about a second before reading or clicking `.active-illnesses` buttons, and check the server's encounter count after the run.
+
+## `page.reload()` keeps the page you were on (met again)
+
+- **Symptom:** a reload helper waited 20 s for the Well Child encounter page after a reload on the Birth History form, and the hold script stopped half-way (PR #2603).
+- **Wrong conclusion:** a reload returns to the encounter page.
+- **Rule:** the same pit. After a reload, wait for the encounter page or the activity page, and press the activity's `.link-back` when it is the activity.

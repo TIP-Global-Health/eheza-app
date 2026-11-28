@@ -109,7 +109,7 @@ function hedley_case_management_handle_nutrition_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_nutrition_follow_ups($person_id, $node->nid);
+  hedley_case_management_resolve_nutrition_follow_ups($person_id, $node);
 }
 
 /**
@@ -117,23 +117,24 @@ function hedley_case_management_handle_nutrition_insert_trigger($node) {
  *
  * @param int $person_id
  *   Person ID.
- * @param int $to_nid
- *   IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   The created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_nutrition_follow_ups($person_id, $to_nid, $limit = 200) {
+function hedley_case_management_resolve_nutrition_follow_ups($person_id, $node, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
-  $result = $query
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', HEDLEY_CASE_MANAGEMENT_NUTRITION_FOLLOW_UP_TYPES, 'IN')
-    ->propertyCondition('nid', $to_nid, '<')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->addTag('exclude_resolved')
-    ->range(0, $limit)
-    ->execute();
+    ->range(0, $limit);
 
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
+
+  $result = $query->execute();
   if (empty($result['node'])) {
     return;
   }
@@ -179,7 +180,7 @@ function hedley_case_management_handle_acute_illness_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_acute_illness_follow_ups($person_id, $encounters, $node->nid);
+  hedley_case_management_resolve_acute_illness_follow_ups($person_id, $encounters, $node);
 }
 
 /**
@@ -189,12 +190,12 @@ function hedley_case_management_handle_acute_illness_insert_trigger($node) {
  *   Person ID.
  * @param array $encounters
  *   IDs of encounters were performed for an illness.
- * @param int $to_nid
- *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   Optional; the created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_acute_illness_follow_ups($person_id, array $encounters, $to_nid = NULL, $limit = 200) {
+function hedley_case_management_resolve_acute_illness_follow_ups($person_id, array $encounters, $node = NULL, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
@@ -205,9 +206,7 @@ function hedley_case_management_resolve_acute_illness_follow_ups($person_id, arr
     ->addTag('exclude_resolved')
     ->range(0, $limit);
 
-  if (!empty($to_nid)) {
-    $query->propertyCondition('nid', $to_nid, '<');
-  }
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
 
   $result = $query->execute();
   if (empty($result['node'])) {
@@ -249,7 +248,7 @@ function hedley_case_management_handle_prenatal_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_prenatal_follow_ups($person_id, $node->nid);
+  hedley_case_management_resolve_prenatal_follow_ups($person_id, $node);
 }
 
 /**
@@ -257,12 +256,12 @@ function hedley_case_management_handle_prenatal_insert_trigger($node) {
  *
  * @param int $person_id
  *   Person ID.
- * @param int $to_nid
- *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   Optional; the created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
+function hedley_case_management_resolve_prenatal_follow_ups($person_id, $node = NULL, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
@@ -272,9 +271,7 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
     ->addTag('exclude_resolved')
     ->range(0, $limit);
 
-  if (!empty($to_nid)) {
-    $query->propertyCondition('nid', $to_nid, '<');
-  }
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
 
   $result = $query->execute();
   if (empty($result['node'])) {
@@ -312,7 +309,7 @@ function hedley_case_management_handle_immunization_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_immunization_follow_ups($person_id, $node->nid);
+  hedley_case_management_resolve_immunization_follow_ups($person_id, $node);
 }
 
 /**
@@ -320,23 +317,24 @@ function hedley_case_management_handle_immunization_insert_trigger($node) {
  *
  * @param int $person_id
  *   Person ID.
- * @param int $to_nid
- *   IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   The created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_immunization_follow_ups($person_id, $to_nid, $limit = 200) {
+function hedley_case_management_resolve_immunization_follow_ups($person_id, $node, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
-  $result = $query
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'well_child_next_visit')
-    ->propertyCondition('nid', $to_nid, '<')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->addTag('exclude_resolved')
-    ->range(0, $limit)
-    ->execute();
+    ->range(0, $limit);
 
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
+
+  $result = $query->execute();
   if (empty($result['node'])) {
     return;
   }
@@ -371,7 +369,7 @@ function hedley_case_management_handle_tuberculosis_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $node->nid);
+  hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $node);
 }
 
 /**
@@ -382,12 +380,12 @@ function hedley_case_management_handle_tuberculosis_insert_trigger($node) {
  *
  * @param int $person_id
  *   Person ID.
- * @param int $to_nid
- *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   Optional; the created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
+function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $node = NULL, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
@@ -397,9 +395,7 @@ function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_
     ->addTag('exclude_resolved')
     ->range(0, $limit);
 
-  if (!empty($to_nid)) {
-    $query->propertyCondition('nid', $to_nid, '<');
-  }
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
 
   $result = $query->execute();
   $tb_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
@@ -414,9 +410,7 @@ function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_
     ->addTag('exclude_resolved')
     ->range(0, $limit);
 
-  if (!empty($to_nid)) {
-    $query->propertyCondition('nid', $to_nid, '<');
-  }
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
 
   $result = $query->execute();
   $ai_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
@@ -455,7 +449,7 @@ function hedley_case_management_handle_hiv_insert_trigger($node) {
   }
 
   // Trigger follow-ups resolution.
-  hedley_case_management_resolve_hiv_follow_ups($person_id, $node->nid);
+  hedley_case_management_resolve_hiv_follow_ups($person_id, $node);
 }
 
 /**
@@ -463,12 +457,12 @@ function hedley_case_management_handle_hiv_insert_trigger($node) {
  *
  * @param int $person_id
  *   Person ID.
- * @param int $to_nid
- *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param object $node
+ *   Optional; the created node that closes the follow-ups.
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_hiv_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
+function hedley_case_management_resolve_hiv_follow_ups($person_id, $node = NULL, $limit = 200) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
@@ -478,9 +472,7 @@ function hedley_case_management_resolve_hiv_follow_ups($person_id, $to_nid = NUL
     ->addTag('exclude_resolved')
     ->range(0, $limit);
 
-  if (!empty($to_nid)) {
-    $query->propertyCondition('nid', $to_nid, '<');
-  }
+  hedley_case_management_limit_to_follow_ups_closed_by($query, $node);
 
   $result = $query->execute();
   if (empty($result['node'])) {
@@ -547,6 +539,35 @@ function hedley_case_management_handle_update_trigger($node) {
   // If we got so far, we're dealing with pregnancy.
   // Trigger follow ups resolution.
   hedley_case_management_resolve_prenatal_follow_ups($person_id);
+}
+
+/**
+ * Limits a follow-ups query to those a created node may close.
+ *
+ * A node closes only follow-ups that reached the server before it, dated on
+ * or before it.
+ *
+ * @param object $query
+ *   The follow-ups query.
+ * @param object $node
+ *   The created node. Empty when nothing limits the query, as when an illness
+ *   or pregnancy is concluded.
+ */
+function hedley_case_management_limit_to_follow_ups_closed_by($query, $node) {
+  if (empty($node)) {
+    return;
+  }
+
+  $query->propertyCondition('nid', $node->nid, '<');
+
+  // Encounters are dated by their scheduled date, follow-ups by date measured.
+  $date = $node->field_scheduled_date[LANGUAGE_NONE][0]['value'] ?? $node->field_date_measured[LANGUAGE_NONE][0]['value'] ?? NULL;
+  if (empty($date)) {
+    return;
+  }
+
+  $day = hedley_restful_timestamp_only_date($date);
+  $query->fieldCondition('field_date_measured', 'value', $day . ' 23:59:59', '<=');
 }
 
 /**

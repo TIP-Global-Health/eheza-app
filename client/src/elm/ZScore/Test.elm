@@ -1,11 +1,16 @@
 module ZScore.Test exposing (all, testModel)
 
 import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Date
 import Expect exposing (Expectation, FloatingPointTolerance(..))
+import Gizra.NominalDate exposing (diffMonths)
 import Http
 import Json.Decode exposing (Decoder, decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
+import Round
 import Test exposing (Test, describe, test)
+import Time exposing (Month(..))
 import Utils.AllDict exposing (AllDict)
 import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 import ZScore.Fixture.Bfawho2007
@@ -18,6 +23,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.View exposing (PlotConfig, headCircumferenceForAge0To2Config, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2684,4 +2690,317 @@ all : Test
 all =
     describe "ZScore"
         [ calculateZScoreTest
+        , unchangedChartsGridTest
+        , weightForAge0To2GridTest
+        , yAxisLinesTest
+        , zeroToTwoChartsTest
+        ]
+
+
+zeroToTwoChartsTest : Test
+zeroToTwoChartsTest =
+    let
+        -- For each birth date in four years, the oldest age in days at which the child is still
+        -- under the graduating age, so still shown the 0-2 charts.
+        oldestAgeInDays =
+            List.range 0 (4 * 365)
+                |> List.filterMap
+                    (\offset ->
+                        let
+                            birthDate =
+                                Date.add Date.Days offset (Date.fromCalendarDate 2020 Jan 1)
+                        in
+                        List.range 760 820
+                            |> List.filter (\days -> diffMonths birthDate (Date.add Date.Days days birthDate) < graduatingAgeInMonth)
+                            |> List.maximum
+                    )
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> toFloat
+    in
+    describe "0-2 charts"
+        [ test "length-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays heightForAgeConfig.input.maxX
+        , test "weight-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays weightForAgeConfig.input.maxX
+        , test "head circumference 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays headCircumferenceForAge0To2Config.input.maxX
+        , test "length-for-age 0-2: the year lines are 365 days of the frame apart" <|
+            \_ ->
+                (heightForAgeConfig.xAxis.width / toFloat (heightForAgeConfig.xAxis.maxAgeUnit - heightForAgeConfig.xAxis.minAgeUnit + 1))
+                    |> Expect.within (Absolute 0.000001)
+                        ((heightForAgeConfig.output.maxX - heightForAgeConfig.output.minX) * 365 / heightForAgeConfig.input.maxX)
+        ]
+
+
+{-| Where the chart plots a value, through the same path as the child's points.
+-}
+plottedYPosition : PlotConfig x y -> Float -> Float
+plottedYPosition config value =
+    plotPoints config [ { x = config.input.minX, y = value } ]
+        |> List.head
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault -1
+
+
+yAxisLinesTest : Test
+yAxisLinesTest =
+    let
+        -- The largest distance between where a label is drawn and where its value is plotted.
+        expectLabelsAtTheirValues config =
+            yAxisLines config
+                |> List.map (\{ value, position } -> abs (position - plottedYPosition config value))
+                |> List.maximum
+                |> Maybe.withDefault 1
+                |> Expect.within (Absolute 0.000001) 0
+
+        expectPositionsWithin expected actual =
+            List.map2 (-) expected actual
+                |> List.map abs
+                |> List.sum
+                |> Expect.all
+                    [ Expect.within (Absolute 0.0001) 0
+                    , always (Expect.equal (List.length expected) (List.length actual))
+                    ]
+    in
+    describe "yAxisLines"
+        [ test "length-for-age 0-2: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues heightForAgeConfig
+        , test "weight-for-length 0-2: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues weightForHeightConfig
+        , test "weight-for-height 0-5: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues weightForHeight0To5Config
+        , test "length-for-age 0-2: the label 45 is drawn 3/57 of the frame up from the bottom" <|
+            \_ ->
+                yAxisLines heightForAgeConfig
+                    |> List.filter (\line -> abs (line.value - 45) < 0.000001)
+                    |> List.map .position
+                    |> expectPositionsWithin [ 486.3421 ]
+        , test "length-for-age 0-2: the lines between 42 and 45 are at 43 and 44 cm" <|
+            \_ ->
+                yAxisLines heightForAgeConfig
+                    |> List.head
+                    |> Maybe.map .innerPositions
+                    |> Maybe.withDefault []
+                    |> expectPositionsWithin [ plottedYPosition heightForAgeConfig 43, plottedYPosition heightForAgeConfig 44 ]
+        ]
+
+
+{-| What the y-axis labels of a SpaceAround chart read, bottom to top: every
+gridline is labelled with its value at the chart's decimals, except the lines
+whose value is exactly the chart's bottom or top edge.
+-}
+spaceAroundLabels : PlotConfig x y -> List String
+spaceAroundLabels config =
+    yAxisLines config
+        |> List.map .value
+        |> List.filter (\value -> value /= config.input.minY && value /= config.input.maxY)
+        |> List.map (Round.round config.yAxis.decimalPointsForText)
+
+
+{-| Compares a chart's y-axis gridlines with the expected ones, given as each
+labelled value with the values of the minor lines between it and the next
+labelled value. Every expected line is drawn where its value is plotted.
+-}
+expectGrid : PlotConfig x y -> List ( Float, List Float ) -> Expectation
+expectGrid config expected =
+    let
+        actual =
+            yAxisLines config
+
+        distance expectedLine actualLine =
+            let
+                ( value, innerValues ) =
+                    expectedLine
+
+                expectedInner =
+                    List.map (plottedYPosition config) innerValues
+            in
+            abs (value - actualLine.value)
+                + abs (plottedYPosition config value - actualLine.position)
+                + (List.map2 (-) expectedInner actualLine.innerPositions |> List.map abs |> List.sum)
+                + (if List.length expectedInner == List.length actualLine.innerPositions then
+                    0
+
+                   else
+                    1000
+                  )
+    in
+    Expect.all
+        [ \_ -> Expect.equal (List.map Tuple.first expected |> List.map (Round.round 4)) (List.map (.value >> Round.round 4) actual)
+        , \_ -> Expect.equal (List.map (Tuple.second >> List.length) expected) (List.map (.innerPositions >> List.length) actual)
+        , \_ -> List.map2 distance expected actual |> List.sum |> Expect.within (Absolute 0.0001) 0
+        ]
+        ()
+
+
+{-| The weight-for-age chart for children under 2 runs from 1.4 kg to 17.8 kg.
+Its labelled gridlines must sit on whole kilograms, the edges bound the grid
+without a label, and the minor lines fall every 0.2 kg, even in the short gaps
+next to the edges (1.4 to 2 kg, and 17 to 17.8 kg).
+-}
+weightForAge0To2GridTest : Test
+weightForAge0To2GridTest =
+    let
+        config =
+            weightForAgeConfig
+
+        lines =
+            yAxisLines config
+
+        values =
+            List.map .value lines
+
+        -- The labelled values between the two edges.
+        innerValues =
+            values
+                |> List.drop 1
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+
+        wholeKilograms =
+            List.range 2 17 |> List.map toFloat
+
+        -- The values of the minor lines strictly between two values, every 0.2 kg.
+        minorBetween low high =
+            List.range 1 100
+                |> List.map (\k -> toFloat (round (low * 5) + k) / 5)
+                |> List.filter (\value -> value < high - 0.000001)
+
+        expected =
+            ( 1.4, minorBetween 1.4 2 )
+                :: List.map (\kg -> ( kg, minorBetween kg (kg + 1) )) (List.take 15 wholeKilograms)
+                ++ [ ( 17, minorBetween 17 17.8 ), ( 17.8, [] ) ]
+
+        innerOf value =
+            lines
+                |> List.filter (\line -> abs (line.value - value) < 0.000001)
+                |> List.concatMap .innerPositions
+
+        expectPositions expectedValues actual =
+            Expect.all
+                [ \_ -> Expect.equal (List.length expectedValues) (List.length actual)
+                , \_ ->
+                    List.map2 (-) (List.map (plottedYPosition config) expectedValues) actual
+                        |> List.map abs
+                        |> List.sum
+                        |> Expect.within (Absolute 0.0001) 0
+                ]
+                ()
+    in
+    describe "weight-for-age 0-2 y-axis"
+        [ test "labelled gridlines sit on whole kilograms (2, 3, 4 … 17)" <|
+            \_ ->
+                innerValues
+                    |> List.map (Round.round 6)
+                    |> Expect.equal (List.map (Round.round 6) wholeKilograms)
+        , test "labelled gridlines are labelled without decimals" <|
+            \_ ->
+                spaceAroundLabels config
+                    |> Expect.equal (List.map String.fromInt (List.range 2 17))
+        , test "the bottom and top edges (1.4 kg and 17.8 kg) still bound the grid and carry no label" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> Expect.equal (Just 1.4) (List.head values)
+                    , \_ -> Expect.equal (Just 17.8) (List.reverse values |> List.head)
+                    , \_ -> Expect.equal [] (List.filter (\value -> value < 1.4 || value > 17.8) values)
+
+                    -- Edge lines go unlabelled only on a SpaceAround chart, as length-for-age 0-2 is.
+                    , \_ -> Expect.equal heightForAgeConfig.yAxis.spaceType config.yAxis.spaceType
+                    ]
+                    ()
+        , test "the edges carry no label: neither 1.4, 17.8, nor their rounded forms appear" <|
+            \_ ->
+                spaceAroundLabels config
+                    |> List.filter (\label -> List.member label [ "1", "1.4", "1.40", "17.8", "17.80", "18" ])
+                    |> Expect.equal []
+        , test "minor lines fall every 0.2 kg, including next to the edges" <|
+            \_ ->
+                lines
+                    |> List.concatMap .innerPositions
+                    |> expectPositions (List.concatMap Tuple.second expected)
+        , test "between the 1.4 kg edge and the 2 kg line the minor lines are at 1.6 and 1.8 kg" <|
+            \_ -> innerOf 1.4 |> expectPositions [ 1.6, 1.8 ]
+        , test "between the 2 and 3 kg lines the minor lines are at 2.2, 2.4, 2.6 and 2.8 kg" <|
+            \_ -> innerOf 2 |> expectPositions [ 2.2, 2.4, 2.6, 2.8 ]
+        , test "between the 17 kg line and the 17.8 kg edge the minor lines are at 17.2, 17.4 and 17.6 kg" <|
+            \_ -> innerOf 17 |> expectPositions [ 17.2, 17.4, 17.6 ]
+        , test "the 17.8 kg top edge has no minor lines above it" <|
+            \_ -> innerOf 17.8 |> expectPositions []
+        , test "the whole grid, line by line: whole-kilogram lines with minor lines every 0.2 kg between them, each at its value's height" <|
+            \_ -> expectGrid config expected
+        , test "each line sits at the height of its value" <|
+            \_ ->
+                lines
+                    |> List.map (\{ value, position } -> abs (position - plottedYPosition config value))
+                    |> List.sum
+                    |> Expect.within (Absolute 0.000001) 0
+        , test "the edge lines sit on the frame's bottom and top" <|
+            \_ ->
+                Expect.equal
+                    [ Just (Round.round 4 config.output.maxY), Just (Round.round 4 config.output.minY) ]
+                    [ List.head lines |> Maybe.map (.position >> Round.round 4)
+                    , List.reverse lines |> List.head |> Maybe.map (.position >> Round.round 4)
+                    ]
+        ]
+
+
+{-| The other exposed growth charts keep the gridlines and labels they draw
+today. Each expectation lists the labelled values bottom to top, with the minor
+line values between each one and the next.
+-}
+unchangedChartsGridTest : Test
+unchangedChartsGridTest =
+    let
+        -- Minor line values strictly between low and high, `parts` equal steps apart.
+        split parts low high =
+            List.range 1 (parts - 1)
+                |> List.map (\part -> low + (high - low) * toFloat part / toFloat parts)
+
+        -- Labelled values, with the minor lines between neighbours split into the given steps.
+        gridOf stepSize labelled =
+            List.map2
+                (\value next ->
+                    ( value
+                    , next
+                        |> Maybe.map (\nextValue -> split (round ((nextValue - value) / stepSize)) value nextValue)
+                        |> Maybe.withDefault []
+                    )
+                )
+                labelled
+                (List.map Just (List.drop 1 labelled) ++ [ Nothing ])
+
+        heightForAgeLabelled =
+            42 :: List.map (\n -> toFloat (n * 5)) (List.range 9 19) ++ [ 99 ]
+
+        headCircumferenceLabelled =
+            List.range 25 55 |> List.map toFloat
+
+        weightForHeightLabelled =
+            1 :: List.map (\n -> toFloat (n * 2)) (List.range 1 12) ++ [ 25 ]
+
+        weightForHeight0To5Labelled =
+            1 :: List.map (\n -> toFloat (n * 2)) (List.range 1 16)
+
+        labelsOf =
+            List.map String.fromInt
+    in
+    describe "Every other growth chart draws the same lines and labels as before"
+        [ test "length-for-age 0-2 draws the same lines as before" <|
+            \_ -> expectGrid heightForAgeConfig (gridOf 1 heightForAgeLabelled)
+        , test "length-for-age 0-2 draws the same labels as before" <|
+            \_ -> spaceAroundLabels heightForAgeConfig |> Expect.equal (labelsOf (List.range 9 19 |> List.map ((*) 5)))
+        , test "head circumference 0-2 draws the same lines as before" <|
+            \_ -> expectGrid headCircumferenceForAge0To2Config (gridOf (1 / 30) headCircumferenceLabelled)
+        , test "head circumference 0-2 draws the same labels as before" <|
+            \_ -> spaceAroundLabels headCircumferenceForAge0To2Config |> Expect.equal (labelsOf (List.range 26 54))
+        , test "weight-for-length 0-2 draws the same lines as before" <|
+            \_ -> expectGrid weightForHeightConfig (gridOf 1 weightForHeightLabelled)
+        , test "weight-for-length 0-2 draws the same labels as before" <|
+            \_ -> spaceAroundLabels weightForHeightConfig |> Expect.equal (labelsOf (List.range 1 12 |> List.map ((*) 2)))
+        , test "weight-for-height 0-5 draws the same lines as before" <|
+            \_ -> expectGrid weightForHeight0To5Config (gridOf (2 / 3) weightForHeight0To5Labelled)
+        , test "weight-for-height 0-5 draws the same labels as before" <|
+            \_ -> spaceAroundLabels weightForHeight0To5Config |> Expect.equal (labelsOf (List.range 1 15 |> List.map ((*) 2)))
         ]

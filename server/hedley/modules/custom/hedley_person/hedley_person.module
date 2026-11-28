@@ -1513,6 +1513,8 @@ function hedley_person_load_individual_encounter_measurements_ids($nid, $bundle 
   $query->join("field_data_$encounter_field", 'p', 'p.entity_id = n.nid');
   $query->condition("p.{$encounter_field}_target_id", $nid);
   $query->addField('n', 'nid');
+  // A fixed order, so the same encounter always gives the same data.
+  $query->orderBy('n.nid');
 
   return $query->execute()->fetchCol();
 }

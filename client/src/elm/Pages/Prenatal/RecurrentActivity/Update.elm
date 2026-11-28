@@ -13,6 +13,8 @@ import Gizra.Update exposing (sequenceExtra)
 import Measurement.Utils
     exposing
         ( syphilisResultFormWithDefault
+        , testResultUpdateHIVTest
+        , testResultUpdatePartnerHIVTest
         , toBloodGpRsResultValueWithDefault
         , toHIVPCRResultValueWithDefault
         , toHIVResultValueWithDefault
@@ -28,7 +30,7 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
-import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefaultRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefaultRecurrentPhase)
 import Pages.Utils exposing (nonAdministrationReasonToSign, saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
 
@@ -834,21 +836,8 @@ update id isLabTech db msg model =
 
         SetHIVTestResult value ->
             let
-                form =
-                    model.labResultsData.hivTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , hivProgramHC = Nothing
-                        , hivProgramHCDirty = True
-                        , partnerHIVPositive = Nothing
-                        , partnerHIVPositiveDirty = True
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdateHIVTest (testResultFromString value) model.labResultsData.hivTestForm
 
                 updatedData =
                     model.labResultsData
@@ -906,11 +895,8 @@ update id isLabTech db msg model =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    model.labResultsData.partnerHIVTestForm
-
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) model.labResultsData.partnerHIVTestForm
 
                 updatedData =
                     model.labResultsData
@@ -1044,7 +1030,7 @@ update id isLabTech db msg model =
                         |> Maybe.map
                             (.sendToHC
                                 >> getMeasurementValueFunc
-                                >> referralFormWithDefault model.nextStepsData.referralForm
+                                >> referralFormWithDefaultRecurrentPhase model.nextStepsData.referralForm
                             )
                         |> Maybe.withDefault model.nextStepsData.referralForm
 
@@ -1080,7 +1066,7 @@ update id isLabTech db msg model =
         SaveSendToHC personId saved nextTask ->
             ( model
             , Cmd.none
-            , saveMeasurementMsgs toPrenatalReferralValueWithDefault
+            , saveMeasurementMsgs toPrenatalReferralValueWithDefaultRecurrentPhase
                 model.nextStepsData.referralForm
                 saved
                 (Backend.PrenatalEncounter.Model.SaveSendToHC personId)
@@ -1136,7 +1122,7 @@ update id isLabTech db msg model =
         SetRecommendedTreatmentSign allowedSigns sign ->
             let
                 updatedSigns =
-                    -- Since we may have values from inital phase of encounter, we make
+                    -- Since we may have values from initial phase of encounter, we make
                     -- sure to preserve them, before setting new value at recurrent phase.
                     Maybe.map
                         (\signs ->
@@ -1711,21 +1697,8 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
 
         SetHIVTestResult value ->
             let
-                form =
-                    data.hivTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , hivProgramHC = Nothing
-                        , hivProgramHCDirty = True
-                        , partnerHIVPositive = Nothing
-                        , partnerHIVPositiveDirty = True
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdateHIVTest (testResultFromString value) data.hivTestForm
             in
             ( { data | hivTestForm = updatedForm }
             , Cmd.none
@@ -1774,11 +1747,8 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
 
         SetPartnerHIVTestResult value ->
             let
-                form =
-                    data.partnerHIVTestForm
-
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    testResultUpdatePartnerHIVTest (testResultFromString value) data.partnerHIVTestForm
             in
             ( { data | partnerHIVTestForm = updatedForm }
             , Cmd.none

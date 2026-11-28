@@ -1,42 +1,72 @@
 module Measurement.Test exposing (all)
 
 import AssocList as Dict
+import Backend.ChildScoreboardEncounter.Model exposing (emptyChildScoreboardEncounter)
+import Backend.Entities exposing (IndividualEncounterParticipantId, PersonId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
-        ( BloodSmearResult(..)
+        ( AdministrationNote(..)
+        , AdverseEvent(..)
+        , BloodSmearResult(..)
+        , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
+        , HealthEducationSign(..)
+        , HealthEducationValue
         , HeightInCm(..)
         , LiverFunctionTestValue
         , MalariaTestValue
         , MuacInCm(..)
         , NCDASign(..)
+        , NutritionAssessment(..)
+        , NutritionFeedingSign(..)
+        , NutritionSupplementType(..)
+        , PartnerHIVTestValue
+        , ReasonForNonReferral(..)
+        , ReasonForNotProvidingHealthEducation(..)
+        , ReasonForNotTaking(..)
+        , ReferralFacility(..)
+        , SendToHCSign(..)
+        , SendToHCValue
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , TestResult(..)
+        , TreatmentOngoingSign(..)
+        , TreatmentOngoingValue
         , VaccineDose(..)
         , WeightInGrm(..)
         , WeightInKg(..)
         , WellChildVaccineType(..)
         )
-import Date exposing (Unit(..))
-import EverySet
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Date exposing (Date, Unit(..))
+import EverySet exposing (EverySet)
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html, div)
+import Html.Attributes
+import Measurement.Model exposing (ModelChild, MsgChild(..), NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyNutritionFeedingForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( birthWeightOutsideConstraints
+        ( ancVisitDateForMonth
+        , birthWeightOutsideConstraints
         , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
+        , generateIndividualNutritionAssessmentEntries
+        , generateVaccinationProgressDictByChildScoreboard
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         , getIntervalForVaccine
+        , healthEducationFormWithDefault
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , knownAsPositiveUpdate
@@ -49,26 +79,44 @@ import Measurement.Utils
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
+        , ongoingTreatmentReviewFormWithDefault
         , outOfRangeAsEntered
+        , partnerHIVResultFormWithDefault
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
+        , sendToHCFormWithDefault
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueUniversalWithDefault
         , toHIVTestValueWithDefault
+        , toHealthEducationValueWithDefault
         , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
         , toNCDAValueWithDefault
+        , toNutritionFeedingValueWithDefault
+        , toOngoingTreatmentReviewValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
+        , toSendToHCValueWithDefault
+        , treatmentReviewInputsAndTasks
         )
-import Measurement.View exposing (viewColorAlertIndication)
+import Measurement.View exposing (healthEducationFormInputsAndTasks, nutritionFeedingInputsAndTasks, sendToFacilityInputsAndTasks, viewColorAlertIndication, viewNCDAContent)
+import Pages.ChildScoreboard.Activity.Model as ChildScoreboardActivity
+import Pages.ChildScoreboard.Activity.Update as ChildScoreboardActivityUpdate
+import Pages.Nutrition.Activity.Model as NutritionActivity
+import Pages.Nutrition.Activity.Update as NutritionActivityUpdate
+import Pages.WellChild.Activity.Model as WellChildActivity
+import Pages.WellChild.Activity.Update as WellChildActivityUpdate
+import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Event as Event exposing (Event)
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (classes, text)
+import Test.Html.Selector exposing (attribute, class, classes, containing, selected, tag, text)
+import TestFixtures exposing (testChild, testParticipant)
 import Time exposing (Month(..))
 import Translate.Model exposing (Language(..))
 
@@ -773,6 +821,30 @@ savedLiverFunctionTest =
     }
 
 
+{-| The lab technician reopens a partner HIV test they declined because the
+partner was not present.
+-}
+partnerHIVResultFormNotPresentTest : Test
+partnerHIVResultFormNotPresentTest =
+    let
+        saved : PartnerHIVTestValue
+        saved =
+            { executionNote = TestNoteNotPresent
+            , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+            , testPrerequisites = Nothing
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+    in
+    describe "partnerHIVResultFormWithDefault, on a partner who was not present"
+        [ test "shows the test will not be performed today" <|
+            \_ ->
+                partnerHIVResultFormWithDefault emptyPartnerHIVResultForm (Just saved)
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        ]
+
+
 liverFunctionResultFormWithDefaultTest : Test
 liverFunctionResultFormWithDefaultTest =
     let
@@ -1049,10 +1121,160 @@ bloodSmearOrderedTest =
         ]
 
 
+generateIndividualNutritionAssessmentEntriesTest : Test
+generateIndividualNutritionAssessmentEntriesTest =
+    let
+        date =
+            Date.fromCalendarDate 2026 Oct 1
+
+        entriesForSignsTapped signs =
+            generateIndividualNutritionAssessmentEntries
+                [ { nutrition =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { signs = EverySet.fromList signs
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns signs)
+                                    }
+                              }
+                            )
+                  , followUp =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { options = EverySet.empty
+                                    , resolutionDate = Nothing
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns [ Apathy, Edema ])
+                                    }
+                              }
+                            )
+                  }
+                ]
+
+        expected =
+            [ ( date, [ AssesmentMalnutritionSigns [ Apathy, Edema ] ] ) ]
+    in
+    describe "generateIndividualNutritionAssessmentEntries"
+        [ test "signs tapped in sorted order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Apathy, Edema ]
+                    |> Expect.equal expected
+        , test "signs tapped in reverse order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Edema, Apathy ]
+                    |> Expect.equal expected
+        ]
+
+
+{-| A child should have one Child Scoreboard participant, but some have two.
+A dose recorded under either one must count, or it is offered again.
+-}
+vaccinationProgressAcrossDuplicateParticipantsTest : Test
+vaccinationProgressAcrossDuplicateParticipantsTest =
+    let
+        childId : PersonId
+        childId =
+            toEntityUuid "child"
+
+        -- The first OPV dose was given under one participant, the second
+        -- under the other.
+        doses : List ( IndividualEncounterParticipantId, VaccineDose, Date )
+        doses =
+            [ ( toEntityUuid "participant-a", VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+            , ( toEntityUuid "participant-b", VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+            ]
+
+        encounterId participantId =
+            toEntityUuid ("encounter-" ++ fromEntityUuid participantId)
+
+        measurementsWithOPV participantId dose date =
+            { ncda = Nothing
+            , bcgImmunisation = Nothing
+            , dtpImmunisation = Nothing
+            , dtpStandaloneImmunisation = Nothing
+            , ipvImmunisation = Nothing
+            , mrImmunisation = Nothing
+            , opvImmunisation =
+                Just
+                    ( toEntityUuid ("opv-" ++ fromEntityUuid participantId)
+                    , { dateMeasured = date
+                      , nurse = Nothing
+                      , healthCenter = Nothing
+                      , participantId = childId
+                      , deleted = False
+                      , encounterId = Just (encounterId participantId)
+                      , value =
+                            { administeredDoses = EverySet.singleton dose
+                            , administrationDates = EverySet.singleton date
+                            , administrationNote = AdministeredToday
+                            }
+                      }
+                    )
+            , pcv13Immunisation = Nothing
+            , rotarixImmunisation = Nothing
+            }
+
+        db : ModelIndexedDb
+        db =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.fromList <|
+                                List.map
+                                    (\( participantId, _, date ) ->
+                                        ( participantId
+                                        , emptyIndividualEncounterParticipant date childId ChildScoreboardEncounter (toEntityUuid "health-center")
+                                        )
+                                    )
+                                    doses
+                        )
+                , childScoreboardEncountersByParticipant =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, _, date ) ->
+                                ( participantId
+                                , Success <| Dict.singleton (encounterId participantId) (emptyChildScoreboardEncounter participantId date Nothing)
+                                )
+                            )
+                            doses
+                , childScoreboardMeasurements =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, dose, date ) ->
+                                ( encounterId participantId, Success <| measurementsWithOPV participantId dose date )
+                            )
+                            doses
+            }
+    in
+    describe "Child Scoreboard doses of a child with two participants"
+        [ test "both OPV doses count, whichever participant holds them" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda db childId
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal
+                        (Just
+                            [ ( VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+                            , ( VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+                            ]
+                        )
+        , test "a child with no Child Scoreboard participant has no doses" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda emptyModelIndexedDb childId
+                    |> Expect.equal Dict.empty
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
+        , nutritionFeedingWaterQuestionTest
+        , toNutritionFeedingValueTest
+        , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
         , viewColorAlertIndicationTest
@@ -1060,6 +1282,7 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , mergeVaccinationProgressDictsTest
+        , vaccinationProgressAcrossDuplicateParticipantsTest
         , updateChildSetMuacTest
         , ncdaFormWithDefaultNotTakenTest
         , bloodGlucoseOutOfRangeTest
@@ -1073,6 +1296,7 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , partnerHIVResultFormNotPresentTest
         , malariaResultFormWithDefaultTest
         , malariaResultFormBloodSmearTakenTest
         , malariaResultFormSmearResultTest
@@ -1081,6 +1305,13 @@ all =
         , knownAsPositiveSavesNoPrerequisitesTest
         , knownAsPositiveUpdateTest
         , withdrawnTestResultTest
+        , ancVisitDateForMonthTest
+        , ncdaAncMonthTapsTest
+        , ncdaAncMonthsViewTest
+        , ncdaAncVisitsNotOnRecordTest
+        , referralWhyNotTest
+        , healthEducationWhyNotTest
+        , ongoingTreatmentReviewFollowUpTest
         ]
 
 
@@ -1614,4 +1845,1667 @@ withdrawnTestResultTest =
                 toHIVTestValueWithDefault (Just savedNegativeHIV) emptyHIVTestForm
                     |> Maybe.map .testResult
                     |> Expect.equal (Just (Just TestNegative))
+        ]
+
+
+{-| NCDA Antenatal Care step: the nine pregnancy months, where the months that
+already hold a recorded antenatal visit are shown checked and greyed out.
+
+The pregnancy in these tests starts on 10 January 2025. Its recorded visits
+sit in month 2 (in the middle of it), month 4 (on its very first day, 10 April)
+and month 6 (on its very last day, 9 July), so a month computed one off on
+either side of a recorded visit shows up as a wrong answer. A month is the
+number of whole months from the pregnancy start to the date, plus 1.
+
+A picked month N is stored as pregnancy start + (N - 1) months + 14 days.
+
+-}
+ancPregnancyStart : NominalDate
+ancPregnancyStart =
+    Date.fromCalendarDate 2025 Jan 10
+
+
+{-| What a pick of month N stores: 14 days into that pregnancy month.
+-}
+ancPickedDate : Int -> NominalDate
+ancPickedDate monthNumber =
+    Date.add Months (monthNumber - 1) ancPregnancyStart
+        |> Date.add Days 14
+
+
+ancRecordedMonth2 : NominalDate
+ancRecordedMonth2 =
+    Date.fromCalendarDate 2025 Feb 15
+
+
+ancRecordedMonth4FirstDay : NominalDate
+ancRecordedMonth4FirstDay =
+    Date.fromCalendarDate 2025 Apr 10
+
+
+ancRecordedMonth6LastDay : NominalDate
+ancRecordedMonth6LastDay =
+    Date.fromCalendarDate 2025 Jul 9
+
+
+ancRecordedVisits : EverySet NominalDate
+ancRecordedVisits =
+    EverySet.fromList [ ancRecordedMonth2, ancRecordedMonth4FirstDay, ancRecordedMonth6LastDay ]
+
+
+ancVisitDateForMonthTest : Test
+ancVisitDateForMonthTest =
+    let
+        tap =
+            ancVisitDateForMonth ancPregnancyStart ancRecordedVisits
+
+        monthOf date =
+            Date.diff Months ancPregnancyStart date + 1
+    in
+    describe "ancVisitDateForMonth (what a tap on an NCDA ANC pregnancy month adds)"
+        [ describe "A month that already shows a recorded antenatal visit does not change when tapped, and tapping it adds no visit to the questionnaire"
+            [ test "a visit recorded in the middle of month 2: tapping month 2 adds no visit" <|
+                \_ ->
+                    tap 2 |> Expect.equal Nothing
+            , test "a visit recorded on the first day of month 4: tapping month 4 adds no visit" <|
+                \_ ->
+                    tap 4 |> Expect.equal Nothing
+            , test "a visit recorded on the last day of month 6: tapping month 6 adds no visit" <|
+                \_ ->
+                    tap 6 |> Expect.equal Nothing
+            , test "two visits recorded in the same month: tapping that month adds no visit" <|
+                \_ ->
+                    ancVisitDateForMonth ancPregnancyStart
+                        (EverySet.fromList [ Date.fromCalendarDate 2025 Mar 12, Date.fromCalendarDate 2025 Apr 2 ])
+                        3
+                        |> Expect.equal Nothing
+            ]
+        , describe "A month with no recorded visit still adds its date when tapped"
+            [ -- Months 3, 5 and 7 border the recorded visits on the first
+              -- day of month 4 and the last day of month 6. A month computed
+              -- one off would block one of them.
+              test "months 1, 3, 5, 7, 8 and 9, beside the recorded months, each add their date" <|
+                \_ ->
+                    [ 1, 3, 5, 7, 8, 9 ]
+                        |> List.map tap
+                        |> Expect.equal (List.map (ancPickedDate >> Just) [ 1, 3, 5, 7, 8, 9 ])
+            , test "with no recorded visits at all, every month 1 to 9 adds its date" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map (ancVisitDateForMonth ancPregnancyStart EverySet.empty)
+                        |> Expect.equal (List.map (ancPickedDate >> Just) (List.range 1 9))
+            , -- A visit recorded after the ninth month (a late, post-term
+              -- encounter) falls in no month on the grid, so it blocks none.
+              test "a visit recorded in month 10 blocks none of months 1 to 9" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map
+                            (ancVisitDateForMonth ancPregnancyStart
+                                (EverySet.singleton (Date.fromCalendarDate 2025 Oct 13))
+                            )
+                        |> Expect.equal (List.map (ancPickedDate >> Just) (List.range 1 9))
+            ]
+        , describe "A picked month N is stored as the date 14 days into that pregnancy month (pregnancy start + N-1 months + 14 days)"
+            [ test "month 1 is stored as 24 January 2025" <|
+                \_ ->
+                    tap 1 |> Expect.equal (Just (Date.fromCalendarDate 2025 Jan 24))
+            , test "month 9 is stored as 24 September 2025" <|
+                \_ ->
+                    tap 9 |> Expect.equal (Just (Date.fromCalendarDate 2025 Sep 24))
+            , -- The months are added before the 14 days, so a pregnancy that
+              -- starts on 31 January has month 2 start on 28 February, and
+              -- month 2 is stored as 14 March.
+              test "a pregnancy starting on 31 January stores month 2 as 14 March" <|
+                \_ ->
+                    ancVisitDateForMonth (Date.fromCalendarDate 2025 Jan 31) EverySet.empty 2
+                        |> Expect.equal (Just (Date.fromCalendarDate 2025 Mar 14))
+            , -- The stored date must fall in the month that was tapped, or the
+              -- grid would show a different month checked than the one picked.
+              test "the date stored for each month 1 to 9 falls in that month" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map (ancVisitDateForMonth ancPregnancyStart EverySet.empty >> Maybe.map monthOf)
+                        |> Expect.equal (List.map Just (List.range 1 9))
+            ]
+        ]
+
+
+{-| A tap on a month, as the questionnaire handles it: the view turns the tap
+into the date `ancVisitDateForMonth` gives, and a date toggles it on the form.
+A tap that gives no date sends nothing.
+
+The group session handles the toggle in `updateChild`. Nutrition, Well Child
+and Child Scoreboard have their own toggle handlers, but every one of them
+receives its date from the same shared NCDA view and its call to
+`ancVisitDateForMonth`.
+
+The questionnaire starts after the nurse answered "Yes" to unrecorded ANC
+visits, which leaves the form with an empty set of picked months.
+
+-}
+ncdaAncMonthTapsTest : Test
+ncdaAncMonthTapsTest =
+    let
+        answeredYes recorded =
+            ( recorded
+            , updateChild SiteRwanda (SetUpdateANCVisits True) emptyModelChild
+                |> (\( model, _, _ ) -> model)
+            )
+
+        tapMonth monthNumber ( recorded, model ) =
+            ( recorded
+            , ancVisitDateForMonth ancPregnancyStart recorded monthNumber
+                |> Maybe.map
+                    (\date ->
+                        updateChild SiteRwanda (ToggleANCVisitDate date) model
+                            |> (\( updated, _, _ ) -> updated)
+                    )
+                |> Maybe.withDefault model
+            )
+
+        pickedOnForm ( _, model ) =
+            Maybe.withDefault EverySet.empty model.ncdaData.form.ancVisitsDates
+
+        -- The NCDA activity saved before, with every other answer given, so
+        -- the save produces a value and the ANC dates come from the form.
+        savedBefore =
+            { signs = EverySet.empty
+            , birthWeight = Nothing
+            , ancVisitsDates = EverySet.empty
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Nothing
+            , weight = Nothing
+            , muac = Nothing
+            }
+
+        savedDates ( _, model ) =
+            toNCDAValueWithDefault (Just savedBefore) model.ncdaData.form
+                |> Maybe.map .ancVisitsDates
+
+        -- The rule the shared view applies to show the counseling message:
+        -- recorded visits plus picked months fewer than 4.
+        counselingShown (( recorded, _ ) as state) =
+            EverySet.size recorded + EverySet.size (pickedOnForm state) < 4
+    in
+    describe "NCDA ANC month taps on the questionnaire"
+        [ describe "After tapping such months and saving, the questionnaire holds only the months the user picked that had no recorded visit"
+            [ test "tapping recorded months 2, 4 and 6 between picks of months 3 and 8 saves only months 3 and 8" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 2
+                        |> tapMonth 3
+                        |> tapMonth 4
+                        |> tapMonth 8
+                        |> tapMonth 6
+                        |> savedDates
+                        |> Expect.equal (Just (EverySet.fromList [ ancPickedDate 3, ancPickedDate 8 ]))
+            , test "tapping only recorded months saves no visit dates" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 2
+                        |> tapMonth 4
+                        |> tapMonth 6
+                        |> savedDates
+                        |> Expect.equal (Just EverySet.empty)
+            ]
+        , describe "A month with no recorded visit is picked by a tap and un-picked by a second tap, as today"
+            [ test "one tap on month 3 picks it" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal (EverySet.singleton (ancPickedDate 3))
+            , test "a second tap on month 3 un-picks it" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal EverySet.empty
+            , test "a tap on recorded month 4 between the two taps on month 3 leaves nothing picked" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> tapMonth 4
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal EverySet.empty
+            , test "with no recorded visits, a tap on month 2 picks it and a second tap un-picks it" <|
+                \_ ->
+                    let
+                        picked =
+                            answeredYes EverySet.empty |> tapMonth 2
+                    in
+                    ( pickedOnForm picked, pickedOnForm (tapMonth 2 picked) )
+                        |> Expect.equal ( EverySet.singleton (ancPickedDate 2), EverySet.empty )
+            ]
+        , describe "The \"fewer than 4 ANC visits\" counseling message shows when recorded visits plus picked months are fewer than 4; tapping a recorded month does not change it"
+            [ test "3 recorded visits, nothing picked: the message shows" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> counselingShown
+                        |> Expect.equal True
+            , test "3 recorded visits, recorded month 4 tapped: the message still shows" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 4
+                        |> counselingShown
+                        |> Expect.equal True
+            , test "3 recorded visits, month 3 picked: the message is gone" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> counselingShown
+                        |> Expect.equal False
+            , -- Visits are counted, not months: two visits recorded in month 3
+              -- and one in month 5 are 3 visits, and tapping month 3 adds none.
+              test "2 visits recorded in month 3 and 1 in month 5, month 3 tapped: the message still shows" <|
+                \_ ->
+                    answeredYes
+                        (EverySet.fromList
+                            [ Date.fromCalendarDate 2025 Mar 12
+                            , Date.fromCalendarDate 2025 Apr 2
+                            , Date.fromCalendarDate 2025 May 20
+                            ]
+                        )
+                        |> tapMonth 3
+                        |> counselingShown
+                        |> Expect.equal True
+            ]
+        ]
+
+
+{-| The child the NCDA Antenatal Care step is filled for: born on 17 October
+2025, three months old on the day the questionnaire is filled.
+-}
+ancChildId : PersonId
+ancChildId =
+    toEntityUuid "ncda-child"
+
+
+ancChildBirthDate : NominalDate
+ancChildBirthDate =
+    Date.fromCalendarDate 2025 Oct 17
+
+
+ancQuestionnaireDate : NominalDate
+ancQuestionnaireDate =
+    Date.fromCalendarDate 2026 Jan 15
+
+
+{-| The child's mother has a pregnancy whose EDD puts its start on 10 January
+2025, with nurse prenatal encounters on the three recorded visit dates. A
+postpartum encounter is not an antenatal visit and blocks no month.
+-}
+ancPregnancyDb : ModelIndexedDb
+ancPregnancyDb =
+    let
+        participantId =
+            toEntityUuid "ncda-pregnancy"
+
+        pregnancy =
+            let
+                participant =
+                    testParticipant ancPregnancyStart AntenatalEncounter
+            in
+            { participant | eddDate = Just (lmpToEDDDate ancPregnancyStart) }
+
+        encounters =
+            [ ( "enc-1", emptyPrenatalEncounter participantId ancRecordedMonth2 NurseEncounter Nothing )
+            , ( "enc-2", emptyPrenatalEncounter participantId ancRecordedMonth4FirstDay NurseEncounter Nothing )
+            , ( "enc-3", emptyPrenatalEncounter participantId ancRecordedMonth6LastDay NurseEncounter Nothing )
+            , ( "enc-4", emptyPrenatalEncounter participantId ancChildBirthDate NursePostpartumEncounter Nothing )
+            ]
+                |> List.map (\( id, encounter ) -> ( toEntityUuid id, encounter ))
+                |> Dict.fromList
+    in
+    { emptyModelIndexedDb
+        | pregnancyByNewborn = Dict.singleton ancChildId (Success (Just ( participantId, pregnancy )))
+        , prenatalEncountersByParticipant = Dict.singleton participantId (Success encounters)
+    }
+
+
+{-| The NCDA config the group session builds, for a child whose NCDA was never
+filled before (so the Antenatal Care step is asked), with no newborn exam (so
+the birth weight and birth defect questions are asked on that step too).
+-}
+groupNCDAConfig : NCDAContentConfig MsgChild
+groupNCDAConfig =
+    { atHealthCenter = True
+    , showTasksTray = False
+    , pregnancySummary = Nothing
+    , ncdaNeverFilled = True
+    , ncdaNotFilledAfterAgeOfSixMonths = True
+    , setUpdateANCVisitsMsg = SetUpdateANCVisits
+    , toggleANCVisitDateMsg = ToggleANCVisitDate
+    , setBoolInputMsg = SetNCDABoolInput
+    , setBirthWeightMsg = SetBirthWeight
+    , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+    , setStuntingLevelMsg = SetStuntingLevel
+    , setWeightMsg = SetWeight
+    , setMuacMsg = SetMuac
+    , setStepMsg = SetNCDAFormStep
+    , setHelperStateMsg = SetNCDAHelperState
+    , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
+    , saveMsg = SendOutMsgChild NoOp
+    }
+
+
+{-| The NCDA questionnaire as the shared view renders it for the child above,
+on the day it is filled, at Rwanda.
+-}
+renderNCDA : NCDAContentConfig msg -> ModelIndexedDb -> NCDAForm -> Query.Single msg
+renderNCDA config db form =
+    viewNCDAContent English
+        ancQuestionnaireDate
+        SiteRwanda
+        ancChildId
+        (testChild ancChildBirthDate)
+        config
+        Nothing
+        False
+        form
+        db
+        |> div []
+        |> Query.fromHtml
+
+
+{-| The NCDA Antenatal Care step as the shared view renders it. The group
+session, Nutrition, Well Child and Child Scoreboard all render this one view,
+each passing its own toggle message; the group session's is used here.
+-}
+ncdaAncMonthsViewTest : Test
+ncdaAncMonthsViewTest =
+    let
+        rendered =
+            renderNCDA groupNCDAConfig
+                ancPregnancyDb
+                { emptyNCDAForm
+                    | step = Just NCDAStepAntenatalCare
+                    , updateANCVisits = Just True
+                    , ancVisitsDates = Just EverySet.empty
+                }
+
+        monthRadio monthNumber =
+            rendered
+                |> Query.findAll [ class "month-radio" ]
+                |> Query.index (monthNumber - 1)
+
+        tapMonth monthNumber =
+            monthRadio monthNumber
+                |> Query.find [ tag "label" ]
+                |> Event.simulate Event.click
+    in
+    describe "NCDA ANC months, as the shared view renders them"
+        [ describe "A month that already shows a recorded antenatal visit does not change when tapped, and tapping it adds no visit to the questionnaire"
+            [ test "recorded months 2, 4 and 6 are shown checked and greyed out" <|
+                \_ ->
+                    Expect.all
+                        (List.map
+                            (\monthNumber _ ->
+                                monthRadio monthNumber
+                                    |> Query.find [ tag "input" ]
+                                    |> Query.has [ classes [ "checked", "disabled" ] ]
+                            )
+                            [ 2, 4, 6 ]
+                        )
+                        ()
+            , test "tapping recorded month 2 sends no message" <|
+                \_ ->
+                    tapMonth 2 |> Event.toResult |> Expect.err
+            , test "tapping recorded month 4 sends no message" <|
+                \_ ->
+                    tapMonth 4 |> Event.toResult |> Expect.err
+            , test "tapping recorded month 6 sends no message" <|
+                \_ ->
+                    tapMonth 6 |> Event.toResult |> Expect.err
+            ]
+        , describe "A month with no recorded visit is picked by a tap, with the date 14 days into that month"
+            [ test "tapping month 3 toggles 24 March 2025" <|
+                \_ ->
+                    tapMonth 3 |> Event.expect (ToggleANCVisitDate (ancPickedDate 3))
+            , test "tapping month 7 toggles 24 July 2025" <|
+                \_ ->
+                    tapMonth 7 |> Event.expect (ToggleANCVisitDate (ancPickedDate 7))
+            , test "month 3 is shown neither checked nor greyed out" <|
+                \_ ->
+                    monthRadio 3
+                        |> Query.find [ tag "input" ]
+                        |> Expect.all
+                            [ Query.hasNot [ class "checked" ]
+                            , Query.hasNot [ class "disabled" ]
+                            ]
+            ]
+        , test "3 recorded visits and nothing picked: the \"fewer than 4 ANC visits\" counseling message shows" <|
+            \_ ->
+                rendered
+                    |> Query.has [ classes [ "label", "counseling" ] ]
+        ]
+
+
+
+-- NCDA ANTENATAL CARE: ANC VISITS NOT ON RECORD
+
+
+{-| The Antenatal Care step with every question but the ANC visits one
+answered: no supplements during pregnancy, no birth defect, born at 3000 g.
+
+With no newborn exam, the step's tasks are the ANC visits question, the months
+(only after "Yes"), supplements, birth defect and birth weight. So after "No"
+the step has 4 tasks, and after "Yes" it has 5.
+
+-}
+ancOtherQuestionsAnswered : NCDAForm
+ancOtherQuestionsAnswered =
+    { emptyNCDAForm
+        | step = Just NCDAStepAntenatalCare
+        , supplementsDuringPregnancy = Just False
+        , bornWithBirthDefect = Just False
+        , birthWeight = Just (WeightInGrm 3000)
+    }
+
+
+{-| The "ANC visits not on record" question is the first Yes/No question on
+the Antenatal Care step; its first answer is "Yes", its second "No".
+-}
+ancVisitsAnswer : Int -> Query.Single msg -> Query.Single msg
+ancVisitsAnswer index rendered =
+    rendered
+        |> Query.findAll [ class "yes-no" ]
+        |> Query.first
+        |> Query.findAll [ tag "input" ]
+        |> Query.index index
+
+
+tapAncVisitsAnswer : Bool -> Query.Single msg -> Event msg
+tapAncVisitsAnswer answer rendered =
+    rendered
+        |> Query.findAll [ class "yes-no" ]
+        |> Query.first
+        |> Query.findAll [ tag "label" ]
+        |> Query.index
+            (if answer then
+                0
+
+             else
+                1
+            )
+        |> Event.simulate Event.click
+
+
+tapAncMonth : Int -> Query.Single msg -> Event msg
+tapAncMonth monthNumber rendered =
+    rendered
+        |> Query.findAll [ class "month-radio" ]
+        |> Query.index (monthNumber - 1)
+        |> Query.find [ tag "label" ]
+        |> Event.simulate Event.click
+
+
+{-| What the nurse sees of the step's state: the task counter, and whether the
+one button below the step (Save, which also moves on to the next step) can be
+pressed. A button that cannot be pressed is greyed out and sends nothing.
+-}
+expectAncStep : { counter : String, canMoveOn : Bool } -> Query.Single msg -> Expect.Expectation
+expectAncStep expected rendered =
+    let
+        button =
+            rendered
+                |> Query.find [ class "actions" ]
+                |> Query.find [ tag "button" ]
+    in
+    Expect.all
+        [ \_ ->
+            rendered
+                |> Query.find [ class "tasks-count" ]
+                |> Query.has [ text expected.counter ]
+        , \_ ->
+            if expected.canMoveOn then
+                button |> Query.has [ class "active" ]
+
+            else
+                button |> Query.has [ class "disabled" ]
+        , \_ ->
+            if expected.canMoveOn then
+                button |> Event.simulate Event.click |> Event.toResult |> Expect.ok
+
+            else
+                button |> Event.simulate Event.click |> Event.toResult |> Expect.err
+        ]
+        ()
+
+
+ancStepIncomplete : { counter : String, canMoveOn : Bool }
+ancStepIncomplete =
+    { counter = "4/5 Tasks Completed", canMoveOn = False }
+
+
+ancStepCompleteAfterYes : { counter : String, canMoveOn : Bool }
+ancStepCompleteAfterYes =
+    { counter = "5/5 Tasks Completed", canMoveOn = True }
+
+
+ancStepCompleteAfterNo : { counter : String, canMoveOn : Bool }
+ancStepCompleteAfterNo =
+    { counter = "4/4 Tasks Completed", canMoveOn = True }
+
+
+{-| The Antenatal Care step, rendered by the shared view from a form in a given
+state. The group session's config is used; the hosts below drive the same view
+with their own configs.
+
+The child's mother has visits on record in months 2, 4 and 6, which the view
+shows checked and greyed out. Those are not months the nurse ticked.
+
+-}
+ncdaAncVisitsNotOnRecordViewTest : Test
+ncdaAncVisitsNotOnRecordViewTest =
+    let
+        shown form =
+            renderNCDA groupNCDAConfig ancPregnancyDb form
+
+        answeredYes picked =
+            { ancOtherQuestionsAnswered | updateANCVisits = Just True, ancVisitsDates = Just picked }
+
+        answeredNo picked =
+            { ancOtherQuestionsAnswered | updateANCVisits = Just False, ancVisitsDates = picked }
+
+        -- The NCDA saved earlier the same day, with every Antenatal Care
+        -- question answered "No" and a birth weight of 3000 g, and the given
+        -- months of ANC visits not on record.
+        savedWithMonths months =
+            { signs = EverySet.singleton NoNCDASigns
+            , birthWeight = Just (WeightInGrm 3000)
+            , ancVisitsDates = EverySet.fromList (List.map ancPickedDate months)
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Nothing
+            , weight = Nothing
+            , muac = Nothing
+            }
+
+        reopened saved =
+            shown (ncdaFormWithDefault { emptyNCDAForm | step = Just NCDAStepAntenatalCare } (Just saved))
+
+        monthInput monthNumber rendered =
+            rendered
+                |> Query.findAll [ class "month-radio" ]
+                |> Query.index (monthNumber - 1)
+                |> Query.find [ tag "input" ]
+
+        -- The Child Scoreboard's step tray: the Antenatal Care tab is marked
+        -- completed when it is not the step being shown and its tasks are done.
+        ancTab rendered =
+            rendered
+                |> Query.find [ class "link-section", containing [ class "icon-ncda-antenatal" ] ]
+
+        childScoreboardOnLaterStep form =
+            renderNCDA (childScoreboardNCDAConfig ancChildId)
+                ancPregnancyDb
+                { form | step = Just NCDAStepUniversalInterventions }
+    in
+    describe "NCDA Antenatal Care: the \"ANC visits not on record\" answer and its months"
+        [ describe "In the NCDA questionnaire's Antenatal Care step, answering \"Yes\" to \"there are ANC visits not on record\" with no month ticked leaves the step incomplete: the task counter is short by one, and the step cannot be saved or continued"
+            [ test "\"Yes\" with no month ticked: the counter reads 4/5 and the button is greyed out and sends nothing" <|
+                \_ ->
+                    shown (answeredYes EverySet.empty)
+                        |> expectAncStep ancStepIncomplete
+            , -- Months 2, 4 and 6 show checked because visits are on record
+              -- in them. The nurse ticked none, so nothing about missing
+              -- visits would be saved.
+              test "\"Yes\" with only the months of recorded visits showing checked: the step is still incomplete" <|
+                \_ ->
+                    Expect.all
+                        [ \rendered ->
+                            monthInput 4 rendered |> Query.has [ classes [ "checked", "disabled" ] ]
+                        , expectAncStep ancStepIncomplete
+                        ]
+                        (shown (answeredYes EverySet.empty))
+            , test "\"Yes\" with no month ticked, for a child whose mother has no pregnancy on record: the step is incomplete" <|
+                \_ ->
+                    renderNCDA groupNCDAConfig emptyModelIndexedDb (answeredYes EverySet.empty)
+                        |> expectAncStep ancStepIncomplete
+            , test "\"Yes\" before any set of months exists on the form: the step is incomplete" <|
+                \_ ->
+                    shown { ancOtherQuestionsAnswered | updateANCVisits = Just True, ancVisitsDates = Nothing }
+                        |> expectAncStep ancStepIncomplete
+            , test "the Child Scoreboard tray, on a later step: the Antenatal Care tab is not marked completed after \"Yes\" with no month" <|
+                \_ ->
+                    childScoreboardOnLaterStep (answeredYes EverySet.empty)
+                        |> ancTab
+                        |> Query.hasNot [ class "completed" ]
+            ]
+        , describe "Ticking at least one month completes the step"
+            [ test "\"Yes\" with month 3 ticked: 5/5, the button can be pressed" <|
+                \_ ->
+                    shown (answeredYes (EverySet.singleton (ancPickedDate 3)))
+                        |> expectAncStep ancStepCompleteAfterYes
+            , test "\"Yes\" with months 3 and 8 ticked: 5/5, the button can be pressed" <|
+                \_ ->
+                    shown (answeredYes (EverySet.fromList [ ancPickedDate 3, ancPickedDate 8 ]))
+                        |> expectAncStep ancStepCompleteAfterYes
+            , test "the Child Scoreboard tray, on a later step: the Antenatal Care tab is marked completed after \"Yes\" with month 3" <|
+                \_ ->
+                    childScoreboardOnLaterStep (answeredYes (EverySet.singleton (ancPickedDate 3)))
+                        |> ancTab
+                        |> Query.has [ class "completed" ]
+            ]
+        , describe "Answering \"No\" completes the step without any month"
+            [ test "\"No\" with no set of months on the form: 4/4, the button can be pressed, no months are asked" <|
+                \_ ->
+                    Expect.all
+                        [ expectAncStep ancStepCompleteAfterNo
+                        , Query.findAll [ class "month-radio" ] >> Query.count (Expect.equal 0)
+                        ]
+                        (shown (answeredNo Nothing))
+            , -- The shape the form is left in when "No" is tapped, or when the
+              -- last ticked month is unticked: "No" with an empty set of months.
+              test "\"No\" with an empty set of months: 4/4, the button can be pressed" <|
+                \_ ->
+                    shown (answeredNo (Just EverySet.empty))
+                        |> expectAncStep ancStepCompleteAfterNo
+            ]
+        , describe "Reopening a saved questionnaire with months ticked shows \"Yes\" with those months, and the step is complete"
+            [ test "saved with months 3 and 8: \"Yes\" is selected" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> ancVisitsAnswer 0
+                        |> Query.has [ class "checked" ]
+            , test "saved with months 3 and 8: months 3 and 8 show ticked, and are not greyed out" <|
+                \_ ->
+                    Expect.all
+                        (List.concatMap
+                            (\monthNumber ->
+                                [ monthInput monthNumber >> Query.has [ class "checked" ]
+                                , monthInput monthNumber >> Query.hasNot [ class "disabled" ]
+                                ]
+                            )
+                            [ 3, 8 ]
+                        )
+                        (reopened (savedWithMonths [ 3, 8 ]))
+            , test "saved with months 3 and 8: month 5 shows unticked" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> monthInput 5
+                        |> Query.hasNot [ class "checked" ]
+            , test "saved with months 3 and 8: 5/5, the button can be pressed" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> expectAncStep ancStepCompleteAfterYes
+            , -- A saved NCDA holds no answer to the question itself, only the
+              -- months; no months reads back as "No".
+              test "saved with no months: \"No\" is selected, 4/4, the button can be pressed" <|
+                \_ ->
+                    Expect.all
+                        [ ancVisitsAnswer 1 >> Query.has [ class "checked" ]
+                        , expectAncStep ancStepCompleteAfterNo
+                        ]
+                        (reopened (savedWithMonths []))
+            ]
+        ]
+
+
+{-| One place the NCDA questionnaire appears: the config it builds for the
+shared view, how it holds the form, and its own handler for the messages the
+view sends.
+-}
+type alias NCDAHost msg model =
+    { name : String
+    , config : NCDAContentConfig msg
+    , start : NCDAForm -> model
+    , update : msg -> model -> model
+    , form : model -> NCDAForm
+    }
+
+
+withNCDAForm : NCDAForm -> { a | ncdaData : NCDAData } -> { a | ncdaData : NCDAData }
+withNCDAForm form model =
+    let
+        data =
+            model.ncdaData
+    in
+    { model | ncdaData = { data | form = form } }
+
+
+groupSessionHost : NCDAHost MsgChild ModelChild
+groupSessionHost =
+    { name = "group session"
+    , config = groupNCDAConfig
+    , start = \form -> withNCDAForm form emptyModelChild
+    , update = \msg model -> updateChild SiteRwanda msg model |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config the Child Scoreboard builds: filled by a CHW (not at a health
+centre), with the step tray.
+-}
+childScoreboardNCDAConfig : PersonId -> NCDAContentConfig ChildScoreboardActivity.Msg
+childScoreboardNCDAConfig personId =
+    { atHealthCenter = False
+    , showTasksTray = True
+    , pregnancySummary = Nothing
+    , ncdaNeverFilled = True
+    , ncdaNotFilledAfterAgeOfSixMonths = True
+    , setUpdateANCVisitsMsg = ChildScoreboardActivity.SetUpdateANCVisits
+    , toggleANCVisitDateMsg = ChildScoreboardActivity.ToggleANCVisitDate
+    , setBoolInputMsg = ChildScoreboardActivity.SetNCDABoolInput
+    , setBirthWeightMsg = ChildScoreboardActivity.SetBirthWeight
+    , setChildReceivesVitaminAMsg = ChildScoreboardActivity.SetChildReceivesVitaminA
+    , setStuntingLevelMsg = ChildScoreboardActivity.SetStuntingLevel
+    , setWeightMsg = ChildScoreboardActivity.SetWeight
+    , setMuacMsg = ChildScoreboardActivity.SetMuac
+    , setStepMsg = ChildScoreboardActivity.SetNCDAFormStep
+    , setHelperStateMsg = ChildScoreboardActivity.SetNCDAHelperState
+    , setMeasurementOutOfRangePopupMsg = ChildScoreboardActivity.SetMeasurementOutOfRangePopup
+    , saveMsg = ChildScoreboardActivity.SaveNCDA personId Nothing
+    }
+
+
+childScoreboardHost : NCDAHost ChildScoreboardActivity.Msg ChildScoreboardActivity.Model
+childScoreboardHost =
+    { name = "Child Scoreboard"
+    , config = childScoreboardNCDAConfig ancChildId
+    , start = \form -> withNCDAForm form ChildScoreboardActivity.emptyModel
+    , update =
+        \msg model ->
+            ChildScoreboardActivityUpdate.update ancQuestionnaireDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config Nutrition (individual) builds: at a health centre, with the
+step tray.
+-}
+nutritionHost : NCDAHost NutritionActivity.Msg NutritionActivity.Model
+nutritionHost =
+    { name = "Nutrition (individual)"
+    , config =
+        { atHealthCenter = True
+        , showTasksTray = True
+        , pregnancySummary = Nothing
+        , ncdaNeverFilled = True
+        , ncdaNotFilledAfterAgeOfSixMonths = True
+        , setUpdateANCVisitsMsg = NutritionActivity.SetUpdateANCVisits
+        , toggleANCVisitDateMsg = NutritionActivity.ToggleANCVisitDate
+        , setBoolInputMsg = NutritionActivity.SetNCDABoolInput
+        , setBirthWeightMsg = NutritionActivity.SetBirthWeight
+        , setChildReceivesVitaminAMsg = NutritionActivity.SetChildReceivesVitaminA
+        , setStuntingLevelMsg = NutritionActivity.SetStuntingLevel
+        , setWeightMsg = NutritionActivity.SetWeightForNCDA
+        , setMuacMsg = NutritionActivity.SetMuacForNCDA
+        , setStepMsg = NutritionActivity.SetNCDAFormStep
+        , setHelperStateMsg = NutritionActivity.SetNCDAHelperState
+        , setMeasurementOutOfRangePopupMsg = NutritionActivity.SetMeasurementOutOfRangePopup
+        , saveMsg = NutritionActivity.SaveNCDA ancChildId Nothing
+        }
+    , start = \form -> withNCDAForm form NutritionActivity.emptyModel
+    , update =
+        \msg model ->
+            NutritionActivityUpdate.update SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config Well Child builds: at a health centre, with the step tray.
+-}
+wellChildHost : NCDAHost WellChildActivity.Msg WellChildActivity.Model
+wellChildHost =
+    { name = "Well Child"
+    , config =
+        { atHealthCenter = True
+        , showTasksTray = True
+        , pregnancySummary = Nothing
+        , ncdaNeverFilled = True
+        , ncdaNotFilledAfterAgeOfSixMonths = True
+        , setUpdateANCVisitsMsg = WellChildActivity.SetUpdateANCVisits
+        , toggleANCVisitDateMsg = WellChildActivity.ToggleANCVisitDate
+        , setBoolInputMsg = WellChildActivity.SetNCDABoolInput
+        , setBirthWeightMsg = WellChildActivity.SetBirthWeight
+        , setChildReceivesVitaminAMsg = WellChildActivity.SetChildReceivesVitaminA
+        , setStuntingLevelMsg = WellChildActivity.SetStuntingLevel
+        , setWeightMsg = WellChildActivity.SetWeightForNCDA
+        , setMuacMsg = WellChildActivity.SetMuacForNCDA
+        , setStepMsg = WellChildActivity.SetNCDAFormStep
+        , setHelperStateMsg = WellChildActivity.SetNCDAHelperState
+        , setMeasurementOutOfRangePopupMsg = WellChildActivity.SetMeasurementOutOfRangePopup
+        , saveMsg = WellChildActivity.SaveNCDA ancChildId Nothing
+        }
+    , start = \form -> withNCDAForm form WellChildActivity.emptyModel
+    , update =
+        \msg model ->
+            WellChildActivityUpdate.update ancQuestionnaireDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The nurse's taps, played through one place the questionnaire appears: each
+tap is made on the step as the shared view renders the current form, and the
+message it sends goes to that place's own handler. A tap that sends nothing
+stops the play with the reason.
+-}
+playAncTaps : NCDAHost msg model -> List (Query.Single msg -> Event msg) -> Result String model
+playAncTaps host taps =
+    List.foldl
+        (\tap ->
+            Result.andThen
+                (\model ->
+                    renderNCDA host.config ancPregnancyDb (host.form model)
+                        |> tap
+                        |> Event.toResult
+                        |> Result.map (\msg -> host.update msg model)
+                )
+        )
+        (Ok (host.start ancOtherQuestionsAnswered))
+        taps
+
+
+expectAfterAncTaps : NCDAHost msg model -> List (Query.Single msg -> Event msg) -> (Query.Single msg -> Expect.Expectation) -> Expect.Expectation
+expectAfterAncTaps host taps expectation =
+    case playAncTaps host taps of
+        Err reason ->
+            Expect.fail reason
+
+        Ok model ->
+            renderNCDA host.config ancPregnancyDb (host.form model)
+                |> expectation
+
+
+{-| Every criterion, played as taps on the step through each place the
+questionnaire appears. Month 3 and month 8 have no visit on record.
+-}
+ncdaAncVisitsNotOnRecordHostTest : NCDAHost msg model -> Test
+ncdaAncVisitsNotOnRecordHostTest host =
+    let
+        yes =
+            tapAncVisitsAnswer True
+
+        no =
+            tapAncVisitsAnswer False
+
+        expectAnswer index =
+            ancVisitsAnswer index >> Query.has [ class "checked" ]
+    in
+    describe ("This holds wherever the questionnaire appears: " ++ host.name)
+        [ test "answering \"Yes\" with no month ticked leaves the step incomplete: 4/5, the button is greyed out and sends nothing" <|
+            \_ ->
+                expectAfterAncTaps host [ yes ] (expectAncStep ancStepIncomplete)
+        , test "ticking at least one month completes the step: \"Yes\", month 3 — 5/5, the button can be pressed" <|
+            \_ ->
+                expectAfterAncTaps host [ yes, tapAncMonth 3 ] (expectAncStep ancStepCompleteAfterYes)
+        , test "\"Yes\", months 3 and 8, month 8 unticked: \"Yes\" stays, 5/5, the button can be pressed" <|
+            \_ ->
+                expectAfterAncTaps host
+                    [ yes, tapAncMonth 3, tapAncMonth 8, tapAncMonth 8 ]
+                    (Expect.all [ expectAnswer 0, expectAncStep ancStepCompleteAfterYes ])
+        , test "unticking the last ticked month switches the answer to \"No\", and the step is complete: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host
+                    [ yes, tapAncMonth 3, tapAncMonth 3 ]
+                    (Expect.all [ expectAnswer 1, expectAncStep ancStepCompleteAfterNo ])
+        , test "answering \"No\" completes the step without any month: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host [ no ] (expectAncStep ancStepCompleteAfterNo)
+        , test "\"Yes\" then \"No\": the step is complete without any month: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host [ yes, no ] (expectAncStep ancStepCompleteAfterNo)
+        , test "\"No\" then \"Yes\" with no month ticked: the step is incomplete: 4/5" <|
+            \_ ->
+                expectAfterAncTaps host [ no, yes ] (expectAncStep ancStepIncomplete)
+        ]
+
+
+ncdaAncVisitsNotOnRecordTest : Test
+ncdaAncVisitsNotOnRecordTest =
+    describe "NCDA Antenatal Care: ANC visits not on record"
+        [ ncdaAncVisitsNotOnRecordViewTest
+        , ncdaAncVisitsNotOnRecordHostTest childScoreboardHost
+        , ncdaAncVisitsNotOnRecordHostTest groupSessionHost
+        , ncdaAncVisitsNotOnRecordHostTest nutritionHost
+        , ncdaAncVisitsNotOnRecordHostTest wellChildHost
+        ]
+
+
+
+-- YES/NO QUESTIONS WITH A FOLLOW-UP
+
+
+{-| A task list is complete when every entry holds an answer.
+-}
+followUpTasksComplete : List (Maybe Bool) -> Bool
+followUpTasksComplete =
+    List.all ((/=) Nothing)
+
+
+{-| What the nurse sees of a "Why not?" question in the rendered inputs: whether
+its options are on screen at all, how many of them are ticked, and whether the
+task list counts as complete.
+
+A stored "no reason" placeholder is not among the options, so it never shows
+ticked; what gives the defect away is the task list reading complete while
+nothing is ticked.
+
+-}
+expectWhyNot : { asked : Bool, ticked : Int, complete : Bool } -> ( List (Html msg), List (Maybe Bool) ) -> Expect.Expectation
+expectWhyNot expected ( inputs, tasks ) =
+    let
+        rendered =
+            Query.fromHtml (div [] inputs)
+
+        options =
+            Query.findAll [ classes [ "ui", "checkbox", "activity" ] ] rendered
+    in
+    Expect.all
+        [ \_ ->
+            if expected.asked then
+                Query.count (Expect.atLeast 1) options
+
+            else
+                Query.count (Expect.equal 0) options
+        , \_ ->
+            Query.findAll
+                [ classes [ "ui", "checkbox", "activity" ]
+                , containing [ tag "input", class "checked" ]
+                ]
+                rendered
+                |> Query.count (Expect.equal expected.ticked)
+        , \_ ->
+            followUpTasksComplete tasks
+                |> Expect.equal expected.complete
+        ]
+        ()
+
+
+{-| Referral to a facility asks "Why not?" after a "No". The saved record is
+passed as `saved`; the form is the page's own form after the answer handler
+ran, which sets the Yes/No answer and clears the reason. A stored "no reason"
+is `NoReasonForNonReferral`.
+-}
+referralWhyNotTest : Test
+referralWhyNotTest =
+    let
+        savedReferred =
+            { signs = EverySet.fromList [ HandReferrerForm, ReferToHealthCenter ]
+            , reasonForNotSendingToHC = NoReasonForNonReferral
+            }
+
+        savedNotReferred : ReasonForNonReferral -> SendToHCValue
+        savedNotReferred reason =
+            { signs = EverySet.singleton NoSendToHCSigns
+            , reasonForNotSendingToHC = reason
+            }
+
+        -- The page's form right after "Yes" or "No" is tapped on a reopened record.
+        answered value =
+            { emptySendToHCForm | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+        reasonChosen reason form =
+            { form | reasonForNotSendingToHC = Just reason }
+
+        shown facility saved form =
+            sendToHCFormWithDefault form saved
+                |> sendToFacilityInputsAndTasks English facility (always ()) (always ()) (always ()) Nothing
+
+        -- The record as comparable data: a set of signs compares unequal when built in another order.
+        comparable =
+            Maybe.map
+                (\value ->
+                    ( List.filter (\sign -> EverySet.member sign value.signs)
+                        [ EnrollToNutritionProgram, HandReferrerForm, NoSendToHCSigns, PrenatalAccompanyToHC, ReferToHealthCenter, ReferToNutritionProgram ]
+                    , value.reasonForNotSendingToHC
+                    )
+                )
+
+        stored saved form =
+            toSendToHCValueWithDefault saved form
+
+        expectRecord expected =
+            comparable >> Expect.equal (comparable (Just expected))
+    in
+    describe "Referral: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "A referral saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "health centre referral: \"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just savedReferred) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "hospital referral: \"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHospital (Just savedReferred) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just savedReferred) (answered False |> reasonChosen ClientRefused)
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "the chosen reason is what gets saved, with no referral" <|
+                \_ ->
+                    stored (Just savedReferred) (answered False |> reasonChosen NoAmbulance)
+                        |> Maybe.map
+                            (\value ->
+                                ( EverySet.member ReferToHealthCenter value.signs
+                                , value.reasonForNotSendingToHC
+                                )
+                            )
+                        |> Expect.equal (Just ( False, NoAmbulance ))
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just savedReferred) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedReferred) form
+                                |> Maybe.map .reasonForNotSendingToHC
+                                |> Expect.equal (Just NoReasonForNonReferral)
+                        ]
+                        (answered True)
+            ]
+        , describe "A referral saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            (List.map
+                (\( label, reason ) ->
+                    test ("saved reason: " ++ label) <|
+                        \_ ->
+                            stored (Just (savedNotReferred reason)) (answered True)
+                                |> Maybe.map
+                                    (\value ->
+                                        ( EverySet.member ReferToHealthCenter value.signs
+                                        , value.reasonForNotSendingToHC
+                                        )
+                                    )
+                                |> Expect.equal (Just ( True, NoReasonForNonReferral ))
+                )
+                [ ( "client already in care", ClientAlreadyInCare )
+                , ( "client refused", ClientRefused )
+                , ( "client unable to afford fees", ClientUnableToAffordFees )
+                , ( "no ambulance", NoAmbulance )
+                , ( "not indicated", ReasonForNonReferralNotIndicated )
+                , ( "other", ReasonForNonReferralOther )
+                ]
+                ++ [ test "the \"Why not?\" question is no longer asked and the task is complete" <|
+                        \_ ->
+                            shown FacilityHealthCenter (Just (savedNotReferred ClientRefused)) (answered True)
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                   ]
+            )
+        , describe "A referral saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just (savedNotReferred ClientRefused)) emptySendToHCForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotReferred ClientRefused)) emptySendToHCForm
+                        |> expectRecord (savedNotReferred ClientRefused)
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    stored (Just (savedNotReferred ClientRefused)) (reasonChosen NoAmbulance emptySendToHCForm)
+                        |> expectRecord (savedNotReferred NoAmbulance)
+            ]
+        , describe "An older referral saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just (savedNotReferred NoReasonForNonReferral)) emptySendToHCForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just (savedNotReferred NoReasonForNonReferral)) form
+                                |> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , \form ->
+                            stored (Just (savedNotReferred NoReasonForNonReferral)) form
+                                |> expectRecord (savedNotReferred ClientUnableToAffordFees)
+                        ]
+                        (reasonChosen ClientUnableToAffordFees emptySendToHCForm)
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "a referral saved with \"Yes\", reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just savedReferred) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedReferred) form
+                                |> expectRecord savedReferred
+                        ]
+                        emptySendToHCForm
+            , test "a first-time \"No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    let
+                        form =
+                            answered False
+                    in
+                    shown FacilityHealthCenter Nothing { form | handReferralForm = Just False }
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            ]
+        ]
+
+
+{-| Health education asks "Why not?" after a "No". The saved record is passed
+as `saved`; the form is the page's own form after the answer handler ran, which
+sets the Yes/No answer and clears the reason. A stored "no reason" is
+`NoReasonForNotProvidingHealthEducation`.
+-}
+healthEducationWhyNotTest : Test
+healthEducationWhyNotTest =
+    let
+        savedProvided =
+            { signs = EverySet.singleton MalariaPrevention
+            , reasonForNotProvidingHealthEducation = NoReasonForNotProvidingHealthEducation
+            }
+
+        savedNotProvided : ReasonForNotProvidingHealthEducation -> HealthEducationValue
+        savedNotProvided reason =
+            { signs = EverySet.singleton NoHealthEducationSigns
+            , reasonForNotProvidingHealthEducation = reason
+            }
+
+        -- The page's form right after "Yes" or "No" is tapped on a reopened record.
+        answered value =
+            { emptyHealthEducationForm | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+        reasonChosen reason form =
+            { form | reasonForNotProvidingHealthEducation = Just reason }
+
+        shown saved form =
+            healthEducationFormWithDefault form saved
+                |> healthEducationFormInputsAndTasks English (always ()) (always ())
+
+        stored saved form =
+            toHealthEducationValueWithDefault saved form
+    in
+    describe "Health education: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "Health education saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just savedProvided) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just savedProvided) (answered False |> reasonChosen PatientRefused)
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "the chosen reason is what gets saved, with no education provided" <|
+                \_ ->
+                    stored (Just savedProvided) (answered False |> reasonChosen PatientTooIll)
+                        |> Expect.equal (Just (savedNotProvided PatientTooIll))
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just savedProvided) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedProvided) form
+                                |> Expect.equal (Just savedProvided)
+                        ]
+                        (answered True)
+            ]
+        , describe "Health education saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            (List.map
+                (\( label, reason ) ->
+                    test ("saved reason: " ++ label) <|
+                        \_ ->
+                            stored (Just (savedNotProvided reason)) (answered True)
+                                |> Expect.equal (Just savedProvided)
+                )
+                [ ( "lack of appropriate education user guide", LackOfAppropriateEducationUserGuide )
+                , ( "patient needs emergency referral", PatientNeedsEmergencyReferral )
+                , ( "patient refused", PatientRefused )
+                , ( "patient too ill", PatientTooIll )
+                , ( "received emergency case", ReceivedEmergencyCase )
+                ]
+                ++ [ test "the \"Why not?\" question is no longer asked and the task is complete" <|
+                        \_ ->
+                            shown (Just (savedNotProvided PatientRefused)) (answered True)
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                   ]
+            )
+        , describe "Health education saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just (savedNotProvided PatientRefused)) emptyHealthEducationForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotProvided PatientRefused)) emptyHealthEducationForm
+                        |> Expect.equal (Just (savedNotProvided PatientRefused))
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    stored (Just (savedNotProvided PatientRefused)) (reasonChosen ReceivedEmergencyCase emptyHealthEducationForm)
+                        |> Expect.equal (Just (savedNotProvided ReceivedEmergencyCase))
+            ]
+        , describe "Older health education saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) emptyHealthEducationForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) form
+                                |> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , \form ->
+                            stored (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) form
+                                |> Expect.equal (Just (savedNotProvided PatientRefused))
+                        ]
+                        (reasonChosen PatientRefused emptyHealthEducationForm)
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "health education saved with \"Yes\", reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just savedProvided) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedProvided) form
+                                |> Expect.equal (Just savedProvided)
+                        ]
+                        emptyHealthEducationForm
+            , test "a first-time \"No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    shown Nothing (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            ]
+        ]
+
+
+{-| The treatment review (Acute Illness subsequent visit, HIV, Tuberculosis)
+asks "Why not?" after "taken as prescribed: No" and "How many doses?" after
+"missed doses: Yes".
+
+Its Yes/No handlers live inside `treatmentReviewInputsAndTasks`, so each test
+reads the real handler off the rendered Yes/No label instead of copying it. The
+pages run that handler on the form already merged with the saved record, keep
+the result as the page's form, and merge it with the saved record again to
+draw and to save; `tap` and `choose*` below follow the same steps.
+
+A stored "no reason" is `NoReasonForNotTakingSign`; stored "no number" is 0
+missed doses.
+
+-}
+ongoingTreatmentReviewFollowUpTest : Test
+ongoingTreatmentReviewFollowUpTest =
+    let
+        savedWith : List TreatmentOngoingSign -> ReasonForNotTaking -> Int -> TreatmentOngoingValue
+        savedWith signs reason doses =
+            { signs = EverySet.fromList signs
+            , reasonForNotTaking = reason
+            , missedDoses = doses
+            , adverseEvents = EverySet.singleton NoAdverseEvent
+            }
+
+        -- Taken as prescribed, feeling better, no missed doses, no side effects.
+        savedAllGood =
+            savedWith [ FeelingBetter, TakenAsPrescribed ] NoReasonForNotTakingSign 0
+
+        savedNotTaken reason =
+            savedWith [ FeelingBetter ] reason 0
+
+        savedMissed doses =
+            savedWith [ FeelingBetter, MissedDoses, TakenAsPrescribed ] NoReasonForNotTakingSign doses
+
+        merged saved pageForm =
+            ongoingTreatmentReviewFormWithDefault pageForm saved
+
+        -- The page's form after the label `answer` of the Yes/No input `inputClass` is tapped.
+        tap inputClass answer saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            treatmentReviewInputsAndTasks English
+                (\updateFunc value -> updateFunc value)
+                (always identity)
+                (always identity)
+                (always identity)
+                form
+                |> Tuple.first
+                |> div []
+                |> Query.fromHtml
+                |> Query.find [ class inputClass ]
+                |> Query.find [ tag "label", containing [ text answer ] ]
+                |> Event.simulate Event.click
+                |> Event.toResult
+                |> Result.map (\updateFunc -> updateFunc form)
+
+        -- The page's form after a reason for not taking is picked.
+        chooseReason reason saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            { form | reasonForNotTaking = Just reason, reasonForNotTakingDirty = True }
+
+        -- The page's form after a number of missed doses is picked.
+        chooseDoses doses saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            { form | totalMissedDoses = Just doses, totalMissedDosesDirty = True }
+
+        shown saved pageForm =
+            merged saved pageForm
+                |> treatmentReviewInputsAndTasks English (\_ _ -> ()) (always ()) (always ()) (always ())
+
+        -- The record as comparable data: a set of signs compares unequal when built in another order.
+        comparable =
+            Maybe.map
+                (\value ->
+                    { signs =
+                        List.filter (\sign -> EverySet.member sign value.signs)
+                            [ FeelingBetter, MissedDoses, NoTreatmentOngoingSign, SideEffects, TakenAsPrescribed ]
+                    , reasonForNotTaking = value.reasonForNotTaking
+                    , missedDoses = value.missedDoses
+                    , adverseEvents = EverySet.toList value.adverseEvents
+                    }
+                )
+
+        stored saved pageForm =
+            toOngoingTreatmentReviewValueWithDefault saved pageForm
+                |> comparable
+
+        expectRecord expected =
+            Expect.equal (comparable (Just expected))
+
+        onTapped result expectation =
+            case result of
+                Ok pageForm ->
+                    expectation pageForm
+
+                Err error ->
+                    Expect.fail error
+
+        -- "How many doses?" as drawn: asked or not, the number it shows (Nothing for empty), and the task list.
+        expectHowManyDoses expected ( inputs, tasks ) =
+            let
+                selects =
+                    Query.fromHtml (div [] inputs)
+                        |> Query.findAll [ tag "select" ]
+
+                numberShown =
+                    case expected.number of
+                        Just number ->
+                            Query.first selects
+                                |> Query.find [ tag "option", selected True ]
+                                |> Query.has [ attribute (Html.Attributes.value (String.fromInt number)) ]
+
+                        Nothing ->
+                            -- Empty: any option marked selected is the blank one.
+                            Query.first selects
+                                |> Query.findAll [ tag "option", selected True ]
+                                |> Query.each (Query.has [ attribute (Html.Attributes.value "") ])
+            in
+            Expect.all
+                [ \_ ->
+                    if expected.asked then
+                        Expect.all [ \_ -> Query.count (Expect.equal 1) selects, \_ -> numberShown ] ()
+
+                    else
+                        Query.count (Expect.equal 0) selects
+                , \_ ->
+                    followUpTasksComplete tasks
+                        |> Expect.equal expected.complete
+                ]
+                ()
+    in
+    describe "Treatment review: \"Why not?\" and \"How many doses?\" when a saved answer is changed"
+        [ describe "A treatment review saved with \"taken as prescribed: Yes\", changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (shown (Just savedAllGood)
+                            >> expectWhyNot { asked = True, ticked = 0, complete = False }
+                        )
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseReason NotTakingNoMoney (Just savedAllGood)
+                            >> shown (Just savedAllGood)
+                            >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        )
+            , test "the chosen reason is what gets saved" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseReason NotTakingMemoryProblems (Just savedAllGood)
+                            >> stored (Just savedAllGood)
+                            >> expectRecord (savedNotTaken NotTakingMemoryProblems)
+                        )
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    onTapped
+                        (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm
+                            |> Result.andThen (tap "taken-as-prescribed" "Yes" (Just savedAllGood))
+                        )
+                        (Expect.all
+                            [ shown (Just savedAllGood) >> expectWhyNot { asked = False, ticked = 0, complete = True }
+                            , stored (Just savedAllGood) >> expectRecord savedAllGood
+                            ]
+                        )
+            ]
+        , describe "A treatment review saved with \"missed doses: No\", changed to \"Yes\": \"How many doses?\" is empty and the task is not complete until a number is chosen"
+            [ test "\"How many doses?\" is asked, shows no number, the task is not complete" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (shown (Just savedAllGood)
+                            >> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+                        )
+            , test "once a number is chosen it is shown and the task is complete" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseDoses 3 (Just savedAllGood)
+                            >> shown (Just savedAllGood)
+                            >> expectHowManyDoses { asked = True, number = Just 3, complete = True }
+                        )
+            , test "the chosen number is what gets saved" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseDoses 21 (Just savedAllGood)
+                            >> stored (Just savedAllGood)
+                            >> expectRecord (savedMissed 21)
+                        )
+            , test "changed to \"Yes\" and back to \"No\": the task is complete and zero doses are saved" <|
+                \_ ->
+                    onTapped
+                        (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm
+                            |> Result.andThen (tap "missed-doses" "No" (Just savedAllGood))
+                        )
+                        (Expect.all
+                            [ shown (Just savedAllGood) >> expectHowManyDoses { asked = False, number = Nothing, complete = True }
+                            , stored (Just savedAllGood) >> expectRecord savedAllGood
+                            ]
+                        )
+            ]
+        , describe "A treatment review whose follow-up is no longer asked saves no earlier answer"
+            [ test "saved \"taken as prescribed: No\" with a reason, changed to \"Yes\" and saved: the record holds no reason" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "Yes" (Just (savedNotTaken NotTakingNoMoney)) emptyOngoingTreatmentReviewForm)
+                        (stored (Just (savedNotTaken NotTakingNoMoney))
+                            >> expectRecord savedAllGood
+                        )
+            , test "saved \"missed doses: Yes\" with 5 doses, changed to \"No\" and saved: the record holds zero doses" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "No" (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm)
+                        (stored (Just (savedMissed 5))
+                            >> expectRecord savedAllGood
+                        )
+            ]
+        , describe "A treatment review saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm
+                        |> expectRecord (savedNotTaken NotTakingAdverseEvent)
+            , test "the saved reason stays ticked when another question's answer is changed" <|
+                \_ ->
+                    onTapped (tap "feeling-better" "No" (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm)
+                        (shown (Just (savedNotTaken NotTakingAdverseEvent))
+                            >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        )
+            , test "saved \"missed doses: Yes\" with 5 doses, reopened: 5 is shown and the task is complete" <|
+                \_ ->
+                    shown (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm
+                        |> expectHowManyDoses { asked = True, number = Just 5, complete = True }
+            , test "saved \"missed doses: Yes\" with 5 doses, saved again: the same record" <|
+                \_ ->
+                    stored (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm
+                        |> expectRecord (savedMissed 5)
+            ]
+        , describe "An older treatment review saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just (savedNotTaken NoReasonForNotTakingSign)) emptyOngoingTreatmentReviewForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ shown (Just (savedNotTaken NoReasonForNotTakingSign)) >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , stored (Just (savedNotTaken NoReasonForNotTakingSign)) >> expectRecord (savedNotTaken NotTakingOther)
+                        ]
+                        (chooseReason NotTakingOther (Just (savedNotTaken NoReasonForNotTakingSign)) emptyOngoingTreatmentReviewForm)
+            , test "saved \"missed doses: Yes\" with zero doses, reopened: \"How many doses?\" is empty and the task is not complete" <|
+                \_ ->
+                    shown (Just (savedMissed 0)) emptyOngoingTreatmentReviewForm
+                        |> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "a review with no follow-up asked, reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ shown (Just savedAllGood) >> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , stored (Just savedAllGood) >> expectRecord savedAllGood
+                        ]
+                        emptyOngoingTreatmentReviewForm
+            , test "a first-time \"taken as prescribed: No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    onTapped
+                        (tap "taken-as-prescribed"
+                            "No"
+                            Nothing
+                            { emptyOngoingTreatmentReviewForm
+                                | feelingBetter = Just True
+                                , missedDoses = Just False
+                                , sideEffects = Just False
+                            }
+                        )
+                        (shown Nothing
+                            >> expectWhyNot { asked = True, ticked = 0, complete = False }
+                        )
+            , test "a first-time \"missed doses: Yes\", with no saved record, leaves \"How many doses?\" empty and the task not complete" <|
+                \_ ->
+                    onTapped
+                        (tap "missed-doses"
+                            "Yes"
+                            Nothing
+                            { emptyOngoingTreatmentReviewForm
+                                | feelingBetter = Just True
+                                , sideEffects = Just False
+                                , takenAsPrescribed = Just True
+                            }
+                        )
+                        (shown Nothing
+                            >> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+                        )
+            ]
+        ]
+
+
+nutritionFeedingWaterQuestionTest : Test
+nutritionFeedingWaterQuestionTest =
+    let
+        feedingForm supplementType eatenWithWater =
+            nutritionFeedingInputsAndTasks English
+                (toEntityUuid "child")
+                (\_ _ -> ())
+                (\_ -> ())
+                (\_ -> ())
+                emptyModelIndexedDb
+                { emptyNutritionFeedingForm
+                    | receiveSupplement = Just True
+                    , supplementType = Just supplementType
+                    , eatenWithWater = eatenWithWater
+                }
+
+        answeredTasks supplementType eatenWithWater =
+            feedingForm supplementType eatenWithWater
+                |> Tuple.second
+                |> List.filterMap identity
+                |> List.length
+
+        showsWaterQuestion supplementType =
+            feedingForm supplementType Nothing
+                |> Tuple.first
+                |> div []
+                |> Query.fromHtml
+                |> Query.findAll [ text "Is water given to the child when eating the food supplement" ]
+    in
+    describe "nutritionFeedingInputsAndTasks, the water question"
+        [ test "with RUTF, the question is shown" <|
+            \_ ->
+                showsWaterQuestion Rutf
+                    |> Query.count (Expect.atLeast 1)
+        , test "with RUTF, answering it completes one more task" <|
+            \_ ->
+                answeredTasks Rutf (Just False)
+                    |> Expect.equal (answeredTasks Rutf Nothing + 1)
+        , test "with fortified porridge, the question is not shown" <|
+            \_ ->
+                showsWaterQuestion FortifiedPorridge
+                    |> Query.count (Expect.equal 0)
+        , test "with fortified porridge, it is not a task" <|
+            \_ ->
+                answeredTasks FortifiedPorridge (Just False)
+                    |> Expect.equal (answeredTasks FortifiedPorridge Nothing)
+        ]
+
+
+toNutritionFeedingValueTest : Test
+toNutritionFeedingValueTest =
+    let
+        rutfForm =
+            { emptyNutritionFeedingForm
+                | receiveSupplement = Just True
+                , supplementType = Just Rutf
+                , eatenWithWater = Just True
+                , sachetsPerDay = Just 2
+            }
+
+        savedRutf =
+            Just
+                { signs = EverySet.fromList [ ReceiveSupplement, EatenWithWater ]
+                , supplementType = Rutf
+                , sachetsPerDay = 3
+                }
+
+        waterAndSachets =
+            Maybe.map (\value -> ( EverySet.member EatenWithWater value.signs, value.sachetsPerDay ))
+    in
+    describe "toNutritionFeedingValueWithDefault, the water and sachets answers"
+        [ test "kept for RUTF that is received" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault Nothing rutfForm
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( True, 2 ))
+        , test "dropped for another supplement" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault Nothing { rutfForm | supplementType = Just FortifiedPorridge }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
+        , test "dropped when an edit switches saved RUTF to another supplement" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault savedRutf { emptyNutritionFeedingForm | supplementType = Just FortifiedPorridge }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
+        , test "dropped when an edit says the supplement is no longer received" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault savedRutf { emptyNutritionFeedingForm | receiveSupplement = Just False }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
         ]

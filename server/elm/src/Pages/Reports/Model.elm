@@ -1,7 +1,8 @@
-module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyModel, emptyNutritionMetrics)
+module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionReportData, NutritionTableData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
 import Backend.Components.Model exposing (PersonId)
+import Backend.Reports.Model exposing (NutritionRate)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import RemoteData exposing (RemoteData(..))
@@ -101,15 +102,14 @@ emptyNutritionMetrics =
     }
 
 
-type alias NutritionMetricsResults =
-    { stuntingModerate : Float
-    , stuntingSevere : Float
-    , wastingModerate : Float
-    , wastingSevere : Float
-    , underweightModerate : Float
-    , underweightSevere : Float
-    , acuteMalnutritionMam : Float
-    , acuteMalnutritionSam : Float
+{-| A Nutrition report table, translated: one row per indicator, with
+its rate in each period column.
+-}
+type alias NutritionTableData =
+    { heading : String
+    , captions : List String
+    , rows : List ( String, List NutritionRate )
+    , note : String
     }
 
 

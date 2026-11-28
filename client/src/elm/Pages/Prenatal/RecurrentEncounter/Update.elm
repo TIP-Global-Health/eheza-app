@@ -5,7 +5,6 @@ import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
@@ -13,8 +12,8 @@ import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..))
 
 
-update : NominalDate -> PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id msg model =
+update : PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id msg model =
     case msg of
         SetActivePage page ->
             let
@@ -43,9 +42,9 @@ update currentDate id msg model =
         ConcludeEncounter personId encounterId labsResultsId value ->
             ( model
             , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) { value | resolutionDate = currentDate }
+            , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) value
                     |> Backend.Model.MsgPrenatalEncounter encounterId
                     |> App.Model.MsgIndexedDb
               ]
             )
-                |> sequenceExtra (update currentDate id) [ SetActivePage <| UserPage GlobalCaseManagementPage ]
+                |> sequenceExtra (update id) [ SetActivePage <| UserPage GlobalCaseManagementPage ]

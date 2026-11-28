@@ -6,6 +6,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , BirthDefect(..)
+        , DeliveryComplication(..)
+        , ECDSign(..)
         , HeadCircumferenceInCm(..)
         , HeightInCm(..)
         , MeasurementNote(..)
@@ -14,82 +17,72 @@ import Backend.Measurement.Model
         , VaccinationValue
         , VaccineDose(..)
         , WeightInGrm(..)
-        , WellChildMeasurements
+        , WellChildVaccineType(..)
         )
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
-import Backend.WellChildEncounter.Model
-import Date
+import Backend.Person.Utils exposing (ageInMonthsReached)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
+import Date exposing (Date)
 import EverySet
 import Expect
-import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
-import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Html exposing (div)
+import Measurement.Model exposing (ImmunisationTask(..), RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
+import Measurement.Utils exposing (toVaccinationValueWithDefault, vaccinationFormWithDefault)
+import Pages.Utils exposing (maybeToBoolTask, resolveTasksCompletedFromTotal)
+import Pages.WellChild.Activity.Model exposing (Msg(..), PregnancySummaryForm, WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Pages.WellChild.Activity.Types exposing (MedicationTask(..))
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( pregnancySummaryFormWithDefault
+        ( expectMedicationByAge
+        , expectedECDSignsOnMilestone
+        , generateASAPImmunisationDate
+        , generateNextDateForImmunisationVisit
+        , generateNextVisitDates
+        , immunisationTasksCompletedFromTotal
+        , nextVisitFormWithDefault
+        , pregnancySummaryFormWithDefault
         , pregnancySummaryMeasurementsOutOfRange
+        , refreshNextVisitValue
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
+        , resolveNextDateForMedicationVisitUnderSixMonths
         , resolvePreviousMaybeValue
+        , toPregnancySummaryValueWithDefault
         )
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (class, text)
+import TestFixtures exposing (emptyWellChildMeasurements, expectDoseInHistory, expectSaveEnabled, expectYesAnswerSends, testParticipant, testPerson, vaccinationQuestionPrevious, vaccinationQuestionToday, vitalsValueWith, wrapMeasurement)
 import Time
+import Translate.Model exposing (Language(..))
 
 
 all : Test
 all =
     describe "Pages.WellChild.Activity"
-        [ resolveFirstEncounterDateAfterMilestoneTests
+        [ ageInMonthsReachedTests
+        , resolveFirstEncounterDateAfterMilestoneTests
         , resolveNextDateForECDVisitTests
+        , nextECDVisitOnMonthEndTests
+        , nextECDVisitWeekMilestonesTests
+        , resolveNextDateForMedicationVisitUnderSixMonthsTests
         , pregnancySummaryFormWithDefaultTests
+        , pregnancySummaryChecklistTests
+        , pregnancySummaryOpenChecklistTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
         , dtpStandaloneSaveTests
         , resolvePreviousMaybeValueTests
         , previousHeadCircumferenceTests
+        , doseFallingDueTodayTests
+        , nextVisitAfterCorrectionTests
         ]
-
-
-emptyWellChildMeasurements : WellChildMeasurements
-emptyWellChildMeasurements =
-    { pregnancySummary = Nothing
-    , symptomsReview = Nothing
-    , vitals = Nothing
-    , height = Nothing
-    , muac = Nothing
-    , nutrition = Nothing
-    , photo = Nothing
-    , weight = Nothing
-    , contributingFactors = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , sendToHC = Nothing
-    , headCircumference = Nothing
-    , ecd = Nothing
-    , albendazole = Nothing
-    , mebendezole = Nothing
-    , vitaminA = Nothing
-    , nextVisit = Nothing
-    , bcgImmunisation = Nothing
-    , dtpImmunisation = Nothing
-    , dtpStandaloneImmunisation = Nothing
-    , hpvImmunisation = Nothing
-    , ipvImmunisation = Nothing
-    , mrImmunisation = Nothing
-    , opvImmunisation = Nothing
-    , pcv13Immunisation = Nothing
-    , rotarixImmunisation = Nothing
-    , ncda = Nothing
-    , feeding = Nothing
-    , hygiene = Nothing
-    , foodSecurity = Nothing
-    , caring = Nothing
-    }
 
 
 {-| The head circumference form shows the child's last measured value. A
@@ -566,6 +559,360 @@ resolveNextDateForECDVisitTests =
         ]
 
 
+dateOn : Int -> Time.Month -> Int -> Date
+dateOn year month day =
+    Date.fromCalendarDate year month day
+
+
+{-| A child born late in a month has a milestone that falls on the last day of
+a shorter month: born 31 March, the 6-month date is 30 September. On that day
+the child has reached the milestone, so the next visit is the following rung.
+The next visit must never be the day of the visit itself.
+
+From 6 months up the ladder does not look at whether the current signs are
+done, so every case here is checked with both answers.
+
+-}
+nextECDVisitOnMonthEndTests : Test
+nextECDVisitOnMonthEndTests =
+    let
+        expectNext name bornOn seenOn expected =
+            test name <|
+                \_ ->
+                    List.map (resolveNextDateForECDVisit seenOn bornOn) [ True, False ]
+                        |> Expect.equal [ Just expected, Just expected ]
+    in
+    describe "resolveNextDateForECDVisit around month-end"
+        [ describe "a milestone on a shorter month's last day counts as reached that day"
+            [ expectNext "Born 31 Mar 2025, seen 30 Sep 2025: the next ECD visit is the 15-month date, 30 Jun 2026"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "Born 31 Aug 2025, seen 28 Feb 2026: the next ECD visit is 30 Nov 2026"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 30)
+            , expectNext "Born 30 Nov 2024, seen 28 Feb 2026: the next ECD visit is the 18-month date, 30 May 2026"
+                (dateOn 2024 Time.Nov 30)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.May 30)
+            , expectNext "Born 29 Feb 2024, seen 28 Feb 2026: the next ECD visit is the 3-year date, 28 Feb 2027"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2027 Time.Feb 28)
+            , expectNext "6-month date on the 29th of a leap February moves on to the 15-month date"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2024 Time.Nov 30)
+            , expectNext "born on the 30th, 6-month date on 28 Feb moves on to the 15-month date"
+                (dateOn 2025 Time.Aug 30)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 30)
+            , expectNext "born on the 29th, 6-month date on 28 Feb moves on to the 15-month date"
+                (dateOn 2025 Time.Aug 29)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 29)
+            , expectNext "15-month date on the 30th moves on to the 18-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2026 Time.Jun 30)
+                (dateOn 2026 Time.Sep 30)
+            , expectNext "18-month date on 28 Feb moves on to the 2-year date"
+                (dateOn 2024 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Aug 31)
+            , expectNext "3-year date on 28 Feb moves on to the 4-year date"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2027 Time.Feb 28)
+                (dateOn 2028 Time.Feb 29)
+            ]
+        , describe "the day before a milestone still schedules that milestone"
+            [ expectNext "Born 15 Mar 2025, seen 14 Sep 2025 (one day before the milestone): still 15 Sep 2025"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 14)
+                (dateOn 2025 Time.Sep 15)
+
+            -- The visit is on a month's last day, but the milestone is tomorrow.
+            , expectNext "born on the 1st, seen on the last day of the month before the 6-month date"
+                (dateOn 2025 Time.Apr 1)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "born on the 31st, seen the day before a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 29)
+                (dateOn 2025 Time.Sep 30)
+            , expectNext "born on the 31st, seen the day before a 6-month date on 28 Feb"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+
+            -- In a leap year 28 February is not the last day of the month.
+            , expectNext "28 Feb of a leap year is the day before a 6-month date on the 29th"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 28)
+                (dateOn 2024 Time.Feb 29)
+            , expectNext "born on the 30th, seen the day before a 15-month date on 28 Feb"
+                (dateOn 2024 Time.Nov 30)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+            , expectNext "born 29 Feb, seen the day before a 2-year date on 28 Feb"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+            , expectNext "born 29 Feb, seen the day before the 4-year date on 29 Feb"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2028 Time.Feb 28)
+                (dateOn 2028 Time.Feb 29)
+            ]
+        , describe "month-end days that are not such a milestone are unchanged"
+            [ expectNext "the day after a 6-month date on the 30th moves on to the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Oct 1)
+                (dateOn 2026 Time.Jun 30)
+
+            -- The birth day exists in the milestone month, so the milestone
+            -- date is the true anniversary and was always counted as reached.
+            , expectNext "born on the 30th, seen on a 6-month date that is the 30th"
+                (dateOn 2025 Time.Mar 30)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "born on the 28th, seen on a 6-month date that is 28 Feb"
+                (dateOn 2025 Time.Aug 28)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 28)
+
+            -- 5, 8 and 13 months are not rungs of the ladder, so reaching them
+            -- on a month's last day does not move the child on.
+            , expectNext "reaching 5 months on a month's last day still schedules the 6-month date"
+                (dateOn 2025 Time.Jan 31)
+                (dateOn 2025 Time.Jun 30)
+                (dateOn 2025 Time.Jul 31)
+            , expectNext "reaching 8 months on a month's last day still schedules the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Nov 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "reaching 13 months on a month's last day still schedules the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2026 Time.Apr 30)
+                (dateOn 2026 Time.Jun 30)
+            ]
+        , describe "Visits away from month-end are unchanged"
+            [ expectNext "Visits away from month-end: before 6 months schedules the 6-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Aug 10)
+                (dateOn 2025 Time.Sep 15)
+            , expectNext "Visits away from month-end: on the 6-month date schedules the 15-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 15)
+                (dateOn 2026 Time.Jun 15)
+            , expectNext "Visits away from month-end: the day before the 15-month date schedules it"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2026 Time.Jun 14)
+                (dateOn 2026 Time.Jun 15)
+            ]
+        , describe "past the 4-year date the signs decide"
+            -- The 4-year rung is the last one, so this is the only place from
+            -- 6 months up where the answer depends on the signs.
+            [ test "signs done on the 4-year date: no further ECD visit" <|
+                \_ ->
+                    resolveNextDateForECDVisit (dateOn 2028 Time.Feb 29) (dateOn 2024 Time.Feb 29) True
+                        |> Expect.equal Nothing
+            , test "signs outstanding on the 4-year date: 6 months from the visit" <|
+                \_ ->
+                    resolveNextDateForECDVisit (dateOn 2028 Time.Feb 29) (dateOn 2024 Time.Feb 29) False
+                        |> Expect.equal (Just (dateOn 2028 Time.Aug 29))
+            ]
+        ]
+
+
+{-| The 6-week and 14-week milestones count whole weeks, so they do not depend
+on the length of any month. Signs for each appear one week early, which is why
+5 and 13 weeks depend on whether the signs are done.
+
+The month-end cases pin that a visit on a month's last day is not treated as
+having reached a week milestone that is still a day away.
+
+-}
+nextECDVisitWeekMilestonesTests : Test
+nextECDVisitWeekMilestonesTests =
+    let
+        expectNext name bornOn seenOn signsDone expected =
+            test name <|
+                \_ ->
+                    resolveNextDateForECDVisit seenOn bornOn signsDone
+                        |> Expect.equal (Just expected)
+
+        bornJan1 =
+            dateOn 2025 Time.Jan 1
+
+        sixWeeks =
+            dateOn 2025 Time.Feb 12
+
+        fourteenWeeks =
+            dateOn 2025 Time.Apr 9
+
+        sixMonths =
+            dateOn 2025 Time.Jul 1
+    in
+    describe "resolveNextDateForECDVisit: the 6-week and 14-week milestones are unchanged"
+        [ expectNext "4 weeks old with signs done schedules the 6-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 4)
+            True
+            sixWeeks
+        , expectNext "5 weeks old with signs done schedules the 14-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 5)
+            True
+            fourteenWeeks
+        , expectNext "5 weeks old with signs outstanding schedules the 6-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 5)
+            False
+            sixWeeks
+        , expectNext "on the 6-week date schedules the 14-week date"
+            bornJan1
+            sixWeeks
+            False
+            fourteenWeeks
+        , expectNext "13 weeks old with signs done schedules the 6-month date"
+            bornJan1
+            (dateOn 2025 Time.Apr 8)
+            True
+            sixMonths
+        , expectNext "13 weeks old with signs outstanding schedules the 14-week date"
+            bornJan1
+            (dateOn 2025 Time.Apr 8)
+            False
+            fourteenWeeks
+        , expectNext "on the 14-week date schedules the 6-month date"
+            bornJan1
+            fourteenWeeks
+            False
+            sixMonths
+        , describe "visits on a month's last day"
+            [ expectNext "exactly 6 weeks old on the 30th schedules the 14-week date"
+                (dateOn 2025 Time.Aug 19)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Nov 25)
+            , expectNext "a day under 6 weeks on the 30th, signs outstanding, schedules the 6-week date"
+                (dateOn 2025 Time.Aug 20)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "a day under 6 weeks on the 30th, signs done, schedules the 14-week date"
+                (dateOn 2025 Time.Aug 20)
+                (dateOn 2025 Time.Sep 30)
+                True
+                (dateOn 2025 Time.Nov 26)
+            , expectNext "exactly 14 weeks old on the 30th schedules the 6-month date"
+                (dateOn 2025 Time.Jun 24)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Dec 24)
+            , expectNext "a day under 14 weeks on the 30th, signs outstanding, schedules the 14-week date"
+                (dateOn 2025 Time.Jun 25)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "a day under 14 weeks on the 30th, signs done, schedules the 6-month date"
+                (dateOn 2025 Time.Jun 25)
+                (dateOn 2025 Time.Sep 30)
+                True
+                (dateOn 2025 Time.Dec 25)
+
+            -- Reaching 3 months on a month's last day is 13 weeks, and 3
+            -- months is not a rung.
+            , expectNext "13 weeks old on a month-end 3-month date, signs outstanding, schedules the 14-week date"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2025 Time.Nov 30)
+                False
+                (dateOn 2025 Time.Dec 7)
+            , expectNext "13 weeks old on a month-end 3-month date, signs done, schedules the 6-month date"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2025 Time.Nov 30)
+                True
+                (dateOn 2026 Time.Feb 28)
+            ]
+        ]
+
+
+{-| Under 6 months the medication visit is set to the 6-month date. On a 6-month
+date that is the last day of a shorter month the child has reached it, so the
+result is Nothing and the regular medication schedule takes over; otherwise
+Next Visit would show the day of the visit.
+-}
+resolveNextDateForMedicationVisitUnderSixMonthsTests : Test
+resolveNextDateForMedicationVisitUnderSixMonthsTests =
+    let
+        expectResult name bornOn seenOn expected =
+            test name <|
+                \_ ->
+                    resolveNextDateForMedicationVisitUnderSixMonths seenOn bornOn
+                        |> Expect.equal expected
+    in
+    describe "resolveNextDateForMedicationVisitUnderSixMonths"
+        [ describe "On such a day a child under the 6-month medication date is treated as having reached it, so Next Visit doesn't show today"
+            [ expectResult "born 31 Mar 2025, seen 30 Sep 2025"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 30)
+                Nothing
+            , expectResult "born 31 Aug 2025, seen 28 Feb 2026"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "born 30 Aug 2025, seen 28 Feb 2026"
+                (dateOn 2025 Time.Aug 30)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "born 31 Aug 2023, seen 29 Feb 2024 of a leap year"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 29)
+                Nothing
+            ]
+        , describe "a child who has not reached the 6-month date is scheduled for it"
+            [ expectResult "born 15 Mar 2025, seen 14 Sep 2025 (one day before)"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 14)
+                (Just (dateOn 2025 Time.Sep 15))
+            , expectResult "born on the 1st, seen on the last day of the month before the 6-month date"
+                (dateOn 2025 Time.Apr 1)
+                (dateOn 2025 Time.Sep 30)
+                (Just (dateOn 2025 Time.Oct 1))
+            , expectResult "born on the 31st, seen the day before a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 29)
+                (Just (dateOn 2025 Time.Sep 30))
+            , expectResult "28 Feb of a leap year is the day before a 6-month date on the 29th"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 28)
+                (Just (dateOn 2024 Time.Feb 29))
+            , expectResult "seen on the day of birth"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Mar 15)
+                (Just (dateOn 2025 Time.Sep 15))
+            ]
+        , describe "a child who has reached the 6-month date is unchanged"
+            [ expectResult "seen on a mid-month 6-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 15)
+                Nothing
+            , expectResult "born on the 28th, seen on a 6-month date that is 28 Feb"
+                (dateOn 2025 Time.Aug 28)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "the day after a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Oct 1)
+                Nothing
+            , expectResult "well past 6 months"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2026 Time.Mar 15)
+                Nothing
+            ]
+        ]
+
+
 {-| A saved Pregnancy Summary with every numeric filled in, so the tests can
 check what happens when the nurse clears one and re-opens the encounter.
 -}
@@ -713,6 +1060,478 @@ pregnancySummaryFormWithDefaultTests =
         ]
 
 
+{-| Once the nurse has answered Yes, an empty checklist stays an open task,
+even over a record saved with items ticked, and Save stores nothing for it.
+-}
+pregnancySummaryOpenChecklistTests : Test
+pregnancySummaryOpenChecklistTests =
+    let
+        savedYes =
+            { expectedDateConcluded = Date.fromCalendarDate 2026 Time.Jan 10
+            , deliveryComplications = EverySet.singleton ComplicationHiv
+            , signs = EverySet.singleton NoPregnancySummarySigns
+            , apgarOneMin = Nothing
+            , apgarFiveMin = Nothing
+            , birthWeight = Nothing
+            , birthLength = Nothing
+            , birthDefects = EverySet.singleton DefectClubFoot
+            }
+
+        complicationsYesNothingTicked =
+            { emptyPregnancySummaryForm | deliveryComplicationsPresent = Just True }
+
+        defectsYesNothingTicked =
+            { emptyPregnancySummaryForm | birthDefectsPresent = Just True }
+    in
+    describe "Pregnancy Summary, a Yes with nothing ticked"
+        [ test "unticking every saved complication leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault complicationsYesNothingTicked (Just savedYes)
+                    |> .deliveryComplications
+                    |> Expect.equal Nothing
+        , test "unticking every saved defect leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault defectsYesNothingTicked (Just savedYes)
+                    |> .birthDefects
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the complications checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) complicationsYesNothingTicked
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the birth defects checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) defectsYesNothingTicked
+                    |> Expect.equal Nothing
+        ]
+
+
+{-| The delivery complications and birth defects questions of the Pregnancy
+Summary, each a Yes/No answer followed, on Yes, by a checklist.
+
+The scenarios drive the page through its own `update`, with the messages a tap
+sends, against an encounter holding the saved record (if any). Answering a
+question sets the answer and clears the checklist on the page's raw form;
+ticking a box is applied to the form resolved over the saved record. The tests
+then read the form back through `pregnancySummaryFormWithDefault`, as the page
+does to draw it and count its tasks, and take what Save writes from
+`toPregnancySummaryValueWithDefault`, as Save does.
+
+On the page, a checklist shown under a Yes is one task, complete when the
+resolved form holds a list for it (`Just _`) and open when it holds `Nothing`.
+Save is enabled only when every task is complete. The saved records below have
+every other question answered and every measurement filled in, so these two
+questions alone decide the task count and Save.
+
+A record stores "No" for complications as the set holding only
+`NoDeliveryComplications` (birth defects: `NoBirthDefects`). An empty set is
+read as "No" too, so it is tried as well.
+
+-}
+pregnancySummaryChecklistTests : Test
+pregnancySummaryChecklistTests =
+    describe "Pregnancy Summary, delivery complications and birth defects checklists"
+        [ pregnancySummaryChecklistTestsFor "Rwanda" SiteRwanda
+        , pregnancySummaryChecklistTestsFor "Burundi" SiteBurundi
+        ]
+
+
+pregnancySummaryChecklistTestsFor : String -> Site -> Test
+pregnancySummaryChecklistTestsFor siteName site =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Nov 26
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        -- Saved "No" to both questions.
+        savedNo =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.singleton NoDeliveryComplications
+                , birthDefects = EverySet.singleton NoBirthDefects
+            }
+
+        -- Saved with nothing stored for either question, which the form reads
+        -- as "No".
+        savedEmpty =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.empty
+                , birthDefects = EverySet.empty
+            }
+
+        -- Saved "Yes" to both questions, with two of each ticked.
+        savedYes =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.fromList [ ComplicationHiv, ComplicationPreeclampsia ]
+                , birthDefects = EverySet.fromList [ DefectCleftPalate, DefectClubFoot ]
+            }
+
+        dbWith saved =
+            { emptyModelIndexedDb
+                | wellChildMeasurements =
+                    Dict.singleton encounterId
+                        (Success { emptyWellChildMeasurements | pregnancySummary = Maybe.andThen (wrapMeasurement today) saved })
+            }
+
+        -- The page's raw form after the given taps, starting from a fresh page
+        -- over an encounter holding `saved`.
+        afterTaps saved msgs =
+            List.foldl
+                (\msg model ->
+                    let
+                        ( updated, _, _ ) =
+                            update today site encounterId (dbWith saved) msg model
+                    in
+                    updated
+                )
+                emptyModel
+                msgs
+                |> .pregnancySummaryForm
+
+        -- The form the page draws and counts tasks from.
+        resolvedAfter saved msgs =
+            pregnancySummaryFormWithDefault (afterTaps saved msgs) saved
+
+        -- What Save writes.
+        storedAfter saved msgs =
+            toPregnancySummaryValueWithDefault saved (afterTaps saved msgs)
+
+        -- The taps on the Yes/No questions, as the page sends them.
+        answerComplications answer =
+            SetPregnancySummaryBoolInput
+                (\value form ->
+                    { form
+                        | deliveryComplicationsPresent = Just value
+                        , deliveryComplications = Nothing
+                    }
+                )
+                answer
+
+        answerDefects answer =
+            SetPregnancySummaryBoolInput
+                (\value form ->
+                    { form
+                        | birthDefectsPresent = Just value
+                        , birthDefects = Nothing
+                    }
+                )
+                answer
+
+        -- The tasks of the two questions, as the page counts them: the answer,
+        -- and on Yes the checklist.
+        checklistTasksCount : PregnancySummaryForm -> ( Int, Int )
+        checklistTasksCount form =
+            let
+                section answer checklist =
+                    answer
+                        :: (if answer == Just True then
+                                [ maybeToBoolTask checklist ]
+
+                            else
+                                []
+                           )
+            in
+            section form.deliveryComplicationsPresent form.deliveryComplications
+                ++ section form.birthDefectsPresent form.birthDefects
+                |> resolveTasksCompletedFromTotal
+
+        saveEnabled form =
+            let
+                ( completed, total ) =
+                    checklistTasksCount form
+            in
+            completed == total
+
+        -- The complications (defects) held, in the order the type declares
+        -- them. Two sets holding the same ones then compare equal, whatever
+        -- order they were ticked in.
+        asComplications list =
+            List.filter (\complication -> List.member complication list)
+                [ ComplicationGestationalDiabetes
+                , ComplicationEmergencyCSection
+                , ComplicationPreeclampsia
+                , ComplicationMaternalHemorrhage
+                , ComplicationHiv
+                , ComplicationMaternalDeath
+                , ComplicationOther
+                , NoDeliveryComplications
+                ]
+
+        asDefects list =
+            List.filter (\defect -> List.member defect list)
+                [ DefectBirthInjury
+                , DefectCleftLipWithCleftPalate
+                , DefectCleftPalate
+                , DefectClubFoot
+                , DefectMacrocephaly
+                , DefectGastroschisis
+                , DefectHearingLoss
+                , DefectUndescendedTestes
+                , DefectHypospadias
+                , DefectInguinalHernia
+                , DefectMicrocephaly
+                , DefectNeuralTubes
+                , DefectDownSyndrome
+                , DefectCongenitalHeart
+                , DefectVentricalSeptal
+                , DefectPulmonaryValveAtresiaAndStenosis
+                , NoBirthDefects
+                ]
+
+        storedComplications value =
+            EverySet.toList value.deliveryComplications |> asComplications
+
+        storedDefects value =
+            EverySet.toList value.birthDefects |> asDefects
+
+        complicationsOf form =
+            ( form.deliveryComplicationsPresent, Maybe.map asComplications form.deliveryComplications )
+
+        defectsOf form =
+            ( form.birthDefectsPresent, Maybe.map asDefects form.birthDefects )
+
+        -- A new record also needs the date and the Apgar and length questions
+        -- answered before Save can write anything.
+        newRecordBasics =
+            [ SetExpectedDateConcluded (Date.fromCalendarDate 2026 Time.Nov 20)
+            , SetPregnancySummaryBoolInput (\value form -> { form | apgarScoresAvailable = Just value }) False
+            , SetPregnancySummaryBoolInput (\value form -> { form | birthLengthAvailable = Just value }) False
+            , answerComplications False
+            , answerDefects False
+            ]
+    in
+    describe siteName
+        [ describe "delivery complications, editing a Pregnancy Summary saved with No"
+            [ test "the saved No is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) []
+                        |> complicationsOf
+                        |> Expect.equal ( Just False, Just (asComplications [ NoDeliveryComplications ]) )
+            , test "switching it to Yes: the complications checklist shows as an open task" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> complicationsOf
+                        |> Expect.equal ( Just True, Nothing )
+            , test "while it is open, the task count shows it unfinished and Save stays disabled" <|
+                -- Complications: the Yes is answered, the checklist is open.
+                -- Birth defects: the saved No stands, with no checklist.
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 3 ), False )
+            , test "the checklist stays open until at least one complication is ticked, then counts as done" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True, SetDeliveryComplication ComplicationHiv ]
+                        |> (\form -> ( complicationsOf form, checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Just (asComplications [ ComplicationHiv ]) ), ( 3, 3 ), True )
+            , test "ticking a complication and saving stores Yes with that complication" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerComplications True, SetDeliveryComplication ComplicationHiv ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ ComplicationHiv ]))
+            , test "ticking two complications and saving stores both" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerComplications True
+                        , SetDeliveryComplication ComplicationHiv
+                        , SetDeliveryComplication ComplicationMaternalHemorrhage
+                        ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ ComplicationHiv, ComplicationMaternalHemorrhage ]))
+            , test "unticking the only ticked complication opens the checklist again" <|
+                \_ ->
+                    resolvedAfter (Just savedNo)
+                        [ answerComplications True
+                        , SetDeliveryComplication ComplicationHiv
+                        , SetDeliveryComplication ComplicationHiv
+                        ]
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching back to No closes the checklist and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerComplications True, answerComplications False ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ NoDeliveryComplications ]))
+            , test "the birth defects answer is left as saved" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> defectsOf
+                        |> Expect.equal ( Just False, Just (asDefects [ NoBirthDefects ]) )
+            ]
+        , describe "birth defects, editing a Pregnancy Summary saved with No"
+            [ test "the saved No is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) []
+                        |> defectsOf
+                        |> Expect.equal ( Just False, Just (asDefects [ NoBirthDefects ]) )
+            , test "switching it to Yes: the birth defects checklist shows as an open task" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> defectsOf
+                        |> Expect.equal ( Just True, Nothing )
+            , test "while it is open, the task count shows it unfinished and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 3 ), False )
+            , test "the checklist stays open until at least one defect is ticked, then counts as done" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True, SetBirthDefect DefectClubFoot ]
+                        |> (\form -> ( defectsOf form, checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Just (asDefects [ DefectClubFoot ]) ), ( 3, 3 ), True )
+            , test "ticking a defect and saving stores Yes with that defect" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerDefects True, SetBirthDefect DefectClubFoot ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ DefectClubFoot ]))
+            , test "ticking two defects and saving stores both" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerDefects True
+                        , SetBirthDefect DefectClubFoot
+                        , SetBirthDefect DefectHearingLoss
+                        ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ DefectClubFoot, DefectHearingLoss ]))
+            , test "unticking the only ticked defect opens the checklist again" <|
+                \_ ->
+                    resolvedAfter (Just savedNo)
+                        [ answerDefects True
+                        , SetBirthDefect DefectClubFoot
+                        , SetBirthDefect DefectClubFoot
+                        ]
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching back to No closes the checklist and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerDefects True, answerDefects False ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ NoBirthDefects ]))
+            , test "the delivery complications answer is left as saved" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> complicationsOf
+                        |> Expect.equal ( Just False, Just (asComplications [ NoDeliveryComplications ]) )
+            ]
+        , describe "both, editing a Pregnancy Summary saved with No"
+            [ test "switching both to Yes opens both checklists, and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True, answerDefects True ]
+                        |> (\form -> ( ( complicationsOf form, defectsOf form ), checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( ( Just True, Nothing ), ( Just True, Nothing ) ), ( 2, 4 ), False )
+            , test "ticking one of each and saving stores both answers as Yes with what was ticked" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerComplications True
+                        , answerDefects True
+                        , SetDeliveryComplication ComplicationPreeclampsia
+                        , SetBirthDefect DefectCleftPalate
+                        ]
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ ComplicationPreeclampsia ], asDefects [ DefectCleftPalate ] ))
+            ]
+        , describe "editing a Pregnancy Summary that stores nothing for either question"
+            -- Nothing stored reads as "No" on the form, so switching it to
+            -- "Yes" must open the checklist just like a stored "No".
+            [ test "it is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) []
+                        |> (\form -> ( form.deliveryComplicationsPresent, form.birthDefectsPresent ))
+                        |> Expect.equal ( Just False, Just False )
+            , test "switching complications to Yes: the checklist shows as an open task and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) [ answerComplications True ]
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching birth defects to Yes: the checklist shows as an open task and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) [ answerDefects True ]
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            ]
+        , describe "a Pregnancy Summary saved with complications and defects ticked"
+            [ test "reopens with the complications ticked" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> complicationsOf
+                        |> Expect.equal ( Just True, Just (asComplications [ ComplicationHiv, ComplicationPreeclampsia ]) )
+            , test "reopens with the defects ticked" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> defectsOf
+                        |> Expect.equal ( Just True, Just (asDefects [ DefectCleftPalate, DefectClubFoot ]) )
+            , test "reopens with every task complete" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 4, 4 ), True )
+            , test "saving it unchanged stores what was ticked" <|
+                \_ ->
+                    storedAfter (Just savedYes) []
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal (Just ( storedComplications savedYes, storedDefects savedYes ))
+            , test "ticking one more complication and saving stores all three" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ SetDeliveryComplication ComplicationMaternalDeath ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal
+                            (Just (asComplications [ ComplicationHiv, ComplicationMaternalDeath, ComplicationPreeclampsia ]))
+            , test "switching complications from Yes to No and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ answerComplications False ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ NoDeliveryComplications ]))
+            , test "switching birth defects from Yes to No and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ answerDefects False ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ NoBirthDefects ]))
+            , test "after switching both to No, every task is complete" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) [ answerComplications False, answerDefects False ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 2 ), True )
+            ]
+        , describe "a new Pregnancy Summary"
+            [ test "answering Yes to complications shows the checklist as an open task" <|
+                \_ ->
+                    resolvedAfter Nothing (newRecordBasics ++ [ answerComplications True ])
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "answering Yes to birth defects shows the checklist as an open task" <|
+                \_ ->
+                    resolvedAfter Nothing (newRecordBasics ++ [ answerDefects True ])
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "ticking a complication and a defect and saving stores both" <|
+                \_ ->
+                    storedAfter Nothing
+                        (newRecordBasics
+                            ++ [ answerComplications True
+                               , answerDefects True
+                               , SetDeliveryComplication ComplicationEmergencyCSection
+                               , SetBirthDefect DefectHypospadias
+                               ]
+                        )
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ ComplicationEmergencyCSection ], asDefects [ DefectHypospadias ] ))
+            , test "answering No to both and saving stores No to both" <|
+                \_ ->
+                    storedAfter Nothing newRecordBasics
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ NoDeliveryComplications ], asDefects [ NoBirthDefects ] ))
+            , test "answering No to both completes their tasks" <|
+                \_ ->
+                    resolvedAfter Nothing newRecordBasics
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 2 ), True )
+            ]
+        ]
+
+
 {-| The DTP-standalone task keeps its own form (`dtpStandaloneForm`), separate
 from the DTP form (`dtpForm`). Saving it must store what `dtpStandaloneForm`
 holds.
@@ -802,4 +1621,774 @@ dtpStandaloneSaveTests =
                         [ expectedSaveMsg (Just measurementId)
                             (VaccinationValue savedDoses savedDates AdministeredToday)
                         ]
+        ]
+
+
+ageInMonthsReachedTests : Test
+ageInMonthsReachedTests =
+    let
+        march31 =
+            Date.fromCalendarDate 2025 Time.Mar 31
+
+        sep30 =
+            Date.fromCalendarDate 2025 Time.Sep 30
+
+        child =
+            { testPerson | birthDate = Just march31 }
+
+        expectVitaminA date =
+            expectMedicationByAge date SiteRwanda child TaskVitaminA
+    in
+    describe "ageInMonthsReached"
+        [ test "a month-end day that a milestone falls on completes the month" <|
+            \_ ->
+                ageInMonthsReached march31 sep30 |> Expect.equal 6
+        , test "the day before stays one month short" <|
+            \_ ->
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal 5
+        , test "a mid-month birthday counts as usual" <|
+            \_ ->
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Mar 15) (Date.fromCalendarDate 2025 Time.Sep 15)
+                    |> Expect.equal 6
+        , test "a month-end day of a birthday that exists in that month is not bumped" <|
+            \_ ->
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Aug 31) |> Expect.equal 5
+        , test "Vitamin A is offered on the month-end day the child reaches 6 months" <|
+            \_ ->
+                expectVitaminA sep30 |> Expect.equal True
+        , test "the signs of a milestone that falls on a month-end day are those of that age" <|
+            \_ ->
+                expectedECDSignsOnMilestone march31 sep30 Nothing
+                    |> Expect.equal
+                        (expectedECDSignsOnMilestone
+                            (Date.fromCalendarDate 2025 Time.Mar 15)
+                            (Date.fromCalendarDate 2025 Time.Sep 15)
+                            Nothing
+                        )
+        , test "Vitamin A is not offered the day before" <|
+            \_ ->
+                expectVitaminA (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal False
+        ]
+
+
+{-| The immunisation form on the day a dose falls due.
+
+The scenarios drive the form through the page's own `update`, with the
+messages a tap sends, and then read it through the same function the page
+and the encounter's task count use. Save is enabled when the form's tasks
+completed equal its tasks active.
+
+  - BCG for a child born today: the first dose falls due on the birth day,
+    and it is the only BCG dose.
+  - DTP for a 30-week-old catch-up child whose first dose was given four
+    weeks ago: the second dose falls due today. The third is expected by age,
+    but it is due four weeks after the second.
+
+"Recorded as given previously with today's date" is: "Administered
+previously?" Yes, pick today in the date picker (the only day it offers for
+a dose that falls due today), save the date.
+
+The nurse (Pediatric Care) is asked "will receive today?"; the CHW
+(Pediatric Care CHW) is not.
+
+-}
+doseFallingDueTodayTests : Test
+doseFallingDueTodayTests =
+    describe "Immunisation form, a dose that falls due today"
+        [ doseFallingDueTodayTestsFor "Well Child nurse" SiteRwanda PediatricCare
+        , doseFallingDueTodayTestsFor "Well Child CHW" SiteRwanda PediatricCareChw
+        , doseFallingDueTodayTestsFor "Well Child nurse, Burundi" SiteBurundi PediatricCare
+        , doseFallingDueTodayTestsFor "Well Child CHW, Burundi" SiteBurundi PediatricCareChw
+        ]
+
+
+doseFallingDueTodayTestsFor : String -> Site -> WellChildEncounterType -> Test
+doseFallingDueTodayTestsFor hostName site encounterType =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Nov 10
+
+        isNurse =
+            encounterType == PediatricCare
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        -- The page model after the given taps, starting from a fresh page.
+        afterTaps msgs =
+            List.foldl
+                (\msg model ->
+                    let
+                        ( updated, _, _ ) =
+                            update today site encounterId emptyModelIndexedDb msg model
+                    in
+                    updated
+                )
+                emptyModel
+                msgs
+                |> .immunisationData
+
+        assembled birthDate history measurements =
+            { id = encounterId
+            , encounter = Backend.WellChildEncounter.Model.emptyWellChildEncounter (toEntityUuid "participant") today encounterType Nothing
+            , participant = testParticipant today WellChildEncounter
+            , person = TestFixtures.testChild birthDate
+            , measurements = measurements
+            , previousMeasurementsWithDates = []
+            , vaccinationHistory = history
+            , vaccinationProgress = history
+            }
+
+        formOf vaccineType birthDate history form =
+            Pages.WellChild.Activity.Utils.vaccinationFormDynamicContentAndTasks English
+                today
+                site
+                (assembled birthDate history emptyWellChildMeasurements)
+                vaccineType
+                form
+
+        inputsOf ( inputs, _, _ ) =
+            inputs
+
+        -- What the page saves for the form, as Save does on a new measurement.
+        savedValue form =
+            toVaccinationValueWithDefault Nothing form
+
+        -- BCG, child born today.
+        bcgHistory =
+            Dict.empty
+
+        bcgForm data =
+            formOf VaccineBCG today bcgHistory data.bcgForm
+
+        bcgRecordedPreviouslyToday =
+            afterTaps
+                [ SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst True
+                , SetVaccinationUpdateDate VaccineBCG today
+                , SaveVaccinationUpdateDate VaccineBCG VaccineDoseFirst
+                ]
+
+        bcgGivenToday =
+            afterTaps
+                [ SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst False
+                , SetWillReceiveVaccineToday VaccineBCG VaccineDoseFirst True
+                ]
+
+        -- DTP, catch-up child, dose 1 given four weeks ago, dose 2 due today.
+        dtpBirthDate =
+            Date.add Date.Weeks -30 today
+
+        dtpFirstDoseDate =
+            Date.add Date.Weeks -4 today
+
+        dtpHistory =
+            Dict.singleton VaccineDTP (Dict.singleton VaccineDoseFirst dtpFirstDoseDate)
+
+        dtpForm data =
+            formOf VaccineDTP dtpBirthDate dtpHistory data.dtpForm
+
+        dtpRecordedPreviouslyToday =
+            afterTaps
+                [ SetUpdatePreviousVaccines VaccineDTP VaccineDoseSecond True
+                , SetVaccinationUpdateDate VaccineDTP today
+                , SaveVaccinationUpdateDate VaccineDTP VaccineDoseSecond
+                ]
+
+        asQuery inputs =
+            Query.fromHtml (div [] inputs)
+
+        notAskedAbout inputs =
+            asQuery inputs
+                |> Expect.all
+                    [ Query.hasNot [ text vaccinationQuestionPrevious ]
+                    , Query.hasNot [ text vaccinationQuestionToday ]
+                    ]
+
+        askedAbout question inputs =
+            asQuery inputs
+                |> Query.has [ text question ]
+
+        nurseOnly tests =
+            if isNurse then
+                tests
+
+            else
+                []
+
+        chwOnly tests =
+            if isNurse then
+                []
+
+            else
+                tests
+    in
+    describe hostName
+        (List.concat
+            [ [ describe "A dose that falls due today, recorded as given previously with today's date, shows in the dose history and is not asked about again"
+                    [ test "on the form, once the date is saved" <|
+                        \_ ->
+                            bcgForm bcgRecordedPreviouslyToday
+                                |> inputsOf
+                                |> Expect.all
+                                    [ expectDoseInHistory 1 today
+                                    , notAskedAbout
+                                    ]
+                    , test "once the measurement is saved and the form is opened again" <|
+                        \_ ->
+                            vaccinationFormWithDefault emptyVaccinationForm (savedValue bcgRecordedPreviouslyToday.bcgForm)
+                                |> formOf VaccineBCG today bcgHistory
+                                |> inputsOf
+                                |> Expect.all
+                                    [ expectDoseInHistory 1 today
+                                    , notAskedAbout
+                                    ]
+                    , test "once the measurement is saved and the form is revisited in the same session" <|
+                        \_ ->
+                            vaccinationFormWithDefault bcgRecordedPreviouslyToday.bcgForm (savedValue bcgRecordedPreviouslyToday.bcgForm)
+                                |> formOf VaccineBCG today bcgHistory
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 1 today
+                                    , inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    , test "for a catch-up dose (DTP dose 2, four weeks after dose 1)" <|
+                        \_ ->
+                            dtpForm dtpRecordedPreviouslyToday
+                                |> inputsOf
+                                |> Expect.all
+                                    [ expectDoseInHistory 1 dtpFirstDoseDate
+                                    , expectDoseInHistory 2 today
+                                    , notAskedAbout
+                                    ]
+                    , test "the encounter counts the saved immunisation task as completed" <|
+                        \_ ->
+                            let
+                                measurements =
+                                    { emptyWellChildMeasurements
+                                        | bcgImmunisation =
+                                            savedValue bcgRecordedPreviouslyToday.bcgForm
+                                                |> Maybe.andThen (TestFixtures.wrapMeasurement today)
+                                    }
+
+                                ( completed, active ) =
+                                    immunisationTasksCompletedFromTotal English
+                                        today
+                                        site
+                                        (assembled today bcgHistory measurements)
+                                        emptyModel.immunisationData
+                                        TaskBCG
+                            in
+                            Expect.equal active completed
+                    ]
+              , describe "After saving that date, the next dose is not asked about (it is not due yet), and Save is enabled"
+                    [ test "DTP dose 3, expected by age, is due four weeks after dose 2" <|
+                        \_ ->
+                            dtpForm dtpRecordedPreviouslyToday
+                                |> Expect.all
+                                    [ inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    , test "BCG, which has no next dose" <|
+                        \_ ->
+                            bcgForm bcgRecordedPreviouslyToday
+                                |> Expect.all
+                                    [ inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    , test "once the measurement is saved and the form is opened again" <|
+                        \_ ->
+                            vaccinationFormWithDefault emptyVaccinationForm (savedValue dtpRecordedPreviouslyToday.dtpForm)
+                                |> formOf VaccineDTP dtpBirthDate dtpHistory
+                                |> Expect.all
+                                    [ inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    ]
+              ]
+            , nurseOnly
+                [ describe "A dose given today (\"will receive today: Yes\") keeps its questions on the form, answered, and Save is enabled, as today"
+                    [ test "on the form" <|
+                        \_ ->
+                            bcgForm bcgGivenToday
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 1 today
+                                    , inputsOf >> askedAbout vaccinationQuestionToday
+                                    , expectSaveEnabled
+                                    , \( _, _, active ) -> Expect.atLeast 1 active
+                                    ]
+                    , test "once the measurement is saved and the form is opened again" <|
+                        \_ ->
+                            vaccinationFormWithDefault emptyVaccinationForm (savedValue bcgGivenToday.bcgForm)
+                                |> formOf VaccineBCG today bcgHistory
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 1 today
+                                    , inputsOf >> askedAbout vaccinationQuestionToday
+                                    , expectSaveEnabled
+                                    , \( _, _, active ) -> Expect.atLeast 1 active
+                                    ]
+                    , test "a catch-up dose given today keeps the question about that dose, and the next dose is not asked about" <|
+                        \_ ->
+                            afterTaps
+                                [ SetUpdatePreviousVaccines VaccineDTP VaccineDoseSecond False
+                                , SetWillReceiveVaccineToday VaccineDTP VaccineDoseSecond True
+                                ]
+                                |> dtpForm
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 2 today
+                                    , inputsOf >> askedAbout vaccinationQuestionToday
+                                    , inputsOf >> expectYesAnswerSends 0 (SetWillReceiveVaccineToday VaccineDTP VaccineDoseSecond True)
+                                    , expectSaveEnabled
+                                    ]
+                    ]
+                ]
+            , [ describe "A dose that falls due today and has not been recorded is still asked about"
+                    ([ test "\"administered previously?\", about that dose, with Save disabled until it is answered" <|
+                        \_ ->
+                            bcgForm emptyModel.immunisationData
+                                |> Expect.all
+                                    [ inputsOf >> askedAbout vaccinationQuestionPrevious
+                                    , inputsOf >> expectYesAnswerSends 0 (SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst True)
+                                    , \( _, completed, active ) -> Expect.notEqual active completed
+                                    ]
+                     , test "\"administered previously?\", for a catch-up dose (DTP dose 2)" <|
+                        \_ ->
+                            dtpForm emptyModel.immunisationData
+                                |> inputsOf
+                                |> Expect.all
+                                    [ askedAbout vaccinationQuestionPrevious
+                                    , expectYesAnswerSends 0 (SetUpdatePreviousVaccines VaccineDTP VaccineDoseSecond True)
+                                    ]
+                     ]
+                        ++ nurseOnly
+                            [ test "for a nurse, \"will receive today?\" once \"administered previously?\" is answered No" <|
+                                \_ ->
+                                    afterTaps [ SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst False ]
+                                        |> bcgForm
+                                        |> inputsOf
+                                        |> Expect.all
+                                            [ askedAbout vaccinationQuestionToday
+                                            , expectYesAnswerSends 1 (SetWillReceiveVaccineToday VaccineBCG VaccineDoseFirst True)
+                                            ]
+                            ]
+                        ++ chwOnly
+                            [ test "a CHW is not asked \"will receive today?\", and No enables Save" <|
+                                \_ ->
+                                    afterTaps [ SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst False ]
+                                        |> bcgForm
+                                        |> Expect.all
+                                            [ inputsOf >> asQuery >> Query.hasNot [ text vaccinationQuestionToday ]
+                                            , expectSaveEnabled
+                                            ]
+                            ]
+                    )
+              , describe "A dose given previously on an earlier day behaves as today"
+                    [ test "BCG recorded on the birth day, three days ago: in the history, deletable, not asked about, Save enabled" <|
+                        \_ ->
+                            let
+                                birthDate =
+                                    Date.add Date.Days -3 today
+                            in
+                            afterTaps
+                                [ SetUpdatePreviousVaccines VaccineBCG VaccineDoseFirst True
+                                , SetVaccinationUpdateDate VaccineBCG birthDate
+                                , SaveVaccinationUpdateDate VaccineBCG VaccineDoseFirst
+                                ]
+                                |> .bcgForm
+                                |> formOf VaccineBCG birthDate bcgHistory
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 1 birthDate
+                                    , inputsOf >> asQuery >> Query.find [ class "history" ] >> Query.has [ class "delete" ]
+                                    , inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    , test "DTP dose 2 recorded two weeks ago: the next dose, due in two weeks, is not asked about, Save enabled" <|
+                        \_ ->
+                            let
+                                firstDoseDate =
+                                    Date.add Date.Weeks -8 today
+
+                                secondDoseDate =
+                                    Date.add Date.Weeks -2 today
+
+                                history =
+                                    Dict.singleton VaccineDTP (Dict.singleton VaccineDoseFirst firstDoseDate)
+                            in
+                            afterTaps
+                                [ SetUpdatePreviousVaccines VaccineDTP VaccineDoseSecond True
+                                , SetVaccinationUpdateDate VaccineDTP secondDoseDate
+                                , SaveVaccinationUpdateDate VaccineDTP VaccineDoseSecond
+                                ]
+                                |> .dtpForm
+                                |> formOf VaccineDTP dtpBirthDate history
+                                |> Expect.all
+                                    [ inputsOf >> expectDoseInHistory 2 secondDoseDate
+                                    , inputsOf >> notAskedAbout
+                                    , expectSaveEnabled
+                                    ]
+                    ]
+              ]
+            ]
+        )
+
+
+{-| The nurse saves Next Steps > Next Visit, then reopens an activity from the
+encounter's Completed tab and changes an answer. Once the correction is saved,
+refreshNextVisitValue takes the saved Next Visit and returns it with its dates
+worked out again from the encounter's current data.
+
+Every scenario happens on one day, 15 July 2026, which is also the encounter's
+start date. The saved Next Visit holds the dates Next Visit took when it was
+saved, from the answers given before the correction (`savedBefore`).
+
+The next pediatric visit date is the earlier of the next ECD visit and the next
+medication visit:
+
+  - ECD: under 6 weeks of age the next ECD visit is at 6 weeks, or at 14 weeks
+    once the 5-week signs are all answered Yes; at 13 weeks it is at 14 weeks,
+    or at 6 months once the 13-week signs are all answered Yes.
+  - Medication: under 6 months it is at 6 months of age. Otherwise every
+    medication expected by age is due 6 months after it was last given today
+    (or today when never given), the latest of those is taken, and a date that
+    is today or past becomes today + 6 months.
+
+So a medication correction only moves the date when another medication was
+given more recently: a child of 2 years had one medication given 2 months ago
+(due again on 15 Nov 2026), and the one corrected today is due on 15 Jan 2027
+when given today, or today (so 15 Nov 2026 is the latest) when not given.
+
+-}
+nextVisitAfterCorrectionTests : Test
+nextVisitAfterCorrectionTests =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Jul 15
+
+        assembled birthDate previous measurements progress =
+            { id = toEntityUuid "encounter-today"
+            , encounter = Backend.WellChildEncounter.Model.emptyWellChildEncounter (toEntityUuid "participant") today PediatricCare Nothing
+            , participant = testParticipant birthDate WellChildEncounter
+            , person = TestFixtures.testChild birthDate
+            , measurements = measurements
+            , previousMeasurementsWithDates = previous
+            , vaccinationHistory = Dict.empty
+            , vaccinationProgress = progress
+            }
+
+        -- What Next Visit saved, from the answers before the correction.
+        savedBefore site before =
+            let
+                ( immunisationDate, pediatricVisitDate ) =
+                    generateNextVisitDates today site before
+            in
+            { immunisationDate = immunisationDate
+            , asapImmunisationDate = generateASAPImmunisationDate today site before
+            , pediatricVisitDate = pediatricVisitDate
+            , resolutionDate = Nothing
+            }
+
+        -- The saved Next Visit once the correction is saved.
+        refreshed site before after =
+            refreshNextVisitValue today site after (savedBefore site before)
+
+        -- ECD: a child aged 5 weeks on a first visit (no earlier ECD answers),
+        -- asked the two 5-week signs.
+        fiveWeeksBirthDate =
+            Date.fromCalendarDate 2026 Time.Jun 10
+
+        fiveWeeksECD signs =
+            assembled fiveWeeksBirthDate
+                []
+                { emptyWellChildMeasurements | ecd = wrapMeasurement today (EverySet.fromList signs) }
+                Dict.empty
+
+        fiveWeeksAllYes =
+            fiveWeeksECD [ FollowMothersEyes, MoveArmsAndLegs ]
+
+        fiveWeeksOneNo =
+            fiveWeeksECD [ FollowMothersEyes ]
+
+        -- All answers No is stored as NoECDSigns.
+        fiveWeeksAllNo =
+            fiveWeeksECD [ NoECDSigns ]
+
+        -- 6 and 14 weeks of age.
+        sixWeeks =
+            Date.fromCalendarDate 2026 Time.Jul 22
+
+        fourteenWeeks =
+            Date.fromCalendarDate 2026 Time.Sep 16
+
+        -- ECD: a child aged 13 weeks on a subsequent visit; the 5-week signs
+        -- were all answered Yes at the 5-week visit, today the 13-week signs
+        -- are asked.
+        thirteenWeeksBirthDate =
+            Date.fromCalendarDate 2026 Time.Apr 15
+
+        thirteenWeeksECD signs =
+            let
+                fiveWeekVisit =
+                    Date.fromCalendarDate 2026 Time.May 20
+            in
+            assembled thirteenWeeksBirthDate
+                [ ( fiveWeekVisit
+                  , ( toEntityUuid "encounter-five-weeks"
+                    , { emptyWellChildMeasurements
+                        | ecd = wrapMeasurement fiveWeekVisit (EverySet.fromList [ FollowMothersEyes, MoveArmsAndLegs ])
+                      }
+                    )
+                  )
+                ]
+                { emptyWellChildMeasurements | ecd = wrapMeasurement today (EverySet.fromList signs) }
+                Dict.empty
+
+        thirteenWeeksAllYes =
+            thirteenWeeksECD [ RaiseHandsUp, Smile, RollSideways ]
+
+        thirteenWeeksOneNo =
+            thirteenWeeksECD [ RaiseHandsUp, Smile ]
+
+        -- 14 weeks and 6 months of age for the child born on 15 April.
+        thirteenWeeksNextECD =
+            Date.fromCalendarDate 2026 Time.Jul 22
+
+        sixMonths =
+            Date.fromCalendarDate 2026 Time.Oct 15
+
+        -- Medication: a child aged 2 years (next ECD visit at 3 years, on 15
+        -- Jul 2027) whose previous visit, 2 months ago, gave one medication;
+        -- today the other medication is answered.
+        twoMonthsAgo =
+            Date.fromCalendarDate 2026 Time.May 15
+
+        medicationChild birthDate previousMeasurements todayMeasurements =
+            assembled birthDate
+                [ ( twoMonthsAgo, ( toEntityUuid "encounter-previous", previousMeasurements ) ) ]
+                todayMeasurements
+                Dict.empty
+
+        twoYearsBirthDate =
+            Date.fromCalendarDate 2024 Time.Jul 15
+
+        -- In Rwanda, Mebendazole (1 to 6 years) and Vitamin A (6 months to 6
+        -- years) are expected at 2 years.
+        mebendazoleToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement today note }
+
+        vitaminAToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement today note }
+
+        -- In Burundi, Albendazole (6 months to 12 years) and Vitamin A are
+        -- expected at 2 years; Mebendazole never is. In Rwanda Albendazole
+        -- starts at 6 years, where it is the only medication expected.
+        albendazoleToday note =
+            medicationChild twoYearsBirthDate
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | albendazole = wrapMeasurement today note }
+
+        -- Due 6 months after today's administration.
+        sixMonthsFromToday =
+            Date.fromCalendarDate 2027 Time.Jan 15
+
+        -- Due 6 months after the administration 2 months ago.
+        fourMonthsFromToday =
+            Date.fromCalendarDate 2026 Time.Nov 15
+
+        -- A child aged 14 months, whose next ECD visit (15 months, on 15 Aug
+        -- 2026) comes before either medication date.
+        fourteenMonthsMebendazoleToday note =
+            medicationChild (Date.fromCalendarDate 2025 Time.May 15)
+                { emptyWellChildMeasurements | vitaminA = wrapMeasurement twoMonthsAgo AdministeredToday }
+                { emptyWellChildMeasurements | mebendezole = wrapMeasurement today note }
+
+        fifteenMonths =
+            Date.fromCalendarDate 2026 Time.Aug 15
+
+        -- Immunisation: a child born 2 weeks ago, given BCG and OPV today;
+        -- the correction says BCG was not given. ECD and medication answers
+        -- do not change.
+        newbornBirthDate =
+            Date.fromCalendarDate 2026 Time.Jul 1
+
+        newborn vaccines =
+            assembled newbornBirthDate
+                []
+                emptyWellChildMeasurements
+                (Dict.fromList <|
+                    List.map (\vaccineType -> ( vaccineType, Dict.singleton VaccineDoseFirst today )) vaccines
+                )
+
+        newbornBCGAndOPV =
+            newborn [ VaccineBCG, VaccineOPV ]
+
+        newbornOPVOnly =
+            newborn [ VaccineOPV ]
+
+        newbornSixWeeks =
+            Date.fromCalendarDate 2026 Time.Aug 12
+
+        pediatricVisitDateOf =
+            .pediatricVisitDate
+    in
+    describe "Next Visit after a correction from the Completed tab"
+        [ describe "Scenario check: the dates Next Visit saved before the correction"
+            [ test "ECD at 5 weeks, all Yes: 14 weeks of age" <|
+                \_ ->
+                    savedBefore SiteRwanda fiveWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourteenWeeks)
+            , test "ECD at 5 weeks, one No: 6 weeks of age" <|
+                \_ ->
+                    savedBefore SiteRwanda fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "ECD at 13 weeks, all Yes: 6 months of age" <|
+                \_ ->
+                    savedBefore SiteRwanda thirteenWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonths)
+            , test "Mebendazole given today: 6 months from today" <|
+                \_ ->
+                    savedBefore SiteRwanda (mebendazoleToday AdministeredToday)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonthsFromToday)
+            , test "Mebendazole not given: when Vitamin A given 2 months ago is due" <|
+                \_ ->
+                    savedBefore SiteRwanda (mebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , describe "After Next Visit is saved, correcting an ECD answer from the Completed tab changes the saved next pediatric visit date to the one the corrected answers give"
+            [ test "first visit at 5 weeks, a Yes corrected to No: from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "first visit at 5 weeks, a No corrected to Yes: from 6 weeks to 14 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksOneNo fiveWeeksAllYes
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourteenWeeks)
+            , test "first visit at 5 weeks, every Yes corrected to No (stored as no signs): from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksAllNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            , test "subsequent visit at 13 weeks, a Yes corrected to No: from 6 months to 14 weeks of age" <|
+                \_ ->
+                    refreshed SiteRwanda thirteenWeeksAllYes thirteenWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just thirteenWeeksNextECD)
+            , test "the same correction in Burundi: from 14 weeks to 6 weeks of age" <|
+                \_ ->
+                    refreshed SiteBurundi fiveWeeksAllYes fiveWeeksOneNo
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixWeeks)
+            ]
+        , describe "The same holds after correcting an Albendazole, Mebendazole or Vitamin A answer"
+            [ test "Mebendazole, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (mebendazoleToday AdministeredToday) (mebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "Mebendazole, not given corrected to given today: from 4 months to 6 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (mebendazoleToday NonAdministrationLackOfStock) (mebendazoleToday AdministeredToday)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just sixMonthsFromToday)
+            , test "Vitamin A, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteRwanda (vitaminAToday AdministeredToday) (vitaminAToday NonAdministrationPatientDeclined)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "Albendazole in Burundi, given today corrected to not given: from 6 months to 4 months from today" <|
+                \_ ->
+                    refreshed SiteBurundi (albendazoleToday AdministeredToday) (albendazoleToday NonAdministrationKnownAllergy)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fourMonthsFromToday)
+            , test "a medication correction keeps the date when the next ECD visit comes first (14 months: 15 months of age)" <|
+                \_ ->
+                    refreshed SiteRwanda (fourteenMonthsMebendazoleToday AdministeredToday) (fourteenMonthsMebendazoleToday NonAdministrationLackOfStock)
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just fifteenMonths)
+            ]
+        , test "The progress report's Next Appointment pane shows the corrected date (it shows the saved Next Visit's pediatric visit date)" <|
+            \_ ->
+                -- The pane reads the latest encounter's saved Next Visit and
+                -- shows its pediatricVisitDate; the pane function itself is
+                -- not exposed.
+                refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                    |> wrapMeasurement today
+                    |> getMeasurementValueFunc
+                    |> Maybe.andThen .pediatricVisitDate
+                    |> Expect.equal (Just sixWeeks)
+        , describe "Reopening Next Visit shows the corrected date"
+            [ test "after an ECD correction" <|
+                \_ ->
+                    Just (refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo)
+                        |> nextVisitFormWithDefault emptyModel.nextStepsData.nextVisitForm
+                        |> .pediatricVisitDate
+                        |> Expect.equal (Just sixWeeks)
+            , test "after a medication correction" <|
+                \_ ->
+                    Just (refreshed SiteRwanda (mebendazoleToday AdministeredToday) (mebendazoleToday NonAdministrationLackOfStock))
+                        |> nextVisitFormWithDefault emptyModel.nextStepsData.nextVisitForm
+                        |> .pediatricVisitDate
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , describe "The next immunisation date is worked out again after a vaccination correction, as today"
+            [ test "BCG given today corrected to not given: the immunisation dates are those the corrected vaccinations give" <|
+                \_ ->
+                    refreshed SiteRwanda newbornBCGAndOPV newbornOPVOnly
+                        |> Expect.all
+                            [ .immunisationDate >> Expect.equal (generateNextDateForImmunisationVisit today SiteRwanda newbornOPVOnly)
+                            , .asapImmunisationDate >> Expect.equal (generateASAPImmunisationDate today SiteRwanda newbornOPVOnly)
+
+                            -- The correction does move a date, so the
+                            -- scenario tells a refresh from no refresh.
+                            , \value ->
+                                ( value.immunisationDate, value.asapImmunisationDate )
+                                    |> Expect.notEqual
+                                        (savedBefore SiteRwanda newbornBCGAndOPV
+                                            |> (\saved -> ( saved.immunisationDate, saved.asapImmunisationDate ))
+                                        )
+                            ]
+            , test "a vaccination correction keeps the pediatric visit date the unchanged ECD answers give (6 weeks of age)" <|
+                \_ ->
+                    refreshed SiteRwanda newbornBCGAndOPV newbornOPVOnly
+                        |> pediatricVisitDateOf
+                        |> Expect.equal (Just newbornSixWeeks)
+            , test "an ECD correction keeps the immunisation dates the unchanged vaccinations give" <|
+                \_ ->
+                    refreshed SiteRwanda fiveWeeksAllYes fiveWeeksOneNo
+                        |> (\value -> ( value.immunisationDate, value.asapImmunisationDate ))
+                        |> Expect.equal
+                            ( generateNextDateForImmunisationVisit today SiteRwanda fiveWeeksOneNo
+                            , generateASAPImmunisationDate today SiteRwanda fiveWeeksOneNo
+                            )
+            ]
+        , describe "A correction made before Next Visit is saved changes nothing extra; Next Visit takes the current answers when it is saved, as today"
+            [ test "Next Visit saved after an ECD correction takes the corrected answers" <|
+                \_ ->
+                    generateNextVisitDates today SiteRwanda fiveWeeksOneNo
+                        |> Tuple.second
+                        |> Expect.equal (Just sixWeeks)
+            , test "Next Visit saved after a medication correction takes the corrected answers" <|
+                \_ ->
+                    generateNextVisitDates today SiteRwanda (mebendazoleToday NonAdministrationLackOfStock)
+                        |> Tuple.second
+                        |> Expect.equal (Just fourMonthsFromToday)
+            ]
+        , test "A correction keeps the saved resolution date" <|
+            \_ ->
+                -- The resolution date is not worked out from the encounter's
+                -- answers, so a refresh carries it over unchanged.
+                savedBefore SiteRwanda fiveWeeksAllYes
+                    |> (\saved -> { saved | resolutionDate = Just today })
+                    |> refreshNextVisitValue today SiteRwanda fiveWeeksOneNo
+                    |> .resolutionDate
+                    |> Expect.equal (Just today)
         ]

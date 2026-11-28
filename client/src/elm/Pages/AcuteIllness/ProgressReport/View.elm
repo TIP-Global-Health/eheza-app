@@ -82,8 +82,8 @@ viewContent :
     -> Html Msg
 viewContent language currentDate site features id isChw initiator model assembled =
     let
-        -- Report covers the whole illness, therefore, encounter that is
-        -- being viewed is part of the sequences as well.
+        -- Report covers the illness up to the encounter being viewed,
+        -- which is part of the sequences as well.
         ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
             generateAllEncountersData assembled
                 |> splitByInitialNurseEncounter
@@ -128,7 +128,7 @@ viewContent language currentDate site features id isChw initiator model assemble
             [ class "ui report unstackable items"
             , Html.Attributes.id "report-content"
             ]
-            [ viewPersonInfoPane language currentDate assembled.person
+            [ viewPersonInfoPane language currentDate site assembled.person
             , viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent
             , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled

@@ -318,6 +318,138 @@ function hedley_restful_timestamp_only_date($value) {
 }
 
 /**
+ * Makes a photo measurement's photo the person's profile photo.
+ *
+ * A measurement saved without a photo leaves the person's photo as it is.
+ *
+ * @param int $measurement_id
+ *   The node ID of the photo measurement.
+ *
+ * @throws \Exception
+ *   If there was an error saving the person entity.
+ */
+function hedley_restful_copy_photo_to_person($measurement_id) {
+  $wrapper = entity_metadata_wrapper('node', $measurement_id);
+  if (!$wrapper || !is_object($wrapper)) {
+    return;
+  }
+
+  $photo = $wrapper->field_photo->value();
+  if (empty($photo)) {
+    watchdog('hedley_restful', 'Photo measurement @nid was saved without a photo.', ['@nid' => $measurement_id], WATCHDOG_WARNING);
+    return;
+  }
+
+  $person_wrapper = $wrapper->field_person;
+  if (empty($person_wrapper->value())) {
+    return;
+  }
+
+  $measurements = hedley_restful_person_photo_measurements($person_wrapper->getIdentifier());
+  if (empty($measurements[$measurement_id])) {
+    watchdog('hedley_restful', 'Photo measurement @nid is not of a bundle the person photo copy reads.', ['@nid' => $measurement_id], WATCHDOG_WARNING);
+    return;
+  }
+
+  $measurement = $measurements[$measurement_id];
+  unset($measurements[$measurement_id]);
+  if (!hedley_restful_photo_becomes_person_photo($measurement, array_values($measurements))) {
+    return;
+  }
+
+  try {
+    $person_wrapper->field_photo->set($photo);
+    $person_wrapper->save();
+  }
+  catch (Exception $exception) {
+    watchdog('error', $exception->getMessage());
+
+    throw $exception;
+  }
+}
+
+/**
+ * Decides whether a photo measurement's photo becomes the person's photo.
+ *
+ * Each measurement is an array with 'nid' (int), 'date' (the date measured,
+ * 'Y-m-d'), 'deleted' (bool) and 'has_photo' (bool).
+ *
+ * @param array $measurement
+ *   The photo measurement just created or updated.
+ * @param array $others
+ *   The person's other photo measurements, of every photo bundle, without the
+ *   one above.
+ *
+ * @return bool
+ *   TRUE when the person's photo should be set from this measurement.
+ */
+function hedley_restful_photo_becomes_person_photo(array $measurement, array $others) {
+  $usable = function (array $photo) {
+    return !empty($photo['has_photo']) && empty($photo['deleted']);
+  };
+
+  if (!$usable($measurement)) {
+    return FALSE;
+  }
+
+  foreach ($others as $other) {
+    if (!$usable($other)) {
+      continue;
+    }
+
+    // A later date wins; on the same date, the one uploaded last.
+    $order = strcmp((string) $other['date'], (string) $measurement['date']);
+    if ($order > 0 || ($order == 0 && $other['nid'] > $measurement['nid'])) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Loads a person's photo measurements of every photo bundle.
+ *
+ * @param int $person_id
+ *   The node ID of the person.
+ *
+ * @return array
+ *   Keyed by node ID, in the shape hedley_restful_photo_becomes_person_photo()
+ *   takes.
+ */
+function hedley_restful_person_photo_measurements($person_id) {
+  $query = db_select('field_data_field_person', 'fp');
+  $query->join('node', 'n', 'n.nid = fp.entity_id');
+  $query->leftJoin('field_data_field_date_measured', 'dm', "dm.entity_id = fp.entity_id AND dm.entity_type = 'node'");
+  $query->leftJoin('field_data_field_deleted', 'del', "del.entity_id = fp.entity_id AND del.entity_type = 'node'");
+  $query->leftJoin('field_data_field_photo', 'ph', "ph.entity_id = fp.entity_id AND ph.entity_type = 'node'");
+  $query->addField('fp', 'entity_id', 'nid');
+  $query->addField('dm', 'field_date_measured_value', 'date_measured');
+  $query->addField('del', 'field_deleted_value', 'deleted');
+  $query->addField('ph', 'field_photo_fid', 'fid');
+  $query->condition('fp.entity_type', 'node');
+  $query->condition('fp.field_person_target_id', $person_id);
+  $query->condition('n.type', [
+    'family_nutrition_photo',
+    'nutrition_photo',
+    'photo',
+    'well_child_photo',
+  ], 'IN');
+
+  $measurements = [];
+  foreach ($query->execute() as $row) {
+    $measurements[$row->nid] = [
+      'nid' => (int) $row->nid,
+      'date' => substr((string) $row->date_measured, 0, 10),
+      'deleted' => !empty($row->deleted),
+      'has_photo' => !empty($row->fid),
+    ];
+  }
+
+  return $measurements;
+}
+
+/**
  * Resolve nodes IDs using provided UUIDs.
  *
  * @param array $uuids

@@ -4,6 +4,7 @@ import App.Model
 import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), Model, Msg(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (concludeParticipant)
 import Backend.Utils exposing (sw)
 import Error.Model exposing (ErrorType(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -42,7 +43,7 @@ update currentDate participantId participantState msg model =
                 participantId
                 participantState
                 "close-acute-illness-session"
-                (\participant -> { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) })
+                (concludeParticipant currentDate (AcuteIllness outcome))
                 model
 
         CloseTuberculosisSession outcome ->
@@ -50,13 +51,7 @@ update currentDate participantId participantState msg model =
                 participantId
                 participantState
                 "close-tuberculosis-session"
-                (\participant ->
-                    { participant
-                        | endDate = Just currentDate
-                        , dateConcluded = Just currentDate
-                        , outcome = Just (Tuberculosis outcome)
-                    }
-                )
+                (concludeParticipant currentDate (Tuberculosis outcome))
                 model
 
         CloseHIVSession outcome ->
@@ -64,13 +59,7 @@ update currentDate participantId participantState msg model =
                 participantId
                 participantState
                 "close-hiv-session"
-                (\participant ->
-                    { participant
-                        | endDate = Just currentDate
-                        , dateConcluded = Just currentDate
-                        , outcome = Just (HIV outcome)
-                    }
-                )
+                (concludeParticipant currentDate (HIV outcome))
                 model
 
         SetEddDate eddDate ->

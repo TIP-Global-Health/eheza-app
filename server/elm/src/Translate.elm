@@ -114,6 +114,7 @@ type TranslationId
     | DeliveryLocationsTablePercentage
     | DeliveryLocationsTableTotals
     | Demographics
+    | Denominator
     | Diagnosis
     | Diagnostics
     | District
@@ -197,12 +198,15 @@ type TranslationId
     | NoDiagnosis
     | NumberOfVisits Int
     | NumberOfVisitsLabel
+    | Numerator
     | Nutrition
     | NutritionChildActivity NutritionChildActivity
     | NutritionMotherActivity NutritionMotherActivity
     | NutritionBehavior
     | NutritionIndividual
     | NutritionGroup
+    | NutritionReportPreparedOvernight
+    | NutritionReportTableNote NutritionReportTableType
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | OutcomesTableHeading
@@ -822,6 +826,13 @@ translationSet transId =
 
         Demographics ->
             { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Denominator ->
+            { english = "Denominator"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1739,6 +1750,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        Numerator ->
+            { english = "Numerator"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Nutrition ->
             { english = "Nutrition"
             , kinyarwanda = Nothing
@@ -1824,6 +1842,71 @@ translationSet transId =
             , kirundi = Nothing
             , somali = Nothing
             }
+
+        NutritionReportPreparedOvernight ->
+            { english = "The Nutrition report for this area is prepared overnight, and is not ready yet. Please check again tomorrow."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        NutritionReportTableNote tableType ->
+            case tableType of
+                NutritionTablePrevalanceOneOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTablePrevalanceTwoOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month who have had two or more visits. A child measured several times in the month counts once."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceMonthOneOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceMonthTwoOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceQuarterOneOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceQuarterTwoOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceYearOneOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                NutritionTableIncidenceYearTwoOrMore ->
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         NutritionReportTableType tableType ->
             case tableType of

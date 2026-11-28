@@ -1057,6 +1057,10 @@ type alias PrenatalReferralValue =
     , reasonForNotSendingToHC : Maybe ReasonForNonReferral
     , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
     , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+
+    -- The part of the visit that last answered the hospital referral.
+    -- Nothing on records saved before it was stored.
+    , hospitalReferralPhase : Maybe PhaseRecorded
     }
 
 
@@ -2535,8 +2539,8 @@ type PregnancySummarySign
 type DeliveryComplication
     = ComplicationGestationalDiabetes
     | ComplicationEmergencyCSection
-    | ComplicationPreclampsia
-    | ComplicationMaternalHemmorhage
+    | ComplicationPreeclampsia
+    | ComplicationMaternalHemorrhage
     | ComplicationHiv
     | ComplicationMaternalDeath
     | ComplicationOther
@@ -2847,6 +2851,10 @@ type alias NCDReferral =
 type alias ReferralValue =
     { referralSigns : EverySet ReferToFacilitySign
     , nonReferralReasons : Maybe (EverySet NonReferralSign)
+
+    -- The part of the visit that last answered the hospital referral.
+    -- Nothing on records saved before it was stored.
+    , hospitalReferralPhase : Maybe PhaseRecorded
     }
 
 

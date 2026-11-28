@@ -1,0 +1,13 @@
+$nids = [NIDS];
+$map = array_merge(HEDLEY_RESTFUL_ALL_DEVICES, HEDLEY_RESTFUL_SHARDED);
+$rows = db_select('node', 'n')->fields('n', ['nid', 'type'])->condition('nid', $nids, 'IN')->execute()->fetchAllKeyed();
+$by = [];
+foreach ($rows as $nid => $type) { $by[$type][] = $nid; }
+$out = []; $missing = [];
+foreach ($by as $type => $ids) {
+  if (empty($map[$type])) { $missing[] = $type; continue; }
+  $h = restful_get_restful_handler($map[$type]);
+  $h->setAccount(user_load(1));
+  $out = array_merge($out, $h->viewWithDbSelect($ids));
+}
+print json_encode(['missing' => $missing, 'count' => count($out), 'batch' => $out]);

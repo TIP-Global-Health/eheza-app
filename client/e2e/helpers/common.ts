@@ -956,12 +956,26 @@ export async function setDate(page: Page, date: Date, triggerSelector = '.date-i
     .selectOption(monthValue);
   await page.waitForTimeout(WAIT.elmRerender);
 
+  // The grid also shows the neighbouring months' days: dimmed when in range,
+  // disabled when outside the picker's range. A disabled cell ignores the click.
   const day = date.getUTCDate();
+  const dayPattern = new RegExp(`^${day}$`);
   const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
+    'div.calendar table tbody td:not(.date-selector--dimmed):not(.date-selector--disabled)',
+    { hasText: dayPattern },
   );
+  const wanted = date.toISOString().slice(0, 10);
+  if ((await dayCell.count()) === 0) {
+    throw new Error(`setDate: ${wanted} is outside the date picker's range`);
+  }
   await dayCell.first().click();
+
+  const selected = page.locator('div.calendar table tbody td.date-selector--selected', {
+    hasText: dayPattern,
+  });
+  await selected.waitFor({ timeout: 3000 }).catch(() => {
+    throw new Error(`setDate: the date picker did not select ${wanted}`);
+  });
 
   await click(
     page.locator('.ui.active.modal.calendar-popup div.ui.button'),
@@ -1212,4 +1226,26 @@ export async function fillChildRegistrationFields(
   await selectByLabel(page, 'Mode of delivery:', 1);
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+}
+
+/**
+ * Upload a minimal test image through the photo form's dropzone.
+ */
+export async function uploadTestPhoto(page: Page) {
+  // Dropzone.js adds its hidden file input to the end of the page body, not
+  // inside the dropzone. It replaces the input after each file.
+  const fileInput = page.locator('input.dz-hidden-input').last();
+
+  // A minimal 1x1 PNG.
+  const pngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+  await fileInput.setInputFiles({
+    name: 'test-photo.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(pngBase64, 'base64'),
+  });
+
+  // Wait for the dropzone to process the upload.
+  await page.waitForTimeout(WAIT.pageNavigation);
 }

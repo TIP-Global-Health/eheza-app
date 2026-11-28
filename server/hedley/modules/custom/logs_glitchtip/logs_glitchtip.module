@@ -259,7 +259,7 @@ function logs_glitchtip_shutdown() {
 function logs_glitchtip_sentry_post(array $events) {
   global $user;
 
-  if (!function_exists('\Sentry\init')) {
+  if (!logs_glitchtip_sdk_is_available()) {
     // Composer dependencies not (re)built yet; silently skip rather than
     // taking the site down from inside the error handler.
     return;
@@ -359,6 +359,16 @@ function _logs_glitchtip_getenv($name) {
   }
 
   return '';
+}
+
+/**
+ * Check whether the Sentry SDK that sends the events can be loaded.
+ *
+ * @return bool
+ *   TRUE when the sentry/sdk Composer package is installed.
+ */
+function logs_glitchtip_sdk_is_available() {
+  return function_exists('\Sentry\init');
 }
 
 /**

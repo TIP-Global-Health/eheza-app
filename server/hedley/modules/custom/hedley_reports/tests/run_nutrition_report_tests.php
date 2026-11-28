@@ -16,7 +16,10 @@ function drupal_is_cli() {
   return FALSE;
 }
 
+define('LANGUAGE_NONE', 'und');
+
 require_once dirname(__DIR__) . '/hedley_reports.module';
+require_once __DIR__ . '/assertions.inc';
 
 // The cases are dated relative to today. A run crossing into a new month
 // would compare two different months, so wait until the month has turned.
@@ -26,18 +29,6 @@ if (date('Y-m') !== date('Y-m', time() + 120)) {
 
 $passed = 0;
 $failed = 0;
-
-/**
- * Compares a result with the expected value and records the outcome.
- */
-function assert_same($result, $expected, $case, &$passed, &$failed) {
-  if ($result === $expected) {
-    $passed++;
-    return;
-  }
-  $failed++;
-  echo "FAIL: $case\n  expected: " . var_export($expected, TRUE) . "\n  got: " . var_export($result, TRUE) . "\n";
-}
 
 /**
  * Returns a day of a month before the current one, as Y-m-d.
@@ -66,17 +57,33 @@ function generate(array $patients) {
 }
 
 /**
- * Reads one monthly cell, like '100%', from the generated tables.
+ * Formats a rate as a percentage to compare. Example: [1, 2] is '50%'.
  */
-function monthly_cell(array $tables, $type, $row, $months_ago) {
+function percentage(array $rate) {
+  [$count, $total] = $rate;
+  return $total ? round($count / $total * 100, 3) . '%' : '0%';
+}
+
+/**
+ * Reads one monthly rate, like [1, 2], from the generated tables.
+ */
+function monthly_rate(array $tables, $type, $row, $months_ago) {
   $key = (new DateTime(month_day($months_ago, 1)))->format('Y-m');
   foreach ($tables as $table) {
     if ($table['type'] === $type) {
       $column = array_search($key, $table['period']);
-      return $column === FALSE ? "month $key not in table" : $table[$row][$column];
+      return $column === FALSE ? "month $key not in table" : $table['results'][$column][$row];
     }
   }
   return NULL;
+}
+
+/**
+ * Reads one monthly cell as a percentage, like '100%'.
+ */
+function monthly_cell(array $tables, $type, $row, $months_ago) {
+  $rate = monthly_rate($tables, $type, $row, $months_ago);
+  return is_array($rate) ? percentage($rate) : $rate;
 }
 
 /**
@@ -153,6 +160,7 @@ $tables = generate([
   ],
 ]);
 assert_same(monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 8), '50%', 'both children count in the one-visit table', $passed, $failed);
+assert_same(monthly_rate($tables, 'prevalence-1', 'stunting_moderate', 8), [1, 2], 'a cell holds the counts: 1 of 2 children', $passed, $failed);
 assert_same(monthly_cell($tables, 'prevalence-2', 'stunting_moderate', 8), '0%', 'a child with one visit before six is left out of the two-visit table', $passed, $failed);
 
 // A family-nutrition MUAC visit counts only before six (MUAC 12 is MAM).
@@ -233,17 +241,18 @@ $prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metri
   'stunting_moderate' => [1, 1],
   'stunting_normal' => [2],
 ]));
-assert_same($prevalence['stunting_moderate'], '50%', 'child 1 moderate twice and child 2 normal is 50%', $passed, $failed);
+assert_same($prevalence['stunting_moderate'], [1, 2], 'child 1 moderate twice and child 2 normal is 1 of 2', $passed, $failed);
 $prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics(['stunting_moderate' => [1], 'stunting_normal' => [1]]));
-assert_same($prevalence['stunting_moderate'], '100%', 'a child moderate at one visit and normal at another is 100% moderate', $passed, $failed);
+assert_same($prevalence['stunting_moderate'], [1, 1], 'a child moderate at one visit and normal at another is 1 of 1 moderate', $passed, $failed);
 $prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics([
   'acute_malnutrition_mam' => [1],
   'acute_malnutrition_sam' => [2],
   'acute_malnutrition_normal' => [3, 4],
 ]));
-assert_same([$prevalence['acute_malnutrition_mam'], $prevalence['acute_malnutrition_sam']], ['25%', '25%'], 'MAM and SAM share the MUAC denominator', $passed, $failed);
+$mam_and_sam = [$prevalence['acute_malnutrition_mam'], $prevalence['acute_malnutrition_sam']];
+assert_same($mam_and_sam, [[1, 4], [1, 4]], 'MAM and SAM share the MUAC denominator', $passed, $failed);
 $prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics([]));
-assert_same($prevalence['stunting_moderate'], '0%', 'no measured children is 0%', $passed, $failed);
+assert_same($prevalence['stunting_moderate'], [0, 0], 'no measured children is 0 of 0', $passed, $failed);
 
 /**
  * Incidence for the current and previous period buckets.
@@ -253,14 +262,14 @@ function incidence(array $current, array $previous) {
 }
 
 // Incidence counts children newly moderate or severe.
-assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [1]])['stunting_moderate'], '100%', 'normal before, moderate now, counts', $passed, $failed);
-assert_same(incidence(['stunting_moderate' => [1]], ['stunting_moderate' => [1]])['stunting_moderate'], '0%', 'moderate before, moderate now, does not count', $passed, $failed);
-assert_same(incidence(['stunting_moderate' => [1]], ['stunting_severe' => [1]])['stunting_moderate'], '0%', 'severe before, moderate now, does not count', $passed, $failed);
-assert_same(incidence(['stunting_severe' => [1]], ['stunting_moderate' => [1]])['stunting_severe'], '100%', 'moderate before, severe now, counts', $passed, $failed);
-assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [2]])['stunting_moderate'], '0%', 'a child not tested before does not count', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [1]])['stunting_moderate'], [1, 1], 'normal before, moderate now, counts', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_moderate' => [1]])['stunting_moderate'], [0, 1], 'moderate before, moderate now, does not count', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_severe' => [1]])['stunting_moderate'], [0, 1], 'severe before, moderate now, does not count', $passed, $failed);
+assert_same(incidence(['stunting_severe' => [1]], ['stunting_moderate' => [1]])['stunting_severe'], [1, 1], 'moderate before, severe now, counts', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [2]])['stunting_moderate'], [0, 1], 'a child not tested before does not count', $passed, $failed);
 $tested_before = ['stunting_normal' => [1, 2, 2, 3, 4]];
-assert_same(incidence(['stunting_moderate' => [1]], $tested_before)['stunting_moderate'], '25%', 'the denominator is the children tested before, each once', $passed, $failed);
-assert_same(incidence(['acute_malnutrition_mam' => [1]], ['acute_malnutrition_normal' => [1, 2]])['acute_malnutrition_mam'], '50%', 'MUAC: normal before, MAM now, counts', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], $tested_before)['stunting_moderate'], [1, 4], 'the denominator is the children tested before, each once', $passed, $failed);
+assert_same(incidence(['acute_malnutrition_mam' => [1]], ['acute_malnutrition_normal' => [1, 2]])['acute_malnutrition_mam'], [1, 2], 'MUAC: normal before, MAM now, counts', $passed, $failed);
 
 // The months each period column takes.
 assert_same(hedley_reports_resolve_quarter_date_info(strtotime('2027-01-15')), [2026, 4], 'in January, the previous quarter is the last of the year before', $passed, $failed);
@@ -328,7 +337,7 @@ $tables = generate([
 foreach ($tables as $table) {
   if ($table['type'] === 'incidence-quarter-1') {
     assert_same($table['period'][0], implode('-', $last_quarter), 'the first quarter column is captioned with the last complete quarter', $passed, $failed);
-    assert_same($table['stunting_moderate'][0], '100%', 'the first quarter column holds the last complete quarter', $passed, $failed);
+    assert_same(percentage($table['results'][0]['stunting_moderate']), '100%', 'the first quarter column holds the last complete quarter', $passed, $failed);
   }
 }
 
@@ -351,7 +360,7 @@ foreach ($cases as $day => [$year, $expected]) {
   foreach ($tables as $table) {
     if ($table['type'] === 'incidence-year-1') {
       $column = array_search((string) ($this_year - 2), $table['period']);
-      $cell = $column === FALSE ? 'year ' . ($this_year - 2) . ' not in table' : $table['stunting_moderate'][$column];
+      $cell = $column === FALSE ? 'year ' . ($this_year - 2) . ' not in table' : percentage($table['results'][$column]['stunting_moderate']);
       assert_same($cell, $expected, "a normal visit on $year-$day as the previous year", $passed, $failed);
     }
   }
@@ -414,14 +423,204 @@ $tables = generate([
 ]);
 assert_same(monthly_cell($tables, 'prevalence-1', 'acute_malnutrition_mam', 4), '0%', 'a mother with only family-nutrition visits adds nothing', $passed, $failed);
 
-$total = $passed + $failed;
-echo "\n";
-echo "Nutrition report tests: $total total, $passed passed, $failed failed.\n";
-
-if ($failed > 0) {
-  echo "FAILED\n";
-  exit(1);
+/**
+ * Builds a weight measurement node of the given content type.
+ *
+ * A NULL z-score leaves the field off the node. Example:
+ * weighing('weight', '-2.5', NULL) is a group weighing with only a
+ * weight-for-age z-score.
+ */
+function weighing($type, $zscore_age, $zscore_length, $encounter_id = 10) {
+  $measurement = new stdClass();
+  $measurement->type = $type;
+  $encounter_field = [
+    'nutrition_weight' => 'field_nutrition_encounter',
+    'well_child_weight' => 'field_well_child_encounter',
+    'weight' => 'field_session',
+  ][$type];
+  $measurement->{$encounter_field}[LANGUAGE_NONE][0]['target_id'] = $encounter_id;
+  if (!is_null($zscore_age)) {
+    $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'] = $zscore_age;
+  }
+  if (!is_null($zscore_length)) {
+    $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'] = $zscore_length;
+  }
+  return $measurement;
 }
 
-echo "OK\n";
-exit(0);
+/**
+ * The wire string of one encounter after adding a weighing to the map.
+ *
+ * Example: weight_wire([], weighing('weight', '-2.5', '-1.0')) is
+ * ',-2.5,-1.0,,'.
+ */
+function weight_wire(array $zscores_by_encounter, $measurement, $encounter_id = 10) {
+  $result = hedley_reports_add_weight_zscores($zscores_by_encounter, $encounter_id, $measurement);
+  $values = isset($result[$encounter_id]) ? $result[$encounter_id] : [];
+  return hedley_reports_nutrition_metrics_to_string($values);
+}
+
+/**
+ * Runs the report on one child seen once, 4 months ago, with this wire.
+ *
+ * The wire is placed where the given program puts it: individual
+ * Nutrition, Well Child (between '|') or a CHW group session.
+ */
+function report_for_weighing($program, $wire) {
+  $date = month_day(4, 10);
+  $patient = [
+    'id' => 1,
+    'birth_date' => month_day(30, 1),
+  ];
+  switch ($program) {
+    case 'nutrition':
+      $patient['individual'] = ['nutrition' => [["$date $wire"]]];
+      break;
+
+    case 'well-child':
+      $patient['individual'] = ['well-child' => [["$date|$wire|"]]];
+      break;
+
+    case 'group':
+      $patient['group_nutrition'] = ['chw' => ["$date $wire"]];
+      break;
+  }
+  return generate([$patient]);
+}
+
+// Weight z-scores of a weighing, as the report stores them.
+//
+// A weighing carries two z-scores, each checked on its own against its
+// plausibility limits: weight-for-age (the underweight indicator, wire
+// position 2) and weight-for-length (the wasting indicator, wire position 3).
+// One can be missing while the other is kept, typically when a wrong birth
+// date puts weight-for-age out of range. Each z-score present must reach the
+// report whatever happened to the other one.
+//
+// The seam is hedley_reports_add_weight_zscores(); the cases read its result
+// through hedley_reports_nutrition_metrics_to_string(), so they pin what the
+// report receives and not how the map stores a missing value.
+$weight_types = [
+  'nutrition_weight' => 'nutrition',
+  'well_child_weight' => 'well-child',
+  'weight' => 'group',
+];
+
+foreach ($weight_types as $type => $program) {
+  // Criterion: a weighing with both z-scores counts towards both underweight
+  // and wasting. Both a first entry for the encounter and one that
+  // a height already started.
+  assert_same(weight_wire([], weighing($type, '-2.5', '-3.5')), ',-2.5,-3.5,,', "$type: a weighing with both z-scores counts towards both underweight and wasting", $passed, $failed);
+  assert_same(weight_wire([10 => ['s' => '-1.2']], weighing($type, '-2.5', '-3.5')), '-1.2,-2.5,-3.5,,', "$type: a weighing with both z-scores counts towards both underweight and wasting, after a height", $passed, $failed);
+
+  // Criterion: a weighing with no weight-for-age z-score still counts
+  // towards wasting from its weight-for-length z-score.
+  assert_same(weight_wire([], weighing($type, NULL, '-2.5')), ',,-2.5,,', "$type: a weighing with no weight-for-age z-score still counts towards wasting from its weight-for-length z-score", $passed, $failed);
+  assert_same(weight_wire([10 => ['s' => '-1.2']], weighing($type, NULL, '-2.5')), '-1.2,,-2.5,,', "$type: a weighing with no weight-for-age z-score still counts towards wasting, after a height", $passed, $failed);
+
+  // Criterion: a weighing with no weight-for-length z-score still counts
+  // towards underweight from its weight-for-age z-score.
+  assert_same(weight_wire([], weighing($type, '-2.5', NULL)), ',-2.5,,,', "$type: a weighing with no weight-for-length z-score still counts towards underweight from its weight-for-age z-score", $passed, $failed);
+  assert_same(weight_wire([10 => ['s' => '-1.2']], weighing($type, '-2.5', NULL)), '-1.2,-2.5,,,', "$type: a weighing with no weight-for-length z-score still counts towards underweight, after a height", $passed, $failed);
+
+  // Criterion: a weighing with neither z-score counts towards neither.
+  assert_same(weight_wire([], weighing($type, NULL, NULL)), ',,,,', "$type: a weighing with neither z-score counts towards neither", $passed, $failed);
+  assert_same(weight_wire([10 => ['s' => '-1.2']], weighing($type, NULL, NULL)), '-1.2,,,,', "$type: a weighing with neither z-score counts towards neither, after a height", $passed, $failed);
+
+  // Criterion: stunting figures are unchanged. A weighing never sets the
+  // stunting position, and never clears the height's stunting z-score,
+  // whichever of its own z-scores is missing.
+  foreach ([['-2.5', '-3.5'], [NULL, '-3.5'], ['-2.5', NULL], [NULL, NULL]] as [$age, $length]) {
+    $shape = (is_null($age) ? 'no' : 'a') . ' weight-for-age, ' . (is_null($length) ? 'no' : 'a') . ' weight-for-length';
+    $wire = explode(',', weight_wire([], weighing($type, $age, $length)));
+    assert_same($wire[0], '', "$type: a weighing with $shape z-score adds no stunting value", $passed, $failed);
+    $wire = explode(',', weight_wire([10 => ['s' => '-2.1']], weighing($type, $age, $length)));
+    assert_same($wire[0], '-2.1', "$type: a weighing with $shape z-score keeps the height's stunting value", $passed, $failed);
+  }
+
+  // The other stored shapes of "no z-score": Drupal loads an empty field as
+  // an empty array, and a value may come back empty. Weight-for-length must
+  // still reach the report in each of them.
+  $no_value_shapes = [
+    'an empty field' => [],
+    'an empty language' => [LANGUAGE_NONE => []],
+    'an empty string' => [LANGUAGE_NONE => [['value' => '']]],
+    'a NULL value' => [LANGUAGE_NONE => [['value' => NULL]]],
+  ];
+  foreach ($no_value_shapes as $shape => $field) {
+    $measurement = weighing($type, NULL, '-2.5');
+    $measurement->field_zscore_age = $field;
+    assert_same(weight_wire([], $measurement), ',,-2.5,,', "$type: weight-for-age stored as $shape still counts towards wasting", $passed, $failed);
+    $measurement = weighing($type, '-2.5', NULL);
+    $measurement->field_zscore_length = $field;
+    assert_same(weight_wire([], $measurement), ',-2.5,,,', "$type: weight-for-length stored as $shape still counts towards underweight", $passed, $failed);
+  }
+
+  // A weighing only changes its own encounter; another encounter's height
+  // and weight values stay as they were.
+  $other_encounter = [
+    20 => [
+      's' => '-1.0',
+      'w' => '-0.5',
+      'u' => '-0.7',
+    ],
+  ];
+  $result = hedley_reports_add_weight_zscores($other_encounter, 10, weighing($type, NULL, '-2.5'));
+  assert_same(hedley_reports_nutrition_metrics_to_string($result[20]), '-1.0,-0.5,-0.7,,', "$type: a weighing leaves another encounter's values alone", $passed, $failed);
+
+  // MUAC and edema are added from their own map; a weighing with only one
+  // z-score must not hide them.
+  $result = hedley_reports_add_weight_zscores([], 10, weighing($type, NULL, '-2.5'));
+  $zscores = isset($result[10]) ? $result[10] : [];
+  assert_same(hedley_reports_nutrition_metrics_to_string($zscores + ['m' => '12.1', 'e' => FALSE]), ',,-2.5,12.1,0', "$type: a weighing with no weight-for-age z-score keeps MUAC and edema", $passed, $failed);
+
+  // The report figures, end to end for each program: a moderate z-score is
+  // counted in its indicator's moderate row and in that indicator's total.
+  // [count, total] of [1, 1] means counted, [0, 0] means left out.
+  $cases = [
+    'both z-scores' => ['-2.5', '-2.5', [1, 1], [1, 1]],
+    'no weight-for-age z-score' => [NULL, '-2.5', [0, 0], [1, 1]],
+    'no weight-for-length z-score' => ['-2.5', NULL, [1, 1], [0, 0]],
+    'neither z-score' => [NULL, NULL, [0, 0], [0, 0]],
+  ];
+  foreach ($cases as $shape => [$age, $length, $underweight, $wasting]) {
+    $tables = report_for_weighing($program, weight_wire([], weighing($type, $age, $length)));
+    assert_same(
+      [
+        monthly_rate($tables, 'prevalence-1', 'underweight_moderate', 4),
+        monthly_rate($tables, 'prevalence-1', 'wasting_moderate', 4),
+        monthly_rate($tables, 'prevalence-1', 'stunting_moderate', 4),
+      ],
+      [$underweight, $wasting, [0, 0]],
+      "$program report: a weighing with $shape counts towards underweight " . json_encode($underweight) . ', wasting ' . json_encode($wasting) . ' and not stunting',
+      $passed,
+      $failed
+    );
+  }
+}
+
+// Criterion: this holds the same for individual Nutrition, Well Child and
+// group-session weighings. The loop above runs each case on each content
+// type's node; the report builder itself needs Drupal, so check here that
+// each weight content type's branch hands its node to the shared function.
+$module_source = file_get_contents(dirname(__DIR__) . '/hedley_reports.module');
+$weight_constants = [
+  'HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE',
+  'HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE',
+  'HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE',
+];
+foreach ($weight_constants as $constant) {
+  $found = preg_match('/case ' . $constant . ':(.*?)break;/s', $module_source, $matches);
+  assert_same($found === 1 && strpos($matches[1], 'hedley_reports_add_weight_zscores(') !== FALSE, TRUE, "$constant weighings go through hedley_reports_add_weight_zscores", $passed, $failed);
+}
+
+// Two weighings in one encounter: the later one's pair replaces the earlier
+// one's, so the report never mixes a value from each.
+foreach (array_keys($weight_types) as $type) {
+  $first = hedley_reports_add_weight_zscores([10 => ['s' => '-1.5']], 10, weighing($type, '-1', '-3.2'));
+  assert_same(weight_wire($first, weighing($type, '-2.4', NULL)), '-1.5,-2.4,,,', "$type: a second weighing with no weight-for-length z-score does not keep the first weighing's", $passed, $failed);
+  assert_same(weight_wire($first, weighing($type, NULL, '-2.1')), '-1.5,,-2.1,,', "$type: a second weighing with no weight-for-age z-score does not keep the first weighing's", $passed, $failed);
+  assert_same(weight_wire($first, weighing($type, NULL, NULL)), '-1.5,-1,-3.2,,', "$type: a second weighing with neither z-score keeps the first weighing's pair", $passed, $failed);
+}
+
+report_results('Nutrition report', $passed, $failed);

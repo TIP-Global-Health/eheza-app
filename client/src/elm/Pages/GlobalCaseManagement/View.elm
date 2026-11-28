@@ -24,15 +24,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getHIVEncountersForParticipant
-        , getHomeVisitEncountersForParticipant
+        , getHomeVisitEncountersForPerson
         , getTuberculosisEncountersForParticipant
-        , getWellChildEncountersForParticipant
+        , getWellChildEncountersForPerson
         )
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -43,6 +43,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
 import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -482,13 +483,9 @@ generateNutritionFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -
 generateNutritionFollowUpEntryData limitDate db personId item =
     let
         lastHomeVisitEncounter =
-            resolveIndividualParticipantForPerson personId HomeVisitEncounter db
-                |> Maybe.map
-                    (getHomeVisitEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
-                    )
-                |> Maybe.withDefault []
+            getHomeVisitEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head
@@ -618,7 +615,16 @@ generateAcuteIllnessFollowUpEntryData currentDate limitDate db ( participantId, 
         dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.andThen .dateConcluded
+                |> Maybe.andThen
+                    (\participant ->
+                        -- An illness closed by an older app version has no
+                        -- concluded date, so its end date stands in.
+                        if isAcuteIllnessActive participant then
+                            participant.dateConcluded
+
+                        else
+                            Maybe.Extra.or participant.dateConcluded participant.endDate
+                    )
                 |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
     in
     if dateConcludedCriteria == Just LT then
@@ -1390,7 +1396,7 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
                         |> Maybe.map
                             (.diagnoses
                                 >> EverySet.toList
-                                >> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                >> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
                             )
                         |> Maybe.withDefault []
             in
@@ -1603,17 +1609,13 @@ generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonI
 generateImmunizationFollowUpEntryData limitDate db personId item =
     let
         lastWellChildEncounter =
-            resolveIndividualParticipantForPerson personId WellChildEncounter db
-                |> Maybe.map
-                    (getWellChildEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter
-                            (\encounter ->
-                                (encounter.encounterType /= NewbornExam)
-                                    && (Date.compare encounter.startDate limitDate == LT)
-                            )
+            getWellChildEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter
+                    (\encounter ->
+                        (encounter.encounterType /= NewbornExam)
+                            && (Date.compare encounter.startDate limitDate == LT)
                     )
-                |> Maybe.withDefault []
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head

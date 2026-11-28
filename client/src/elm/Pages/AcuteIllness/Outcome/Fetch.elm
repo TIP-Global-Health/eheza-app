@@ -3,8 +3,8 @@ module Pages.AcuteIllness.Outcome.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Maybe.Extra
+import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import RemoteData
 
 
@@ -20,11 +20,11 @@ fetch participantId db =
             getAcuteIllnessEncountersForParticipant db participantId
                 |> List.map Tuple.first
 
-        firstEncounterId =
+        -- The page is assembled on the latest visit.
+        latestEncounterId =
             List.head encountersIds
 
-        -- We fetch measurements for all encounters, to be
-        -- able to apply `expectedAcuteIllnessActivity` logic.
+        -- The page's data is assembled from every visit's measurements.
         fetchMeasurements =
             List.map FetchAcuteIllnessMeasurements encountersIds
     in
@@ -32,6 +32,6 @@ fetch participantId db =
         [ Just (FetchIndividualEncounterParticipant participantId)
         , Maybe.map FetchPerson personId
         , Just (FetchAcuteIllnessEncountersForParticipant participantId)
-        , Maybe.map FetchAcuteIllnessEncounter firstEncounterId
+        , Maybe.map FetchAcuteIllnessEncounter latestEncounterId
         ]
         ++ fetchMeasurements

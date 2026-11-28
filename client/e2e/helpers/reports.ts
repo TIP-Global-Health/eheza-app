@@ -1206,7 +1206,8 @@ export async function readNutritionTable(
     const valCount = await valueCells.count();
     const values: number[] = [];
     for (let j = 0; j < valCount; j++) {
-      const text = (await valueCells.nth(j).textContent()) ?? '0';
+      // A cell holds the percentage, then its counts like "1 / 2".
+      const text = (await valueCells.nth(j).locator('.percentage').textContent()) ?? '0';
       values.push(parseFloat(text.replace('%', '').trim()) || 0);
     }
     rows.push({ label, values });

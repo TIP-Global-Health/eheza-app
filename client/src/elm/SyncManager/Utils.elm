@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString, updateGeoInfo)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -32,6 +32,7 @@ import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Http
 import Json.Decode
 import Json.Encode exposing (Value, object)
@@ -109,9 +110,9 @@ determineSyncStatus activePage model =
         syncCycleOn =
             model.syncCycle == SyncManager.Model.SyncCycleOn
 
-        -- Determine if we're on session page where it's possible to
-        -- take a photo. If so, we'll halt sync, since it may
-        -- create problems with Dropzone binding / file saving at local cache.
+        -- Session pages where photos are taken. Sync is held there, except
+        -- for the steps `holdOnPhotoPage` lets finish, to protect Dropzone
+        -- binding and file saving at local cache.
         photoPage =
             case activePage of
                 -- Activity page where pictures are taken in bulk.
@@ -124,8 +125,33 @@ determineSyncStatus activePage model =
 
                 _ ->
                     False
+
+        -- Uploads after photos, and an incident report, are not held there.
+        -- Held before the record upload, leaving the page would send records
+        -- whose photos have not gone up yet.
+        holdOnPhotoPage =
+            photoPage
+                && (case model.syncStatus of
+                        SyncReportIncident _ ->
+                            False
+
+                        SyncUploadAuthority _ ->
+                            False
+
+                        SyncUploadGeneral _ ->
+                            False
+
+                        SyncUploadScreenshot _ _ ->
+                            False
+
+                        SyncUploadWhatsApp _ ->
+                            False
+
+                        _ ->
+                            True
+                   )
     in
-    if syncCycleOn && not photoPage then
+    if syncCycleOn && not holdOnPhotoPage then
         let
             syncStatus =
                 model.syncStatus
@@ -135,6 +161,16 @@ determineSyncStatus activePage model =
 
             noChange =
                 ( syncStatus, syncInfoAuthorities )
+
+            -- On a photo page, sync rests instead of starting the record upload,
+            -- the WhatsApp reports or the downloads. They run in the next cycle,
+            -- after the photos.
+            restOnPhotoPage nextStatus =
+                if photoPage then
+                    SyncIdle
+
+                else
+                    nextStatus
 
             ( syncStatusUpdated, syncInfoAuthoritiesUpdated ) =
                 -- Cases are ordered by the cycle order.
@@ -241,7 +277,7 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
+                            ( restOnPhotoPage (SyncUploadAuthority emptyUploadRec), syncInfoAuthorities )
 
                         else
                             noChange
@@ -250,7 +286,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( SyncUploadWhatsApp emptyUploadRec
+                                ( restOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                 , syncInfoAuthorities
                                 )
 
@@ -268,7 +304,7 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( SyncUploadWhatsApp emptyUploadRec
+                                        ( restOnPhotoPage (SyncUploadWhatsApp emptyUploadRec)
                                         , Just (Zipper.first zipper)
                                         )
 
@@ -283,7 +319,7 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked
+                            ( restOnPhotoPage (SyncDownloadGeneral RemoteData.NotAsked)
                             , syncInfoAuthorities
                             )
 
@@ -2881,3 +2917,14 @@ isStorageFullError name =
     -- Browsers report a full quota as `QuotaExceededError`; older Firefox used
     -- `NS_ERROR_DOM_QUOTA_REACHED`. Match the substring to cover both casings.
     String.contains "Quota" name || String.contains "QUOTA" name
+
+
+{-| Builds the location lists of the device's site, used by the person form.
+-}
+updateGeoInfo : Model -> Model
+updateGeoInfo model =
+    let
+        geoInfo =
+            getGeoInfo model.syncInfoGeneral.site
+    in
+    { model | geoInfo = geoInfo, reverseGeoInfo = getReverseGeoInfo geoInfo }

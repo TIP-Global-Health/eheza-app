@@ -3031,6 +3031,7 @@ getGeoVillagesForRwanda =
                , ( toEntityId 5529, GeoLocation "Nyirakavomo" (Just <| toEntityId 5525) )
                , ( toEntityId 5530, GeoLocation "Nyamico" (Just <| toEntityId 5525) )
                , ( toEntityId 5531, GeoLocation "Nyamyitima" (Just <| toEntityId 5525) )
+               , ( toEntityId 5532, GeoLocation "Byimana" (Just <| toEntityId 5113) )
                ]
 
 
@@ -3051,7 +3052,7 @@ getGeoVillagesForBurundi =
         , ( toEntityId 31, GeoLocation "Gashasha" (Just <| toEntityId 30) )
         , ( toEntityId 34, GeoLocation "Mutambara" (Just <| toEntityId 33) )
         , ( toEntityId 36, GeoLocation "Gatete" (Just <| toEntityId 35) )
-        , ( toEntityId 38, GeoLocation "Busebw" (Just <| toEntityId 37) )
+        , ( toEntityId 38, GeoLocation "Busebwa" (Just <| toEntityId 37) )
         , ( toEntityId 40, GeoLocation "Mugara" (Just <| toEntityId 39) )
         , ( toEntityId 43, GeoLocation "Gitwe" (Just <| toEntityId 42) )
         , ( toEntityId 45, GeoLocation "Karagara" (Just <| toEntityId 44) )

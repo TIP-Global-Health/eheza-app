@@ -1,0 +1,2506 @@
+module Backend.Person.Test exposing (all)
+
+{-| What the person form offers and saves: the birth-date range offered when
+registering a child, the age rule the save applies to the date picked, and
+the national ID saved for the text typed, and the address and health centre
+saved when a person is edited or a family member is added.
+
+A child-only birth-date picker offers `earliestChildBirthDate currentDate` up
+to `currentDate`, both ends selectable. An adult-only picker offers dates up
+to exactly 13 years before `currentDate` (`Date.add Years -13`), inclusive.
+On save, `isAdult` decides whether the birth date belongs to an adult, in
+which case education level and marital status are required.
+
+Registering a child from a group session offers
+`earliestGroupChildBirthDate clinicType currentDate` up to `currentDate`; for
+the Child Scoreboard, `earliestChildScoreboardBirthDate currentDate` up to the
+day before. Every date offered must give a child the group, or the Child
+Scoreboard participant list, then takes.
+
+-}
+
+import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
+import Backend.Entities exposing (HealthCenterId)
+import Backend.Person.Form
+    exposing
+        ( applyDefaultValuesForPerson
+        , birthDate
+        , cell
+        , district
+        , educationLevel
+        , emptyCreateForm
+        , emptyEditForm
+        , firstName
+        , gender
+        , healthCenter
+        , maritalStatus
+        , modeOfDelivery
+        , phoneNumber
+        , province
+        , secondName
+        , sector
+        , validatePerson
+        , village
+        )
+import Backend.Person.Model exposing (EducationLevel(..), Initiator(..), MaritalStatus(..), ModeOfDelivery(..), ParticipantDirectoryOperation(..), Person, Ubudehe(..))
+import Backend.Person.Utils exposing (earliestChildBirthDate, earliestChildScoreboardBirthDate, earliestGroupChildBirthDate, graduatingAgeInMonth, isAdult, isChildUnderAgeOf2)
+import Date exposing (Interval(..), Unit(..))
+import Expect
+import Form exposing (Form)
+import Form.Field
+import GeoLocation.Model exposing (GeoLocation, GeoLocationId, ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import List.Extra
+import Maybe.Extra exposing (isJust)
+import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (Site(..))
+import Test exposing (Test, describe, test)
+import TestFixtures exposing (testChild, testPerson)
+import Time exposing (Month(..))
+import Translate exposing (ValidationError)
+
+
+date : Int -> Month -> Int -> NominalDate
+date =
+    Date.fromCalendarDate
+
+
+{-| Exactly 13 years before the given date, the latest birth date an
+adult-only picker offers.
+-}
+thirteenYearsAgo : NominalDate -> NominalDate
+thirteenYearsAgo currentDate =
+    Date.add Years -13 currentDate
+
+
+{-| Every day from 2024-01-01 to 2026-12-31: a leap year and two common
+years, so every month end, the leap day itself, the day after a common
+February, and two year ends all appear as "today".
+-}
+sweep : List NominalDate
+sweep =
+    Date.range Day 1 (date 2024 Jan 1) (date 2027 Jan 1)
+
+
+{-| The "today"s where the calendar does something unusual 13 years back.
+Each is listed with the day it is, and why it matters.
+-}
+edgeDays : List ( String, NominalDate )
+edgeDays =
+    [ ( "an ordinary day", date 2026 Nov 5 )
+    , ( "a leap day, whose 13-years-ago year has no 29 February", date 2024 Feb 29 )
+    , ( "28 February of a common year, 13 years after a leap year", date 2025 Feb 28 )
+    , ( "1 March of a common year, 13 years after a leap year", date 2025 Mar 1 )
+    , ( "the last day of a 31-day month", date 2026 Mar 31 )
+    , ( "the last day of a 30-day month", date 2026 Apr 30 )
+    , ( "the last day of the year", date 2026 Dec 31 )
+    , ( "the first day of the year", date 2026 Jan 1 )
+    , ( "a leap day 13 years after a common year", date 2028 Feb 29 )
+    ]
+
+
+{-| Passes when the check holds on every day of `sweep`; otherwise fails
+naming the first day it does not hold on.
+-}
+expectOnEveryDay : String -> (NominalDate -> Bool) -> Expect.Expectation
+expectOnEveryDay description check =
+    case List.filter (check >> not) sweep of
+        [] ->
+            Expect.pass
+
+        first :: rest ->
+            Expect.fail <|
+                description
+                    ++ " does not hold on "
+                    ++ Date.toIsoString first
+                    ++ " (and "
+                    ++ String.fromInt (List.length rest)
+                    ++ " other days in the sweep)"
+
+
+{-| The names of the form fields that carry a validation error.
+-}
+fieldsWithErrors : Form e o -> List String
+fieldsWithErrors =
+    Form.getErrors >> List.map Tuple.first
+
+
+{-| The errors a registration form shows once a birth date is entered, and
+nothing else. `maybeRelated` is the person the new one is registered for;
+`Nothing` is registration without a relation, as in Well Child.
+-}
+formErrorsFor : Site -> Maybe Person -> NominalDate -> NominalDate -> List String
+formErrorsFor site maybeRelated currentDate birth =
+    let
+        operation =
+            case maybeRelated of
+                Just _ ->
+                    CreatePerson (Just (toEntityUuid "related-person"))
+
+                Nothing ->
+                    CreatePerson Nothing
+    in
+    Form.initial
+        [ ( Backend.Person.Form.firstName, Form.Field.string "Test" )
+        , ( Backend.Person.Form.secondName, Form.Field.string "Person" )
+        , ( birthDate, Form.Field.string (Date.toIsoString birth) )
+        ]
+        (validatePerson site maybeRelated operation (Just currentDate))
+        |> fieldsWithErrors
+
+
+{-| An adult a child is registered for: born 1985-01-01.
+-}
+relatedAdult : Person
+relatedAdult =
+    testPerson
+
+
+{-| A child a parent is registered for: three years old on every date used.
+-}
+relatedChild : Person
+relatedChild =
+    testChild (date 2022 Jun 15)
+
+
+all : Test
+all =
+    describe "Person registration"
+        [ describe "Child birth-date range"
+            [ wellChildEarliestDate
+            , sameRangeForEveryChildPicker
+            , everyOfferedDateSavesAsChild
+            , exactThirteenYearsSavesAsAdult
+            , graduatingAgeUnchanged
+            ]
+        , describe "Group session and Child Scoreboard birth-date ranges"
+            [ groupSessionChildRange
+            , sorwatheAndAchiRangeUnchanged
+            , childScoreboardChildRange
+            , latestBirthDateUnchanged
+            ]
+        , nationalIdNumberSaved
+        , addressAndHealthCentre
+        , storedAddressComparison
+        , villagesOnTheList
+        , unlistedLevelNamedLikeProvince
+        ]
+
+
+{-| What the form saves as the national ID for the text typed into the field:
+`Err` with the refused fields when the form does not save. The form is filled for an adult; `person` is
+the one it takes the address and health centre from.
+-}
+savedNationalIdOn : ParticipantDirectoryOperation -> Person -> Site -> String -> Result (List String) (Maybe String)
+savedNationalIdOn operation person site typed =
+    let
+        related =
+            { person
+                | province = Just "Province"
+                , district = Just "District"
+                , sector = Just "Sector"
+                , cell = Just "Cell"
+                , village = Just "Village"
+                , healthCenterId = Just (toEntityUuid "health-center")
+            }
+    in
+    Form.initial
+        [ ( Backend.Person.Form.firstName, Form.Field.string "Test" )
+        , ( Backend.Person.Form.secondName, Form.Field.string "Person" )
+        , ( birthDate, Form.Field.string "1990-06-15" )
+        , ( Backend.Person.Form.gender, Form.Field.string "female" )
+        , ( educationLevel, Form.Field.string "0" )
+        , ( maritalStatus, Form.Field.string "single" )
+        , ( Backend.Person.Form.nationalIdNumber, Form.Field.string typed )
+        ]
+        (validatePerson site (Just related) operation (Just (date 2026 Nov 5)))
+        |> (\form ->
+                Form.getOutput form
+                    |> Maybe.map .nationalIdNumber
+                    |> Result.fromMaybe (fieldsWithErrors form)
+           )
+
+
+{-| Registering an adult for a child.
+-}
+savedNationalId : Site -> String -> Result (List String) (Maybe String)
+savedNationalId =
+    savedNationalIdOn (CreatePerson (Just (toEntityUuid "related-person"))) relatedChild
+
+
+{-| Editing an adult.
+-}
+savedNationalIdOnEdit : Site -> String -> Result (List String) (Maybe String)
+savedNationalIdOnEdit =
+    savedNationalIdOn (EditPerson (toEntityUuid "edited-person")) relatedAdult
+
+
+{-| Burundi and Somalia take any text as the ID. The spaces around it are
+not saved, because the ID search matches from the start of the saved value.
+Rwanda requires exactly 16 digits.
+-}
+nationalIdNumberSaved : Test
+nationalIdNumberSaved =
+    let
+        freeTextSites =
+            [ ( "Burundi", SiteBurundi ), ( "Somalia", SiteSomalia ) ]
+
+        onFreeTextSites description typed expected =
+            List.map
+                (\( name, site ) ->
+                    test (name ++ ": " ++ description) <|
+                        \_ ->
+                            savedNationalId site typed
+                                |> Expect.equal (Ok expected)
+                )
+                freeTextSites
+    in
+    describe "the national ID saved" <|
+        List.concat
+            [ onFreeTextSites "a leading space is not saved" " 12/345" (Just "12/345")
+            , onFreeTextSites "a trailing space is not saved" "12/345 " (Just "12/345")
+            , onFreeTextSites "spaces at both ends, tabs and line breaks are not saved" " \t12/345 \n" (Just "12/345")
+            , onFreeTextSites "spaces inside the ID are kept" " 12 345/A " (Just "12 345/A")
+            , onFreeTextSites "an ID without outer spaces is saved as typed" "12/345" (Just "12/345")
+            , onFreeTextSites "a field holding only spaces saves no ID" "   " Nothing
+            , onFreeTextSites "an empty field saves no ID" "" Nothing
+            , List.map
+                (\( name, site ) ->
+                    test (name ++ ": editing a person saves the ID without outer spaces too") <|
+                        \_ ->
+                            savedNationalIdOnEdit site " 12/345 "
+                                |> Expect.equal (Ok (Just "12/345"))
+                )
+                freeTextSites
+            , [ test "Rwanda: 16 digits are saved" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "1199080012345678"
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 16 digits with spaces around them are saved without the spaces" <|
+                    \_ ->
+                        savedNationalId SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 15 digits are refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "119908001234567"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: free text is refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "12/345"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: a field holding only spaces saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "   "
+                            |> Expect.equal (Ok Nothing)
+              , test "Rwanda: editing a person saves 16 digits without the spaces around them" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: editing a person refuses 15 digits" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda "119908001234567"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: an empty field saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda ""
+                            |> Expect.equal (Ok Nothing)
+              ]
+            ]
+
+
+{-| Criterion: when registering a child for Well Child, the earliest birth
+date offered is 13 years ago plus one day; exactly 13 years ago is not
+offered.
+-}
+wellChildEarliestDate : Test
+wellChildEarliestDate =
+    describe "the earliest birth date offered for a child"
+        [ test "is 13 years ago plus one day" <|
+            -- On 2026-11-05, 13 years ago is 2013-11-05, so the picker starts
+            -- on 2013-11-06.
+            \_ ->
+                earliestChildBirthDate (date 2026 Nov 5)
+                    |> Date.toIsoString
+                    |> Expect.equal "2013-11-06"
+        , test "exactly 13 years ago is not offered" <|
+            \_ ->
+                expectOnEveryDay "earliest child birth date is after 13 years ago"
+                    (\today -> Date.compare (earliestChildBirthDate today) (thirteenYearsAgo today) == GT)
+        , describe "around month and year ends"
+            [ test "on 31 December it is 1 January of the following year, 13 years back" <|
+                \_ ->
+                    earliestChildBirthDate (date 2026 Dec 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2014-01-01"
+            , test "on 31 March it is 1 April, 13 years back" <|
+                \_ ->
+                    earliestChildBirthDate (date 2026 Mar 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2013-04-01"
+            , test "on 30 April it is 1 May, 13 years back" <|
+                \_ ->
+                    earliestChildBirthDate (date 2026 Apr 30)
+                        |> Date.toIsoString
+                        |> Expect.equal "2013-05-01"
+            , test "on 1 January it is 2 January, 13 years back" <|
+                \_ ->
+                    earliestChildBirthDate (date 2026 Jan 1)
+                        |> Date.toIsoString
+                        |> Expect.equal "2013-01-02"
+            ]
+        , describe "around leap days"
+            [ test "on 28 February 2025 it is the leap day 29 February 2012" <|
+                -- 13 years before 2025-02-28 is 2012-02-28; the day after is
+                -- 2012-02-29, which exists.
+                \_ ->
+                    earliestChildBirthDate (date 2025 Feb 28)
+                        |> Date.toIsoString
+                        |> Expect.equal "2012-02-29"
+            , test "on 1 March 2025 it is 2 March 2012" <|
+                \_ ->
+                    earliestChildBirthDate (date 2025 Mar 1)
+                        |> Date.toIsoString
+                        |> Expect.equal "2012-03-02"
+            , test "on the leap day 29 February 2024 it is 1 March 2011" <|
+                -- 2011 has no 29 February, so 13 years before 2024-02-29 is
+                -- 2011-02-28 (what the adult picker offers last), and the
+                -- child picker starts the day after.
+                \_ ->
+                    earliestChildBirthDate (date 2024 Feb 29)
+                        |> Date.toIsoString
+                        |> Expect.equal "2011-03-01"
+            ]
+        ]
+
+
+{-| Criterion: the same applies everywhere a child is registered with a
+child-only date range: Nutrition, Family encounter, a child added to a related
+adult, and the Sorwathe/ACHI group default.
+
+Nutrition and Family encounter already start their range on "13 years ago,
+plus one day". Every child-only range must start on that same date, every
+day of the calendar, so that the child range begins the day after the adult
+range ends: no birth date offered by both, none offered by neither.
+
+-}
+sameRangeForEveryChildPicker : Test
+sameRangeForEveryChildPicker =
+    describe "every child-only picker"
+        [ test "starts on the same date as Nutrition and Family encounter: 13 years ago plus one day" <|
+            \_ ->
+                expectOnEveryDay "earliest child birth date is the day after 13 years ago"
+                    (\today -> earliestChildBirthDate today == Date.add Days 1 (thirteenYearsAgo today))
+        , test "starts the day after the last date an adult-only picker offers, on every edge day" <|
+            \_ ->
+                edgeDays
+                    |> List.filter
+                        (\( _, today ) ->
+                            Date.diff Days (thirteenYearsAgo today) (earliestChildBirthDate today) /= 1
+                        )
+                    |> List.map Tuple.first
+                    |> Expect.equalLists []
+        ]
+
+
+{-| Criterion: every birth date a child picker offers saves as a child,
+without asking for education level or marital status.
+-}
+everyOfferedDateSavesAsChild : Test
+everyOfferedDateSavesAsChild =
+    describe "every birth date a child picker offers"
+        [ test "saves as a child: the earliest date offered is not an adult's on any day" <|
+            \_ ->
+                expectOnEveryDay "the earliest child birth date counts as a child"
+                    (\today -> isAdult today (Just (earliestChildBirthDate today)) == Just False)
+        , test "saves as a child: every date offered on an edge day is a child's" <|
+            -- The whole range, from the earliest date to today, on each of the
+            -- calendar edge days.
+            \_ ->
+                edgeDays
+                    |> List.concatMap
+                        (\( name, today ) ->
+                            Date.range Day 1 (earliestChildBirthDate today) (Date.add Days 1 today)
+                                |> List.filter (\birth -> isAdult today (Just birth) /= Just False)
+                                |> List.map (\birth -> name ++ ": " ++ Date.toIsoString birth)
+                        )
+                    |> Expect.equalLists []
+        , test "saves without asking for education level or marital status (Well Child, no relation)" <|
+            -- Well Child registers the child with no relation, so the save
+            -- decides child or adult from the birth date alone. The earliest
+            -- date offered must not make education level and marital status
+            -- required.
+            \_ ->
+                edgeDays
+                    |> List.filter
+                        (\( _, today ) ->
+                            formErrorsFor SiteRwanda Nothing today (earliestChildBirthDate today)
+                                |> List.any (\field -> field == educationLevel || field == maritalStatus)
+                        )
+                    |> List.map Tuple.first
+                    |> Expect.equalLists []
+        , test "saves without asking for education level or marital status on a site that is not Rwanda" <|
+            \_ ->
+                formErrorsFor SiteBurundi Nothing (date 2026 Nov 5) (earliestChildBirthDate (date 2026 Nov 5))
+                    |> List.filter (\field -> field == educationLevel || field == maritalStatus)
+                    |> Expect.equalLists []
+        , test "saves as a child of a related adult, without an error on the birth date" <|
+            -- A child added to a related adult is validated as a child; the
+            -- earliest date offered must not be refused as too old.
+            \_ ->
+                edgeDays
+                    |> List.filter
+                        (\( _, today ) ->
+                            formErrorsFor SiteRwanda (Just relatedAdult) today (earliestChildBirthDate today)
+                                |> List.member birthDate
+                        )
+                    |> List.map Tuple.first
+                    |> Expect.equalLists []
+        , test "today, the latest date offered, saves as a child" <|
+            \_ ->
+                isAdult (date 2026 Nov 5) (Just (date 2026 Nov 5))
+                    |> Expect.equal (Just False)
+        ]
+
+
+{-| Criterion: a birth date of exactly 13 years ago stays selectable where an
+adult is registered, and saves as an adult.
+
+The adult picker's bound is built in the view, not in the seam, so these
+tests pin the half that is pure: that date is an adult's on save.
+
+-}
+exactThirteenYearsSavesAsAdult : Test
+exactThirteenYearsSavesAsAdult =
+    describe "a birth date of exactly 13 years ago"
+        [ test "saves as an adult, on every day" <|
+            \_ ->
+                expectOnEveryDay "exactly 13 years ago counts as an adult"
+                    (\today -> isAdult today (Just (thirteenYearsAgo today)) == Just True)
+        , test "the day after it saves as a child, on every day" <|
+            \_ ->
+                expectOnEveryDay "the day after 13 years ago counts as a child"
+                    (\today -> isAdult today (Just (Date.add Days 1 (thirteenYearsAgo today))) == Just False)
+        , test "saves as an adult with no relation: education level and marital status are required" <|
+            \_ ->
+                formErrorsFor SiteRwanda Nothing (date 2026 Nov 5) (thirteenYearsAgo (date 2026 Nov 5))
+                    |> List.filter (\field -> field == educationLevel || field == maritalStatus)
+                    |> List.sort
+                    |> Expect.equalLists (List.sort [ educationLevel, maritalStatus ])
+        , test "saves as a parent of a related child, without an error on the birth date" <|
+            \_ ->
+                edgeDays
+                    |> List.filter
+                        (\( _, today ) ->
+                            formErrorsFor SiteRwanda (Just relatedChild) today (thirteenYearsAgo today)
+                                |> List.member birthDate
+                        )
+                    |> List.map Tuple.first
+                    |> Expect.equalLists []
+        , test "with no birth date, neither adult nor child is decided" <|
+            \_ ->
+                isAdult (date 2026 Nov 5) Nothing
+                    |> Expect.equal Nothing
+        ]
+
+
+{-| Criterion: the graduating-age limit for other group types is unchanged.
+A child in such a group is listed while younger than this many months.
+-}
+graduatingAgeUnchanged : Test
+graduatingAgeUnchanged =
+    test "the graduating-age limit for other group types is unchanged: 26 months" <|
+        \_ ->
+            graduatingAgeInMonth
+                |> Expect.equal 26
+
+
+
+-- GROUP SESSION AND CHILD SCOREBOARD BIRTH-DATE RANGES
+
+
+{-| Whether a child born on `birth` is listed for adding to a group of this
+type on `today`. FBF and PMTCT groups, like every type other than Sorwathe and
+ACHI, take a child younger than `graduatingAgeInMonth` whole months; Sorwathe
+and ACHI groups take a child of any age.
+-}
+listedForGroup : ClinicType -> NominalDate -> NominalDate -> Bool
+listedForGroup clinicType today birth =
+    case clinicType of
+        Achi ->
+            True
+
+        Chw ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Fbf ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Pmtct ->
+            diffMonths birth today < graduatingAgeInMonth
+
+        Sorwathe ->
+            True
+
+
+{-| Whether a child born on `birth` appears in the CHW Child Scoreboard
+participant list on `today`.
+-}
+appearsOnChildScoreboard : NominalDate -> NominalDate -> Bool
+appearsOnChildScoreboard today birth =
+    isChildUnderAgeOf2 today (testChild birth)
+
+
+{-| Every birth date the picker offers when registering a child from a group
+session of this type: from the earliest date up to today, both included.
+-}
+offeredForGroup : ClinicType -> NominalDate -> List NominalDate
+offeredForGroup clinicType today =
+    Date.range Day 1 (earliestGroupChildBirthDate clinicType today) (Date.add Days 1 today)
+
+
+{-| Every birth date the picker offers when registering a child for the Child
+Scoreboard: from the earliest date up to yesterday, both included.
+-}
+offeredForChildScoreboard : NominalDate -> List NominalDate
+offeredForChildScoreboard today =
+    Date.range Day 1 (earliestChildScoreboardBirthDate today) today
+
+
+{-| Whether `birth` lies between `from` and `to`, both included.
+-}
+isWithin : NominalDate -> NominalDate -> NominalDate -> Bool
+isWithin from to birth =
+    Date.compare birth from /= LT && Date.compare birth to /= GT
+
+
+twentySixMonthsAgo : NominalDate -> NominalDate
+twentySixMonthsAgo today =
+    Date.add Months (-1 * graduatingAgeInMonth) today
+
+
+twoYearsAgo : NominalDate -> NominalDate
+twoYearsAgo today =
+    Date.add Years -2 today
+
+
+{-| The "today"s where the calendar does something unusual 26 months or two
+years back, on top of the 13-year edge days. `Date.add` lands on the last day
+of the month when the day does not exist there: 26 months before 30 April
+2025 is 28 February 2023, and two years before 29 February 2028 is 28
+February 2026.
+-}
+rangeEdgeDays : List ( String, NominalDate )
+rangeEdgeDays =
+    edgeDays
+        ++ [ ( "the day this test was written", date 2026 Nov 25 )
+           , ( "30 April, 26 months after a leap day", date 2026 Apr 30 )
+           , ( "30 April, 26 months after a common February", date 2025 Apr 30 )
+           , ( "29 April, 26 months after a common February", date 2025 Apr 29 )
+           , ( "31 August, 26 months after a 30-day June", date 2026 Aug 31 )
+           , ( "31 May, 26 months after 31 March", date 2026 May 31 )
+           , ( "28 February of a common year, two years after a leap year", date 2026 Feb 28 )
+           , ( "1 March of a common year, two years after a leap year", date 2026 Mar 1 )
+           , ( "a leap day, two years after a common year", date 2028 Feb 29 )
+           , ( "the day after a leap day", date 2028 Mar 1 )
+           ]
+
+
+{-| The names of the edge days on which a check fails, for a failure message
+that says where.
+-}
+failingEdgeDays : (NominalDate -> Bool) -> List String
+failingEdgeDays check =
+    rangeEdgeDays
+        |> List.filter (Tuple.second >> check >> not)
+        |> List.map (\( name, today ) -> name ++ " (" ++ Date.toIsoString today ++ ")")
+
+
+{-| A group type's name, for failure messages.
+-}
+groupName : ClinicType -> String
+groupName clinicType =
+    case clinicType of
+        Achi ->
+            "ACHI"
+
+        Chw ->
+            "CHW"
+
+        Fbf ->
+            "FBF"
+
+        Pmtct ->
+            "PMTCT"
+
+        Sorwathe ->
+            "Sorwathe"
+
+
+{-| The group types the 26-month listing rule applies to, as the criteria
+name them.
+-}
+fbfAndPmtct : List ClinicType
+fbfAndPmtct =
+    [ Fbf, Pmtct ]
+
+
+{-| Criteria for registering a child from an FBF or PMTCT group session. A
+child given the earliest birth date offered must then be listed for adding to
+that group; a child of exactly 26 months is not listed, so it must not be
+offered, and the day after it must be.
+-}
+groupSessionChildRange : Test
+groupSessionChildRange =
+    describe "Registering a child from an FBF or PMTCT group session"
+        [ describe "every birth date offered gives a child who is then listed for adding to that group"
+            [ test "the earliest date offered is listed, on every day of the sweep, for FBF and PMTCT" <|
+                \_ ->
+                    expectOnEveryDay "the earliest group birth date is listed for FBF and PMTCT"
+                        (\today ->
+                            List.all
+                                (\clinicType -> listedForGroup clinicType today (earliestGroupChildBirthDate clinicType today))
+                                fbfAndPmtct
+                        )
+            , test "every date in the whole range is listed, on every edge day, for FBF and PMTCT" <|
+                -- From the earliest date offered up to today, each date is
+                -- given to a child and checked against the group's listing.
+                \_ ->
+                    fbfAndPmtct
+                        |> List.concatMap
+                            (\clinicType ->
+                                rangeEdgeDays
+                                    |> List.concatMap
+                                        (\( name, today ) ->
+                                            offeredForGroup clinicType today
+                                                |> List.filter (listedForGroup clinicType today >> not)
+                                                |> List.map (\birth -> groupName clinicType ++ ", " ++ name ++ ": " ++ Date.toIsoString birth)
+                                        )
+                            )
+                        |> Expect.equalLists []
+            , test "every date offered is listed for a CHW-type group too, which lists by the same 26-month rule" <|
+                -- Boundary: CHW is the other type, besides FBF and PMTCT, that
+                -- the 26-month listing applies to.
+                \_ ->
+                    failingEdgeDays (\today -> List.all (listedForGroup Chw today) (offeredForGroup Chw today))
+                        |> Expect.equalLists []
+            ]
+        , test "a child born exactly 26 months ago is not offered there" <|
+            \_ ->
+                expectOnEveryDay "exactly 26 months ago is before the earliest group birth date for FBF and PMTCT"
+                    (\today ->
+                        List.all
+                            (\clinicType -> Date.compare (earliestGroupChildBirthDate clinicType today) (twentySixMonthsAgo today) == GT)
+                            fbfAndPmtct
+                    )
+        , test "a child born one day later is offered and listed" <|
+            \_ ->
+                expectOnEveryDay "the day after exactly 26 months ago is offered and listed for FBF and PMTCT"
+                    (\today ->
+                        let
+                            dayLater =
+                                Date.add Days 1 (twentySixMonthsAgo today)
+                        in
+                        List.all
+                            (\clinicType ->
+                                isWithin (earliestGroupChildBirthDate clinicType today) today dayLater
+                                    && listedForGroup clinicType today dayLater
+                            )
+                            fbfAndPmtct
+                    )
+        , describe "the earliest date offered is the day after exactly 26 months ago"
+            [ test "on 25 November 2026 it is 26 September 2024" <|
+                \_ ->
+                    List.map (\clinicType -> earliestGroupChildBirthDate clinicType (date 2026 Nov 25) |> Date.toIsoString) fbfAndPmtct
+                        |> Expect.equalLists [ "2024-09-26", "2024-09-26" ]
+            , test "on 30 April 2026 it is 1 March 2024: 26 months back is the leap day" <|
+                \_ ->
+                    earliestGroupChildBirthDate Fbf (date 2026 Apr 30)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-03-01"
+            , test "on 30 April 2025 it is 1 March 2023: 26 months back is 28 February" <|
+                \_ ->
+                    earliestGroupChildBirthDate Pmtct (date 2025 Apr 30)
+                        |> Date.toIsoString
+                        |> Expect.equal "2023-03-01"
+            , test "on 31 August 2026 it is 1 July 2024: 26 months back is 30 June" <|
+                \_ ->
+                    earliestGroupChildBirthDate Fbf (date 2026 Aug 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-07-01"
+            , test "on 31 December 2026 it is 1 November 2024" <|
+                \_ ->
+                    earliestGroupChildBirthDate Pmtct (date 2026 Dec 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-11-01"
+            ]
+        ]
+
+
+{-| Criterion: Sorwathe and ACHI group sessions offer the same birth dates as
+today: a child of any age up to 13 is taken there, so the picker starts on the
+earliest child birth date, 13 years ago plus one day.
+-}
+sorwatheAndAchiRangeUnchanged : Test
+sorwatheAndAchiRangeUnchanged =
+    describe "Sorwathe and ACHI group sessions offer the same birth dates as today"
+        [ test "the earliest date offered is 13 years ago plus one day, on every day of the sweep" <|
+            \_ ->
+                expectOnEveryDay "the earliest Sorwathe and ACHI birth date is the earliest child birth date"
+                    (\today ->
+                        List.all
+                            (\clinicType -> earliestGroupChildBirthDate clinicType today == earliestChildBirthDate today)
+                            [ Achi, Sorwathe ]
+                    )
+        , test "on 25 November 2026 it is 26 November 2013" <|
+            \_ ->
+                List.map (\clinicType -> earliestGroupChildBirthDate clinicType (date 2026 Nov 25) |> Date.toIsoString) [ Achi, Sorwathe ]
+                    |> Expect.equalLists [ "2013-11-26", "2013-11-26" ]
+        , test "every date offered is listed for adding to the group" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        List.all
+                            (\clinicType -> List.all (listedForGroup clinicType today) (offeredForGroup clinicType today))
+                            [ Achi, Sorwathe ]
+                    )
+                    |> Expect.equalLists []
+        ]
+
+
+{-| Criteria for registering a child for the Child Scoreboard as a CHW. The
+participant list takes a child under 2 by `isChildUnderAgeOf2`; a child of
+exactly 2 years is not under 2, so it must not be offered, and the day after
+it must be.
+-}
+childScoreboardChildRange : Test
+childScoreboardChildRange =
+    describe "Registering a child for the Child Scoreboard as a CHW"
+        [ describe "every birth date offered gives a child who then appears in the Child Scoreboard participant list"
+            [ test "the earliest date offered appears, on every day of the sweep" <|
+                \_ ->
+                    expectOnEveryDay "the earliest Child Scoreboard birth date appears in the participant list"
+                        (\today -> appearsOnChildScoreboard today (earliestChildScoreboardBirthDate today))
+            , test "every date in the whole range appears, on every edge day" <|
+                -- From the earliest date offered up to yesterday, each date is
+                -- given to a child and checked against the participant list.
+                \_ ->
+                    rangeEdgeDays
+                        |> List.concatMap
+                            (\( name, today ) ->
+                                offeredForChildScoreboard today
+                                    |> List.filter (appearsOnChildScoreboard today >> not)
+                                    |> List.map (\birth -> name ++ ": " ++ Date.toIsoString birth)
+                            )
+                        |> Expect.equalLists []
+            ]
+        , test "a child born exactly 2 years ago is not offered there" <|
+            \_ ->
+                expectOnEveryDay "exactly 2 years ago is before the earliest Child Scoreboard birth date"
+                    (\today -> Date.compare (earliestChildScoreboardBirthDate today) (twoYearsAgo today) == GT)
+        , test "a child born one day later is offered and appears" <|
+            \_ ->
+                expectOnEveryDay "the day after exactly 2 years ago is offered and appears"
+                    (\today ->
+                        let
+                            dayLater =
+                                Date.add Days 1 (twoYearsAgo today)
+                        in
+                        isWithin (earliestChildScoreboardBirthDate today) (Date.add Days -1 today) dayLater
+                            && appearsOnChildScoreboard today dayLater
+                    )
+        , describe "the earliest date offered is the day after exactly 2 years ago"
+            [ test "on 25 November 2026 it is 26 November 2024" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Nov 25)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-11-26"
+            , test "on 28 February 2026 it is the leap day 29 February 2024" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Feb 28)
+                        |> Date.toIsoString
+                        |> Expect.equal "2024-02-29"
+            , test "on the leap day 29 February 2028 it is 1 March 2026: two years back is 28 February" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2028 Feb 29)
+                        |> Date.toIsoString
+                        |> Expect.equal "2026-03-01"
+            , test "on 1 March 2025 it is 2 March 2023" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2025 Mar 1)
+                        |> Date.toIsoString
+                        |> Expect.equal "2023-03-02"
+            , test "on 31 December 2026 it is 1 January 2025" <|
+                \_ ->
+                    earliestChildScoreboardBirthDate (date 2026 Dec 31)
+                        |> Date.toIsoString
+                        |> Expect.equal "2025-01-01"
+            ]
+        , test "a child with no birth date does not appear" <|
+            -- Boundary: the stored shape with no birth date.
+            \_ ->
+                isChildUnderAgeOf2 (date 2026 Nov 25) { testPerson | birthDate = Nothing }
+                    |> Expect.equal False
+        ]
+
+
+{-| Criterion: the latest birth date offered doesn't change in either place:
+today for a group session, yesterday for the Child Scoreboard.
+
+The latest date is set in the view, not in the seam, so these tests pin the
+pure half: the range still reaches that date, and a child given it is listed.
+
+-}
+latestBirthDateUnchanged : Test
+latestBirthDateUnchanged =
+    describe "The latest birth date offered doesn't change in either place"
+        [ test "a group session still offers today, and a child born today is listed, for every group type" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        List.all
+                            (\clinicType ->
+                                isWithin (earliestGroupChildBirthDate clinicType today) today today
+                                    && listedForGroup clinicType today today
+                            )
+                            [ Achi, Chw, Fbf, Pmtct, Sorwathe ]
+                    )
+                    |> Expect.equalLists []
+        , test "the Child Scoreboard still offers yesterday, and a child born yesterday appears" <|
+            \_ ->
+                failingEdgeDays
+                    (\today ->
+                        let
+                            yesterday =
+                                Date.add Days -1 today
+                        in
+                        isWithin (earliestChildScoreboardBirthDate today) yesterday yesterday
+                            && appearsOnChildScoreboard today yesterday
+                    )
+                    |> Expect.equalLists []
+        ]
+
+
+
+-- ADDRESS AND HEALTH CENTRE ON SAVE
+
+
+{-| The day every address scenario is saved on.
+-}
+saveDate : NominalDate
+saveDate =
+    date 2026 Nov 18
+
+
+{-| One place on the device's address list: its ID, which is what the form's
+select holds, and its name and parent.
+-}
+type alias Place =
+    ( GeoLocationId, GeoLocation )
+
+
+{-| A full address on the device's address list: one place per level, each
+inside the one before it.
+-}
+type alias Address =
+    { province : Place
+    , district : Place
+    , sector : Place
+    , cell : Place
+    , village : Place
+    }
+
+
+{-| The places the address scenarios need on one site.
+
+`home` is where the person lives. `otherCell` is an address in the same
+sector as `home` but in another cell; `otherSector` is in the same district
+but another sector. Somalia has a single cell per sector, so its `otherCell`
+is `Nothing`.
+
+-}
+type alias Places =
+    { home : Address
+    , otherCell : Maybe Address
+    , otherSector : Maybe Address
+    }
+
+
+{-| Every full address on the site's address list.
+-}
+addressesOn : Site -> List Address
+addressesOn site =
+    let
+        geoInfo =
+            getGeoInfo site
+
+        childrenOf level =
+            Dict.foldr
+                (\id place ->
+                    Dict.update place.parent
+                        (Maybe.withDefault [] >> (::) ( id, place ) >> Just)
+                )
+                Dict.empty
+                level
+
+        districts =
+            childrenOf geoInfo.districts
+
+        sectors =
+            childrenOf geoInfo.sectors
+
+        cells =
+            childrenOf geoInfo.cells
+
+        villages =
+            childrenOf geoInfo.villages
+
+        under children ( parentId, _ ) =
+            Dict.get (Just parentId) children
+                |> Maybe.withDefault []
+    in
+    Dict.toList geoInfo.provinces
+        |> List.concatMap
+            (\province_ ->
+                under districts province_
+                    |> List.concatMap
+                        (\district_ ->
+                            under sectors district_
+                                |> List.concatMap
+                                    (\sector_ ->
+                                        under cells sector_
+                                            |> List.concatMap
+                                                (\cell_ ->
+                                                    under villages cell_
+                                                        |> List.map (Address province_ district_ sector_ cell_)
+                                                )
+                                    )
+                        )
+            )
+
+
+placesOn : Site -> Maybe Places
+placesOn site =
+    let
+        addresses =
+            addressesOn site
+
+        samePlace a b =
+            Tuple.first a == Tuple.first b
+
+        otherCellFor home =
+            List.Extra.find
+                (\address -> samePlace address.sector home.sector && not (samePlace address.cell home.cell))
+                addresses
+
+        otherSectorFor home =
+            List.Extra.find
+                (\address -> samePlace address.district home.district && not (samePlace address.sector home.sector))
+                addresses
+
+        withBoth home =
+            Maybe.map2 (\otherCell otherSector -> Places home (Just otherCell) (Just otherSector))
+                (otherCellFor home)
+                (otherSectorFor home)
+
+        withOtherSector home =
+            Maybe.map (\otherSector -> Places home Nothing (Just otherSector))
+                (otherSectorFor home)
+    in
+    case List.Extra.findMap withBoth addresses of
+        Just places ->
+            Just places
+
+        Nothing ->
+            List.Extra.findMap withOtherSector addresses
+
+
+rwandaPlaces : Maybe Places
+rwandaPlaces =
+    placesOn SiteRwanda
+
+
+burundiPlaces : Maybe Places
+burundiPlaces =
+    placesOn SiteBurundi
+
+
+somaliaPlaces : Maybe Places
+somaliaPlaces =
+    placesOn SiteSomalia
+
+
+rwandaReverseGeoInfo : ReverseGeoInfo
+rwandaReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteRwanda)
+
+
+burundiReverseGeoInfo : ReverseGeoInfo
+burundiReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteBurundi)
+
+
+somaliaReverseGeoInfo : ReverseGeoInfo
+somaliaReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteSomalia)
+
+
+reverseGeoInfoOn : Site -> ReverseGeoInfo
+reverseGeoInfoOn site =
+    case site of
+        SiteBurundi ->
+            burundiReverseGeoInfo
+
+        SiteRwanda ->
+            rwandaReverseGeoInfo
+
+        SiteSomalia ->
+            somaliaReverseGeoInfo
+
+        _ ->
+            getReverseGeoInfo (getGeoInfo site)
+
+
+{-| Runs the check with the site's places, or fails when the site's address
+list has none to offer.
+-}
+withPlaces : Site -> (Places -> Expect.Expectation) -> Expect.Expectation
+withPlaces site check =
+    let
+        places =
+            case site of
+                SiteBurundi ->
+                    burundiPlaces
+
+                SiteRwanda ->
+                    rwandaPlaces
+
+                SiteSomalia ->
+                    somaliaPlaces
+
+                _ ->
+                    placesOn site
+    in
+    case places of
+        Just found ->
+            check found
+
+        Nothing ->
+            Expect.fail "the site's address list has no address these scenarios can use"
+
+
+{-| The sites every address scenario runs on.
+-}
+sites : List ( String, Site )
+sites =
+    [ ( "Rwanda", SiteRwanda ), ( "Burundi", SiteBurundi ), ( "Somalia", SiteSomalia ) ]
+
+
+{-| One test per site, named after it.
+-}
+onEverySite : String -> (Site -> Expect.Expectation) -> Test
+onEverySite description check =
+    describe description <|
+        List.map (\( name, site ) -> test name <| \_ -> check site) sites
+
+
+placeName : Place -> String
+placeName ( _, place ) =
+    place.name
+
+
+{-| What the form's select holds when the place is picked.
+-}
+placeId : Place -> String
+placeId ( id, _ ) =
+    String.fromInt (fromEntityId id)
+
+
+homeHealthCentre : HealthCenterId
+homeHealthCentre =
+    toEntityUuid "home-health-centre"
+
+
+{-| An adult who lives at the address and is registered at
+`homeHealthCentre`. Education level and marital status are set, since an
+adult's save requires them.
+-}
+personAt : Address -> Person
+personAt address =
+    { testPerson
+        | province = Just (placeName address.province)
+        , district = Just (placeName address.district)
+        , sector = Just (placeName address.sector)
+        , cell = Just (placeName address.cell)
+        , village = Just (placeName address.village)
+        , healthCenterId = Just homeHealthCentre
+        , educationLevel = Just PrimarySchool
+        , maritalStatus = Just Married
+        , ubudehe = Just Ubudehe2
+        , telephoneNumber = Just "0788000000"
+    }
+
+
+{-| The part of a person the address scenarios look at.
+-}
+type alias SavedAddress =
+    { province : Maybe String
+    , district : Maybe String
+    , sector : Maybe String
+    , cell : Maybe String
+    , village : Maybe String
+    , healthCenterId : Maybe HealthCenterId
+    }
+
+
+{-| The saved address, written out for a failure message.
+-}
+describeSaved : SavedAddress -> String
+describeSaved saved =
+    [ saved.province, saved.district, saved.sector, saved.cell, saved.village, Maybe.map fromEntityUuid saved.healthCenterId ]
+        |> List.map (Maybe.withDefault "(none)")
+        |> String.join " / "
+
+
+savedAddress : Person -> SavedAddress
+savedAddress person =
+    { province = person.province
+    , district = person.district
+    , sector = person.sector
+    , cell = person.cell
+    , village = person.village
+    , healthCenterId = person.healthCenterId
+    }
+
+
+pick : String -> String -> Form.Msg
+pick name value =
+    Form.Input name Form.Select (Form.Field.String value)
+
+
+{-| The nurse sets a select back to its empty option.
+-}
+clear : String -> Form.Msg
+clear name =
+    pick name ""
+
+
+typeText : String -> String -> Form.Msg
+typeText name value =
+    Form.Input name Form.Text (Form.Field.String value)
+
+
+{-| The nurse opens the form, makes the given changes, and presses Save. This
+follows the person page: the form keeps only what the nurse changed, and the
+related person's values are filled into the fields still empty, both on
+screen and on Save. `Ok` is the person saved; `Err` lists the fields shown in
+error, sorted, and nothing is saved.
+-}
+pressSave : Site -> ParticipantDirectoryOperation -> Person -> List Form.Msg -> Result (List String) Person
+pressSave site operation related changes =
+    let
+        validation =
+            validatePerson site (Just related) operation (Just saveDate)
+
+        opened =
+            case operation of
+                CreatePerson _ ->
+                    emptyCreateForm site
+
+                EditPerson _ ->
+                    emptyEditForm site
+
+        changed =
+            List.foldl (Form.update validation) opened changes
+
+        withDefaults =
+            applyDefaultValuesForPerson saveDate
+                site
+                (reverseGeoInfoOn site)
+                Nothing
+                False
+                (Just related)
+                operation
+                ParticipantDirectoryOrigin
+    in
+    case Form.getOutput (withDefaults changed) of
+        Just person ->
+            Ok person
+
+        Nothing ->
+            let
+                shown =
+                    withDefaults (Form.update validation Form.Submit changed)
+            in
+            Form.getErrors shown
+                |> List.map Tuple.first
+                |> List.filter (\name -> isJust (Form.getFieldAsString name shown).liveError)
+                |> List.sort
+                |> Err
+
+
+editPerson : ParticipantDirectoryOperation
+editPerson =
+    EditPerson (toEntityUuid "edited-person")
+
+
+{-| The nurse edits the person, makes the changes and presses Save.
+-}
+saveEdit : Site -> Person -> List Form.Msg -> Result (List String) SavedAddress
+saveEdit site person changes =
+    pressSave site editPerson person changes
+        |> Result.map savedAddress
+
+
+{-| The fields shown as required when the save is refused, or a failure
+naming the address that was saved instead.
+-}
+expectRequired : List String -> Result (List String) SavedAddress -> Expect.Expectation
+expectRequired fields result =
+    case result of
+        Err shown ->
+            Expect.equalLists (List.sort fields) shown
+
+        Ok saved ->
+            Expect.fail <|
+                "nothing should be saved until "
+                    ++ String.join ", " fields
+                    ++ " is picked, but the form saved "
+                    ++ describeSaved saved
+
+
+{-| The cleared field is among those shown as required, and nothing is
+saved.
+-}
+expectAmongRequired : String -> Result (List String) SavedAddress -> Expect.Expectation
+expectAmongRequired field result =
+    case result of
+        Err shown ->
+            if List.member field shown then
+                Expect.pass
+
+            else
+                Expect.fail <| field ++ " is not shown as required; the fields in error are " ++ String.join ", " shown
+
+        Ok saved ->
+            Expect.fail <|
+                "nothing should be saved until "
+                    ++ field
+                    ++ " is picked, but the form saved "
+                    ++ describeSaved saved
+
+
+addressLevels : List String
+addressLevels =
+    [ province, district, sector, cell, village ]
+
+
+{-| The same address and health centre as the person's, as saved.
+-}
+unchanged : Person -> Result (List String) SavedAddress
+unchanged person =
+    Ok (savedAddress person)
+
+
+addressAndHealthCentre : Test
+addressAndHealthCentre =
+    describe "the address and health centre saved"
+        [ clearedVillageIsRequired
+        , everyClearedLevelIsRequired
+        , changedCellNeedsAVillage
+        , untouchedAddressSavesUnchanged
+        , unlistedAddressSavesWhenUntouched
+        , familyMemberAddress
+        ]
+
+
+{-| Criterion: editing a person, clearing the village and saving shows the
+village as required. Nothing is saved until a village is picked.
+-}
+clearedVillageIsRequired : Test
+clearedVillageIsRequired =
+    describe "Editing a person, clearing the village and saving"
+        [ onEverySite "shows the village as required, and nothing is saved until a village is picked" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear village ]
+                            |> expectRequired [ village ]
+        , onEverySite "then picking the same village again saves the address unchanged" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ clear village, pick village (placeId places.home.village) ]
+                            |> Expect.equal (unchanged person)
+        , test "Rwanda: also editing the phone number does not let the cleared village through" <|
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        saveEdit SiteRwanda (personAt places.home) [ typeText phoneNumber "0788111111", clear village ]
+                            |> expectRequired [ village ]
+        , test "Rwanda: clearing the village of a child shows it as required too" <|
+            -- The village select is locked for a child being edited, but the
+            -- save must not depend on that lock.
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        let
+                            child =
+                                personAt places.home
+                                    |> (\person -> { person | birthDate = Just (date 2023 Mar 10), educationLevel = Nothing, maritalStatus = Nothing, modeOfDelivery = Just CesareanDelivery })
+                        in
+                        saveEdit SiteRwanda child [ clear village ]
+                            |> expectRequired [ village ]
+        ]
+
+
+{-| Criterion: the same holds for every address level, and for the health
+centre.
+
+The address selects lock a level until the levels below it are cleared, so on
+screen clearing the province means clearing all five. The save must not rely
+on that lock: each level cleared alone is shown as required too.
+
+-}
+everyClearedLevelIsRequired : Test
+everyClearedLevelIsRequired =
+    describe "The same holds for every address level, and for the health centre"
+        [ describe "a level cleared alone is shown as required, and nothing is saved" <|
+            List.map
+                (\level ->
+                    onEverySite level <|
+                        \site ->
+                            withPlaces site <|
+                                \places ->
+                                    saveEdit site (personAt places.home) [ clear level ]
+                                        |> expectAmongRequired level
+                )
+                [ province, district, sector, cell ]
+        , onEverySite "clearing the levels from the village up to the province shows all five as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) (List.map clear (List.reverse addressLevels))
+                            |> expectRequired addressLevels
+        , onEverySite "clearing the village and the cell shows both as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear village, clear cell ]
+                            |> expectRequired [ cell, village ]
+        , onEverySite "clearing the health centre shows it as required, and nothing is saved" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear healthCenter ]
+                            |> expectRequired [ healthCenter ]
+        , onEverySite "picking another health centre saves it" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+
+                            otherHealthCentre =
+                                toEntityUuid "other-health-centre"
+                        in
+                        saveEdit site person [ pick healthCenter (fromEntityUuid otherHealthCentre) ]
+                            |> Expect.equal (Ok (savedAddress { person | healthCenterId = Just otherHealthCentre }))
+        ]
+
+
+{-| Criterion: changing the cell and saving without picking a village shows
+the village as required, so a new cell can never be saved with the old
+village.
+
+On screen the cell is locked while a village is set, so the nurse clears the
+village, then the cell, then picks the new cell.
+
+-}
+changedCellNeedsAVillage : Test
+changedCellNeedsAVillage =
+    let
+        changeCell otherCell =
+            [ clear village, clear cell, pick cell (placeId otherCell.cell) ]
+
+        changeSector otherSector =
+            [ clear village, clear cell, clear sector, pick sector (placeId otherSector.sector) ]
+
+        onSitesWithAnotherCell description check =
+            describe description <|
+                List.map
+                    (\( name, site ) ->
+                        test name <|
+                            \_ ->
+                                withPlaces site <|
+                                    \places ->
+                                        case places.otherCell of
+                                            Just otherCell ->
+                                                check site places otherCell
+
+                                            Nothing ->
+                                                Expect.fail "no sector on this site has two cells"
+                    )
+                    [ ( "Rwanda", SiteRwanda ), ( "Burundi", SiteBurundi ) ]
+
+        onEverySiteWithAnotherSector description check =
+            onEverySite description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            case places.otherSector of
+                                Just otherSector ->
+                                    check site places otherSector
+
+                                Nothing ->
+                                    Expect.fail "no district on this site has two sectors"
+    in
+    describe "Changing the cell and saving without picking a village"
+        [ onSitesWithAnotherCell "shows the village as required, so a new cell can never be saved with the old village" <|
+            \site places otherCell ->
+                saveEdit site (personAt places.home) (changeCell otherCell)
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "picking the same cell again without a village shows the village as required" <|
+            \site places _ ->
+                saveEdit site (personAt places.home) [ clear village, clear cell, pick cell (placeId places.home.cell) ]
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "picking a village of the new cell saves the new cell with that village" <|
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                in
+                saveEdit site person (changeCell otherCell ++ [ pick village (placeId otherCell.village) ])
+                    |> Expect.equal
+                        (Ok
+                            (savedAddress
+                                { person
+                                    | cell = Just (placeName otherCell.cell)
+                                    , village = Just (placeName otherCell.village)
+                                }
+                            )
+                        )
+        , onEverySiteWithAnotherSector "changing the sector and picking a cell without a village shows the village as required" <|
+            \site places otherSector ->
+                saveEdit site (personAt places.home) (changeSector otherSector ++ [ pick cell (placeId otherSector.cell) ])
+                    |> expectRequired [ village ]
+        , onEverySiteWithAnotherSector "changing the sector without picking a cell shows the cell and the village as required" <|
+            \site places otherSector ->
+                saveEdit site (personAt places.home) (changeSector otherSector)
+                    |> expectRequired [ cell, village ]
+        , onSitesWithAnotherCell "a person whose stored village is missing from the address list: changing the cell still needs a village" <|
+            -- The stored village cannot be shown in the select, so the
+            -- village field starts empty. Once the cell changes, that stored
+            -- village must not be saved with the new cell either.
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                            |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                in
+                saveEdit site person [ clear cell, pick cell (placeId otherCell.cell) ]
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "a person whose stored cell is missing from the address list: picking a cell still needs a village" <|
+            -- Neither the stored cell nor its village can be shown, so both
+            -- fields start empty. The nurse picks a cell and presses Save.
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                            |> (\atHome -> { atHome | cell = Just "Cell missing from the list" })
+                in
+                saveEdit site person [ pick cell (placeId otherCell.cell) ]
+                    |> expectRequired [ village ]
+        ]
+
+
+{-| Criterion: editing any other field of a person, without touching the
+address, saves the address unchanged.
+-}
+untouchedAddressSavesUnchanged : Test
+untouchedAddressSavesUnchanged =
+    describe "Editing any other field of a person, without touching the address"
+        [ onEverySite "saves the address unchanged when the phone number is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "saves the address unchanged when the first name is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText firstName "Renamed" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "saves the address unchanged when nothing is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person []
+                            |> Expect.equal (unchanged person)
+        , test "Rwanda: saves the phone number that was edited" <|
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        pressSave SiteRwanda editPerson (personAt places.home) [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .telephoneNumber
+                            |> Expect.equal (Ok (Just "0788111111"))
+        ]
+
+
+{-| Criterion: a person whose stored address names a place missing from the
+device's address list still saves when the address is not touched, and keeps
+that address.
+
+A missing place cannot be shown in its select, and neither can any level
+below it, since each select offers only the places inside the one above.
+
+-}
+unlistedAddressSavesWhenUntouched : Test
+unlistedAddressSavesWhenUntouched =
+    let
+        keepsAddress description withUnlisted =
+            onEverySite description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            let
+                                person =
+                                    withUnlisted (personAt places.home)
+                            in
+                            saveEdit site person [ typeText phoneNumber "0788111111" ]
+                                |> Expect.equal (unchanged person)
+    in
+    describe "A person whose stored address names a place missing from the device's address list"
+        [ keepsAddress "still saves when the address is not touched, and keeps a village missing from the list" <|
+            \person -> { person | village = Just "Village missing from the list" }
+        , keepsAddress "keeps a cell missing from the list, and the village stored under it" <|
+            \person -> { person | cell = Just "Cell missing from the list" }
+        , keepsAddress "keeps a sector missing from the list, and the levels stored under it" <|
+            \person -> { person | sector = Just "Sector missing from the list" }
+        , keepsAddress "keeps an address where no level is on the list" <|
+            \person ->
+                { person
+                    | province = Just "Province missing from the list"
+                    , district = Just "District missing from the list"
+                    , sector = Just "Sector missing from the list"
+                    , cell = Just "Cell missing from the list"
+                    , village = Just "Village missing from the list"
+                }
+        , onEverySite "still saves, and keeps the address, when nothing at all is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                                    |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                        in
+                        saveEdit site person []
+                            |> Expect.equal (unchanged person)
+        ]
+
+
+{-| Criterion: adding a family member, the address and health centre are
+filled in from the related person, and saving them unchanged works. Clearing
+a level shows it as required.
+
+The family member added is a child of the related adult, so the save asks
+for the mode of delivery and not for education level or marital status.
+
+-}
+familyMemberAddress : Test
+familyMemberAddress =
+    let
+        addFamilyMember =
+            CreatePerson (Just (toEntityUuid "related-person"))
+
+        newChild =
+            [ typeText firstName "New"
+            , typeText secondName "Child"
+            , typeText birthDate "2024-03-10"
+            , pick gender "male"
+            , pick modeOfDelivery "cesarean-delivery"
+            ]
+
+        saveFamilyMember site related changes =
+            pressSave site addFamilyMember related (newChild ++ changes)
+                |> Result.map savedAddress
+
+        filledIn site related =
+            applyDefaultValuesForPerson saveDate
+                site
+                (reverseGeoInfoOn site)
+                Nothing
+                False
+                (Just related)
+                addFamilyMember
+                ParticipantDirectoryOrigin
+                (emptyCreateForm site)
+                |> (\form ->
+                        List.map (\name -> ( name, (Form.getFieldAsString name form).value ))
+                            (addressLevels ++ [ healthCenter ])
+                   )
+    in
+    describe "Adding a family member"
+        [ onEverySite "the address and health centre are filled in from the related person" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledIn site (personAt places.home)
+                            |> Expect.equalLists
+                                [ ( province, Just (placeId places.home.province) )
+                                , ( district, Just (placeId places.home.district) )
+                                , ( sector, Just (placeId places.home.sector) )
+                                , ( cell, Just (placeId places.home.cell) )
+                                , ( village, Just (placeId places.home.village) )
+                                , ( healthCenter, Just (fromEntityUuid homeHealthCentre) )
+                                ]
+        , onEverySite "saving the address and health centre unchanged works" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                        in
+                        saveFamilyMember site related []
+                            |> Expect.equal (unchanged related)
+        , describe "clearing a level shows it as required, and nothing is saved" <|
+            List.map
+                (\level ->
+                    onEverySite level <|
+                        \site ->
+                            withPlaces site <|
+                                \places ->
+                                    saveFamilyMember site (personAt places.home) [ clear level ]
+                                        |> expectAmongRequired level
+                )
+                addressLevels
+        , onEverySite "clearing the village shows only the village as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveFamilyMember site (personAt places.home) [ clear village ]
+                            |> expectRequired [ village ]
+        , onEverySite "clearing the health centre shows it as required, and nothing is saved" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveFamilyMember site (personAt places.home) [ clear healthCenter ]
+                            |> expectRequired [ healthCenter ]
+        , onEverySite "the related person's stored village missing from the list: saving the address unchanged keeps it" <|
+            -- The village cannot be filled in, as it is not in the select.
+            -- The nurse leaves the address as it is and presses Save.
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                                    |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                        in
+                        saveFamilyMember site related []
+                            |> Expect.equal (unchanged related)
+        ]
+
+
+{-| Guards for how a level counts as changed. The form finds stored places by
+name without regard to letter case, so a case-only difference is no change. A
+CHW's form is filled from the CHW's village and its address section is
+hidden, so nothing there may become required.
+-}
+storedAddressComparison : Test
+storedAddressComparison =
+    describe "Whether an address level counts as changed"
+        [ onEverySite "picking another province leaves no stored district, sector, cell or village under it" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            otherProvince =
+                                addressesOn site
+                                    |> List.Extra.find (\address -> placeId address.province /= placeId places.home.province)
+                        in
+                        case otherProvince of
+                            Just address ->
+                                saveEdit site (personAt places.home) [ pick province (placeId address.province) ]
+                                    |> expectAmongRequired district
+
+                            Nothing ->
+                                Expect.pass
+        , onEverySite "a stored name that differs from the list only in letter case is not a change" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            atHome =
+                                personAt places.home
+
+                            person =
+                                { atHome
+                                    | province = Maybe.map String.toUpper atHome.province
+                                    , village = Just "Village missing from the list"
+                                }
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .village
+                            |> Expect.equal (Ok (Just "Village missing from the list"))
+        , onEverySite "a CHW editing a person who lives elsewhere still saves when the CHW's village is missing from the list" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+
+                            chwAddress =
+                                Maybe.withDefault places.home places.otherSector
+
+                            chwVillage =
+                                { healthCenterId = homeHealthCentre
+                                , name = "CHW village"
+                                , province = placeName chwAddress.province
+                                , district = placeName chwAddress.district
+                                , sector = placeName chwAddress.sector
+                                , cell = placeName chwAddress.cell
+                                , village = "Village missing from the list"
+                                }
+
+                            validation =
+                                validatePerson site (Just person) editPerson (Just saveDate)
+
+                            changed =
+                                Form.update validation (typeText phoneNumber "0788111111") (emptyEditForm site)
+                        in
+                        applyDefaultValuesForPerson saveDate
+                            site
+                            (reverseGeoInfoOn site)
+                            (Just chwVillage)
+                            True
+                            (Just person)
+                            editPerson
+                            ParticipantDirectoryOrigin
+                            changed
+                            |> Form.getOutput
+                            |> isJust
+                            |> Expect.equal True
+        , onEverySite "a new registration with no related person: picking a province shows no level below it in error before Save" <|
+            -- With no related person nothing is stored, so picking a province
+            -- clears no level below it; those levels are checked at Save.
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            registration =
+                                CreatePerson Nothing
+
+                            validation =
+                                validatePerson site Nothing registration (Just saveDate)
+
+                            shown =
+                                [ typeText firstName "New"
+                                , typeText secondName "Person"
+                                , typeText birthDate "2024-03-10"
+                                , pick gender "male"
+                                , pick modeOfDelivery "cesarean-delivery"
+                                , pick province (placeId places.home.province)
+                                ]
+                                    |> List.foldl (Form.update validation) (emptyCreateForm site)
+                                    |> applyDefaultValuesForPerson saveDate
+                                        site
+                                        (reverseGeoInfoOn site)
+                                        Nothing
+                                        False
+                                        Nothing
+                                        registration
+                                        ParticipantDirectoryOrigin
+                        in
+                        [ district, sector, cell, village ]
+                            |> List.filter (\name -> isJust (Form.getFieldAsString name shown).liveError)
+                            |> Expect.equalLists []
+        ]
+
+
+{-| Whether the address's places, from the province down, carry these names,
+compared without letter case. Fewer names than levels compare the levels above
+only.
+-}
+namedAs : List String -> Address -> Bool
+namedAs names address =
+    [ address.province, address.district, address.sector, address.cell, address.village ]
+        |> List.take (List.length names)
+        |> List.map (placeName >> String.toLower)
+        |> (==) (List.map String.toLower names)
+
+
+{-| The full address on the site's list with these names, from province to
+village.
+-}
+addressNamed : Site -> List String -> Maybe Address
+addressNamed site names =
+    addressesOn site
+        |> List.Extra.find (namedAs names)
+
+
+{-| The names of the villages the list offers under a cell, given the names
+from province to cell, sorted.
+-}
+villagesUnder : Site -> List String -> List String
+villagesUnder site names =
+    addressesOn site
+        |> List.filter (namedAs names)
+        |> List.map (.village >> placeName)
+        |> List.sort
+
+
+{-| Criteria: Byimana (Jali › Nyabuliba, Rwanda) and Busebwa (Gatete ›
+Busebwa, Burundi) are on the address list, so people stored there are shown
+and saved with them.
+-}
+villagesOnTheList : Test
+villagesOnTheList =
+    let
+        nyabuliba =
+            [ "Umujyi wa Kigali", "Gasabo", "Jali", "Nyabuliba" ]
+
+        busebwaCell =
+            [ "Rumonge", "Rumonge", "Gatete", "Busebwa" ]
+
+        byimanaId =
+            addressNamed SiteRwanda (nyabuliba ++ [ "Byimana" ])
+                |> Maybe.map (.village >> placeId)
+
+        -- Stored in capitals, as the people living in Byimana are. A
+        -- listed neighbour gives the rest of the person.
+        byimanaResident =
+            addressNamed SiteRwanda (nyabuliba ++ [ "Kirehe" ])
+                |> Maybe.map
+                    (personAt
+                        >> (\person ->
+                                { person
+                                    | province = Just "UMUJYI WA KIGALI"
+                                    , district = Just "GASABO"
+                                    , sector = Just "JALI"
+                                    , cell = Just "NYABULIBA"
+                                    , village = Just "BYIMANA"
+                                }
+                           )
+                    )
+
+        noKirehe =
+            Expect.fail "the list has no Kirehe under Nyabuliba to build the person from"
+
+        villageFilledIn operation =
+            case ( byimanaResident, byimanaId ) of
+                ( Just person, Just expectedId ) ->
+                    filledInFor SiteRwanda operation person
+                        |> Form.getFieldAsString village
+                        |> .value
+                        |> Expect.equal (Just expectedId)
+
+                ( Nothing, _ ) ->
+                    noKirehe
+
+                ( _, Nothing ) ->
+                    Expect.fail "the list has no Byimana under Nyabuliba"
+    in
+    describe "Villages on the address list"
+        [ test "Jali › Nyabuliba offers Byimana next to the five villages offered before" <|
+            \_ ->
+                villagesUnder SiteRwanda nyabuliba
+                    |> Expect.equalLists [ "Byimana", "Kirehe", "Mataba", "Nyaburira", "Nyarurembo", "Rubona" ]
+        , test "editing a person stored in BYIMANA shows Byimana selected" <|
+            \_ -> villageFilledIn editPerson
+        , test "editing a person stored in BYIMANA and saving keeps Byimana" <|
+            \_ ->
+                case byimanaResident of
+                    Just person ->
+                        saveEdit SiteRwanda person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .village
+                            |> Expect.equal (Ok (Just "Byimana"))
+
+                    Nothing ->
+                        noKirehe
+        , test "adding a family member to a person stored in BYIMANA fills in Byimana" <|
+            \_ -> villageFilledIn (CreatePerson (Just (toEntityUuid "related-person")))
+        , test "Gatete › Busebwa offers Busebwa, spelled in full" <|
+            \_ ->
+                villagesUnder SiteBurundi busebwaCell
+                    |> Expect.equalLists [ "Busebwa" ]
+        , test "picking Busebwa and saving stores Busebwa" <|
+            \_ ->
+                withPlaces SiteBurundi <|
+                    \places ->
+                        case addressNamed SiteBurundi (busebwaCell ++ [ "Busebwa" ]) of
+                            Just address ->
+                                [ pick province (placeId address.province)
+                                , pick district (placeId address.district)
+                                , pick sector (placeId address.sector)
+                                , pick cell (placeId address.cell)
+                                , pick village (placeId address.village)
+                                ]
+                                    |> saveEdit SiteBurundi (personAt places.home)
+                                    |> Result.map .village
+                                    |> Expect.equal (Ok (Just "Busebwa"))
+
+                            Nothing ->
+                                Expect.fail "the list has no Busebwa under Gatete › Busebwa"
+        ]
+
+
+
+-- A LEVEL MISSING FROM THE LIST, WITH A LOWER LEVEL NAMED LIKE A PROVINCE
+
+
+{-| The provinces on the site's address list.
+-}
+provincesOn : Site -> List Place
+provincesOn site =
+    Dict.toList (getGeoInfo site).provinces
+
+
+{-| The name of a province on the list other than the address's own.
+-}
+otherProvinceName : Site -> Address -> Maybe String
+otherProvinceName site address =
+    provincesOn site
+        |> List.Extra.find (\place -> Tuple.first place /= Tuple.first address.province)
+        |> Maybe.map placeName
+
+
+{-| A stored address with a place missing from the list at `missingFrom`, and
+some level below it carrying the name of a province on the list. `stored`
+builds the person from a full address on the list; `Nothing` means the site
+has no place the scenario needs.
+-}
+type alias UnlistedScenario =
+    { description : String
+    , missingFrom : String
+    , stored : Site -> Address -> Maybe Person
+    }
+
+
+{-| The missing level and every level below it.
+-}
+levelsFrom : String -> List String
+levelsFrom level =
+    List.Extra.dropWhile ((/=) level) addressLevels
+
+
+{-| Each stored shape that makes a lower level be looked up among the
+provinces. A level whose place above it is not found has no parent to look
+under; these names match a province there.
+-}
+unlistedScenarios : List UnlistedScenario
+unlistedScenarios =
+    [ { description = "the district is missing and the sector is named like the person's own province"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | district = Just "District missing from the list", sector = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the district is missing and the sector is named like another province"
+      , missingFrom = district
+      , stored =
+            \site home ->
+                otherProvinceName site home
+                    |> Maybe.map
+                        (\name ->
+                            personAt home
+                                |> (\person -> { person | district = Just "District missing from the list", sector = Just name })
+                        )
+      }
+    , { description = "the district is missing and the sector is named like a province, in capitals"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | district = Just "District missing from the list", sector = Just (String.toUpper (placeName home.province)) })
+                    |> Just
+      }
+    , { description = "the province is missing and the district is named like a province"
+      , missingFrom = province
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | province = Just "Province missing from the list", district = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the sector is missing and the cell is named like a province"
+      , missingFrom = sector
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | sector = Just "Sector missing from the list", cell = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the cell is missing and the village is named like a province"
+      , missingFrom = cell
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person -> { person | cell = Just "Cell missing from the list", village = Just (placeName home.province) })
+                    |> Just
+      }
+    , { description = "the district and the sector are missing and the cell is named like a province"
+      , missingFrom = district
+      , stored =
+            \_ home ->
+                personAt home
+                    |> (\person ->
+                            { person
+                                | district = Just "District missing from the list"
+                                , sector = Just "Sector missing from the list"
+                                , cell = Just (placeName home.province)
+                            }
+                       )
+                    |> Just
+      }
+    , { description = "the district is missing, the sector is named like the province and the cell like a district of it"
+      , missingFrom = district
+      , stored =
+            -- Were the sector taken for the province, the cell would be looked
+            -- up among that province's districts, and found.
+            \_ home ->
+                personAt home
+                    |> (\person ->
+                            { person
+                                | district = Just "District missing from the list"
+                                , sector = Just (placeName home.province)
+                                , cell = Just (placeName home.district)
+                            }
+                       )
+                    |> Just
+      }
+    ]
+
+
+{-| One test per scenario and site, each run with the site's places and the
+person the scenario stores.
+-}
+onEveryUnlistedScenario : (Site -> UnlistedScenario -> Person -> Expect.Expectation) -> List Test
+onEveryUnlistedScenario check =
+    List.map
+        (\scenario ->
+            onEverySite scenario.description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            case scenario.stored site places.home of
+                                Just person ->
+                                    check site scenario person
+
+                                Nothing ->
+                                    Expect.fail "the site's address list has no second province"
+        )
+        unlistedScenarios
+
+
+{-| The issue's example, on Burundi: every level stored as Bururi. Province
+Bururi is on the list; commune Bururi is not under it.
+-}
+allBururi : Maybe Person
+allBururi =
+    burundiPlaces
+        |> Maybe.map
+            (\places ->
+                personAt places.home
+                    |> (\person ->
+                            { person
+                                | province = Just "Bururi"
+                                , district = Just "Bururi"
+                                , sector = Just "Bururi"
+                                , cell = Just "Bururi"
+                                , village = Just "Bururi"
+                            }
+                       )
+            )
+
+
+{-| Runs the check with the all-Bururi person.
+-}
+withAllBururi : (Person -> Expect.Expectation) -> Expect.Expectation
+withAllBururi check =
+    case allBururi of
+        Just person ->
+            check person
+
+        Nothing ->
+            Expect.fail "Burundi's address list has no address these scenarios can use"
+
+
+{-| The form opened for the person, for the operation, with the person's
+values filled in, before the nurse changes anything.
+-}
+filledInFor : Site -> ParticipantDirectoryOperation -> Person -> Form ValidationError Person
+filledInFor site operation person =
+    applyDefaultValuesForPerson saveDate
+        site
+        (reverseGeoInfoOn site)
+        Nothing
+        False
+        (Just person)
+        operation
+        ParticipantDirectoryOrigin
+        (case operation of
+            CreatePerson _ ->
+                emptyCreateForm site
+
+            EditPerson _ ->
+                emptyEditForm site
+        )
+
+
+{-| The given address fields that hold a value, written as "field holds
+value". An empty select holds no value, or "".
+-}
+holdingAPlace : List String -> Form e o -> List String
+holdingAPlace levels form =
+    List.filterMap
+        (\name ->
+            case (Form.getFieldAsString name form).value of
+                Just "" ->
+                    Nothing
+
+                Just value ->
+                    Just (name ++ " holds " ++ value)
+
+                Nothing ->
+                    Nothing
+        )
+        levels
+
+
+{-| The address fields of the form, with what each holds.
+-}
+addressFieldsOf : Form e o -> List ( String, Maybe String )
+addressFieldsOf form =
+    List.map (\name -> ( name, (Form.getFieldAsString name form).value )) addressLevels
+
+
+addFamilyMemberTo : ParticipantDirectoryOperation
+addFamilyMemberTo =
+    CreatePerson (Just (toEntityUuid "related-person"))
+
+
+{-| A child added to the related adult: what the nurse types, other than the
+address.
+-}
+newChildFields : List Form.Msg
+newChildFields =
+    [ typeText firstName "New"
+    , typeText secondName "Child"
+    , typeText birthDate "2024-03-10"
+    , pick gender "male"
+    , pick modeOfDelivery "cesarean-delivery"
+    ]
+
+
+{-| The nurse adds a child to the related person, leaves the filled-in address
+as it is, and presses Save.
+-}
+saveNewFamilyMember : Site -> Person -> Result (List String) SavedAddress
+saveNewFamilyMember site related =
+    pressSave site addFamilyMemberTo related newChildFields
+        |> Result.map savedAddress
+
+
+unlistedLevelNamedLikeProvince : Test
+unlistedLevelNamedLikeProvince =
+    describe "A stored address with a place missing from the list and a lower level named like a province"
+        [ unlistedEditSaves
+        , unlistedFamilyMemberSaves
+        , nothingFilledBelowUnlisted
+        , listedAddressAsBefore
+        ]
+
+
+{-| Criterion: a person whose stored address names a place missing from the
+address list, with a lower level named like a province, still saves when the
+address is not touched, and keeps the stored address.
+
+The nurse edits the phone number only, or nothing at all, and presses Save.
+
+-}
+unlistedEditSaves : Test
+unlistedEditSaves =
+    describe "A person whose stored address names a place missing from the address list, with a lower level named like a province, still saves when the address is not touched, and keeps the stored address"
+        [ describe "when the phone number is edited" <|
+            onEveryUnlistedScenario
+                (\site _ person ->
+                    saveEdit site person [ typeText phoneNumber "0788111111" ]
+                        |> Expect.equal (unchanged person)
+                )
+        , describe "when nothing is edited" <|
+            onEveryUnlistedScenario
+                (\site _ person ->
+                    saveEdit site person []
+                        |> Expect.equal (unchanged person)
+                )
+        , test "Burundi: a person stored as Bururi at every level saves when the phone number is edited, and keeps Bururi" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        saveEdit SiteBurundi person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , test "Burundi: the phone number edited on the person stored as Bururi is saved" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        pressSave SiteBurundi editPerson person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .telephoneNumber
+                            |> Expect.equal (Ok (Just "0788111111"))
+        ]
+
+
+{-| Criterion: adding a family member to such a person, saving the filled-in
+address unchanged works, and stores the related person's address.
+
+The family member is a child of the related adult; the nurse fills in the
+child's own details and leaves the address as filled in.
+
+-}
+unlistedFamilyMemberSaves : Test
+unlistedFamilyMemberSaves =
+    describe "Adding a family member to such a person: saving the filled-in address unchanged works, and stores the related person's address"
+        [ describe "for each stored shape" <|
+            onEveryUnlistedScenario
+                (\site _ related ->
+                    saveNewFamilyMember site related
+                        |> Expect.equal (unchanged related)
+                )
+        , test "Burundi: adding a family member to the person stored as Bururi stores Bururi at every level" <|
+            \_ ->
+                withAllBururi <|
+                    \related ->
+                        saveNewFamilyMember SiteBurundi related
+                            |> Expect.equal (unchanged related)
+        ]
+
+
+{-| Criterion: below a level missing from the list, no address field is filled
+with a place from the list. The missing level itself cannot be shown either.
+
+Checked on the form as it opens, for editing the person and for adding a
+family member to them. The levels above the missing one are still filled in
+with their places, as before.
+
+-}
+nothingFilledBelowUnlisted : Test
+nothingFilledBelowUnlisted =
+    let
+        noPlaceFrom operation site scenario person =
+            filledInFor site operation person
+                |> holdingAPlace (levelsFrom scenario.missingFrom)
+                |> Expect.equalLists []
+
+        chwVillageStoredAs person =
+            { healthCenterId = homeHealthCentre
+            , name = "CHW village"
+            , province = Maybe.withDefault "" person.province
+            , district = Maybe.withDefault "" person.district
+            , sector = Maybe.withDefault "" person.sector
+            , cell = Maybe.withDefault "" person.cell
+            , village = Maybe.withDefault "" person.village
+            }
+    in
+    describe "Below a level missing from the list, no address field is filled with a place from the list"
+        [ describe "editing the person" <|
+            onEveryUnlistedScenario (noPlaceFrom editPerson)
+        , describe "adding a family member to the person" <|
+            onEveryUnlistedScenario (noPlaceFrom addFamilyMemberTo)
+        , describe "a CHW registering a person, when the CHW's village has the stored shape" <|
+            -- A CHW's form is filled in from the CHW's village, with the
+            -- address section hidden.
+            onEveryUnlistedScenario
+                (\site scenario person ->
+                    applyDefaultValuesForPerson saveDate
+                        site
+                        (reverseGeoInfoOn site)
+                        (Just (chwVillageStoredAs person))
+                        True
+                        Nothing
+                        (CreatePerson Nothing)
+                        ParticipantDirectoryOrigin
+                        (emptyCreateForm site)
+                        |> holdingAPlace (levelsFrom scenario.missingFrom)
+                        |> Expect.equalLists []
+                )
+        , test "Burundi: the person stored as Bururi has only the province filled in, when edited" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        filledInFor SiteBurundi editPerson person
+                            |> holdingAPlace addressLevels
+                            |> Expect.equalLists [ province ++ " holds 1" ]
+        , test "Burundi: the person stored as Bururi has only the province filled in, when a family member is added" <|
+            \_ ->
+                withAllBururi <|
+                    \person ->
+                        filledInFor SiteBurundi addFamilyMemberTo person
+                            |> holdingAPlace addressLevels
+                            |> Expect.equalLists [ province ++ " holds 1" ]
+        , describe "the levels above the missing one are filled in with their places" <|
+            onEveryUnlistedScenario
+                (\site scenario person ->
+                    withPlaces site <|
+                        \places ->
+                            let
+                                above =
+                                    List.Extra.takeWhile ((/=) scenario.missingFrom) addressLevels
+
+                                expected =
+                                    [ ( province, placeId places.home.province )
+                                    , ( district, placeId places.home.district )
+                                    , ( sector, placeId places.home.sector )
+                                    , ( cell, placeId places.home.cell )
+                                    ]
+                                        |> List.filter (\( name, _ ) -> List.member name above)
+                                        |> List.map (\( name, id ) -> ( name, Just id ))
+                            in
+                            filledInFor site editPerson person
+                                |> addressFieldsOf
+                                |> List.filter (\( name, _ ) -> List.member name above)
+                                |> Expect.equalLists expected
+                )
+        ]
+
+
+{-| Criterion: a person whose stored address is fully on the list is filled in
+and saved as before.
+
+On Burundi, commune Rumonge lies in province Rumonge: a lower level that shares
+a province's name and is on the list under it is filled in with its own place,
+not the province.
+
+-}
+listedAddressAsBefore : Test
+listedAddressAsBefore =
+    let
+        rumongeAddress =
+            addressNamed SiteBurundi [ "Rumonge", "Rumonge", "Gatete", "Busebwa", "Busebwa" ]
+
+        withRumonge check =
+            case rumongeAddress of
+                Just address ->
+                    check address
+
+                Nothing ->
+                    Expect.fail "Burundi's list has no Rumonge › Rumonge › Gatete › Busebwa › Busebwa"
+
+        idsOf address =
+            [ ( province, Just (placeId address.province) )
+            , ( district, Just (placeId address.district) )
+            , ( sector, Just (placeId address.sector) )
+            , ( cell, Just (placeId address.cell) )
+            , ( village, Just (placeId address.village) )
+            ]
+    in
+    describe "A person whose stored address is fully on the list is filled in and saved as before"
+        [ onEverySite "editing the person fills in every level with its place" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledInFor site editPerson (personAt places.home)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
+        , onEverySite "adding a family member fills in every level with its place" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledInFor site addFamilyMemberTo (personAt places.home)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
+        , onEverySite "editing the phone number saves the address unchanged" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "adding a family member saves the related person's address" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                        in
+                        saveNewFamilyMember site related
+                            |> Expect.equal (unchanged related)
+        , test "Burundi: a person in commune Rumonge of province Rumonge has the commune filled in, not the province" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        filledInFor SiteBurundi editPerson (personAt address)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf address)
+        , test "Burundi: a person in commune Rumonge of province Rumonge saves the address unchanged" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        let
+                            person =
+                                personAt address
+                        in
+                        saveEdit SiteBurundi person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , test "Burundi: adding a family member to a person in commune Rumonge saves Rumonge at both levels" <|
+            \_ ->
+                withRumonge <|
+                    \address ->
+                        let
+                            related =
+                                personAt address
+                        in
+                        saveNewFamilyMember SiteBurundi related
+                            |> Expect.equal (unchanged related)
+        , onEverySite "a CHW registering a person has every level filled in from the CHW's village" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        applyDefaultValuesForPerson saveDate
+                            site
+                            (reverseGeoInfoOn site)
+                            (Just
+                                { healthCenterId = homeHealthCentre
+                                , name = "CHW village"
+                                , province = placeName places.home.province
+                                , district = placeName places.home.district
+                                , sector = placeName places.home.sector
+                                , cell = placeName places.home.cell
+                                , village = placeName places.home.village
+                                }
+                            )
+                            True
+                            Nothing
+                            (CreatePerson Nothing)
+                            ParticipantDirectoryOrigin
+                            (emptyCreateForm site)
+                            |> addressFieldsOf
+                            |> Expect.equalLists (idsOf places.home)
+        ]

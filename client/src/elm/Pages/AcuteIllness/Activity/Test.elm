@@ -1,5 +1,6 @@
 module Pages.AcuteIllness.Activity.Test exposing (all)
 
+import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model as AcuteIllnessEncounterModel
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -12,40 +13,60 @@ import Backend.Measurement.Model
         , AcuteFindingsValue
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
+        , AdministrationNote(..)
+        , AdverseEvent(..)
+        , ChildNutritionSign(..)
         , CovidTestingValue
+        , FollowUpOption(..)
+        , Gender(..)
+        , HealthEducationSign(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
+        , MuacInCm(..)
         , RapidTestResult(..)
+        , ReasonForNonReferral(..)
+        , ReasonForNotProvidingHealthEducation(..)
+        , ReasonForNotTaking(..)
+        , SendToHCSign(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
+        , TreatmentOngoingSign(..)
         , TreatmentReviewSign(..)
         , VitalsValue
         )
-import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html, div)
 import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
+import Measurement.Utils exposing (ongoingTreatmentReviewFormWithDefault, toHealthEducationValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toSendToHCValueWithDefault, treatmentReviewInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
-import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PriorTreatmentTask(..), SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
-        ( covidTestingFormWithDefault
+        ( covidTestingFormInputsAndTasks
+        , covidTestingFormWithDefault
+        , laboratoryTasksCompletedFromTotal
         , malariaDangerSignsPresent
         , malariaTestingFormWithDefault
+        , medicationDistributionFormInputsAndTasks
         , mildGastrointestinalInfectionSymptomsPresent
+        , nextStepsTasksCompletedFromTotal
         , nonBloodyDiarrheaAtSymptoms
+        , ongoingTreatmentTasksCompletedFromTotal
         , resolveAcuteIllnessDiagnosis
         , resolveAcuteIllnessDiagnosisByMalariaRDT
         , resolveAmoxicillinDosage
         , resolveCoartemDosage
+        , resolveNextStepsTasks
         , resolveORSDosage
         , resolveZincDosage
         , respiratoryInfectionDangerSignsPresent
@@ -57,16 +78,25 @@ import Pages.AcuteIllness.Activity.Utils
         , symptomsTasksCompletedFromTotal
         , toCovidTestingValueWithDefault
         , toSymptomsGIValueWithDefault
+        , toTreatmentReviewValueWithDefault
+        , treatmentReviewFormInputsAndTasks
         , treatmentReviewFormWithDefault
+        , treatmentTasksCompletedFromTotal
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
+import Pages.AcuteIllness.Encounter.View as EncounterView
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Event as Event
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (class, containing, tag, text)
 import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
+import Translate exposing (translate)
+import Translate.Model exposing (Language(..))
 
 
 
@@ -884,6 +914,12 @@ all =
         , editedRecordDerivedQuestionsTest
         , generateAllEncountersDataTest
         , splitByInitialNurseEncounterTest
+        , generateAssembledDataTest
+        , followUpMalariaTestTest
+        , priorTreatmentDidItHelpTest
+        , covidTestNotPerformedReasonTest
+        , ongoingTreatmentReviewFollowUpTest
+        , nextStepsWhyNotTest
         ]
 
 
@@ -1151,4 +1187,1538 @@ splitByInitialNurseEncounterTest =
         , test "returns empty sequences for no encounters" <|
             \_ ->
                 expectSplit [] ( [], [] )
+        ]
+
+
+{-| A CHW encounter is the initial one when no encounter of the illness came
+before it. Encounters that come after it, by date and then sequence number,
+are not its history, and their diagnosis is not its diagnosis.
+-}
+generateAssembledDataTest : Test
+generateAssembledDataTest =
+    let
+        nextDay =
+            Date.add Date.Days 1 currentDate
+
+        chwEncounter startDate sequenceNumber diagnosis =
+            { dummyEncounter
+                | startDate = startDate
+                , sequenceNumber = sequenceNumber
+                , diagnosis = diagnosis
+            }
+
+        -- Assembles the encounter with the given id, out of an illness
+        -- holding the given encounters, all with no measurements.
+        assemble id encounters =
+            assembleWithLoading [] id encounters
+
+        -- As assemble, with measurements of the listed encounters still loading.
+        assembleWithLoading loadingIds id encounters =
+            let
+                encountersDict =
+                    List.map (Tuple.mapFirst toEntityUuid) encounters
+                        |> Dict.fromList
+
+                loadingUuids =
+                    List.map toEntityUuid loadingIds
+
+                measurementsFor encounterId =
+                    if List.member encounterId loadingUuids then
+                        Loading
+
+                    else
+                        Success emptyAcuteIllnessMeasurements
+
+                db =
+                    { emptyModelIndexedDb
+                        | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encountersDict
+                        , acuteIllnessMeasurements = Dict.map (\encounterId _ -> measurementsFor encounterId) encountersDict
+                        , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encountersDict)
+                        , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
+                        , people = Dict.singleton dummyParticipant.person (Success testPerson)
+                    }
+            in
+            generateAssembledData currentDate EverySet.empty (toEntityUuid id) True db
+                |> RemoteData.toMaybe
+
+        first =
+            ( "first", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+    in
+    describe "generateAssembledData"
+        [ test "a CHW encounter with no other encounters is initial" <|
+            \_ ->
+                assemble "first" [ first ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later day's encounter exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later encounter of the same day exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a later encounter's diagnosis is not taken by an earlier encounter" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 DiagnosisMalariaUncomplicated ) ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just Nothing)
+        , test "a later CHW encounter is subsequent, and takes the earlier encounter's diagnosis" <|
+            \_ ->
+                assemble "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "a follow-up takes the diagnosis of the most recent earlier encounter that has one" <|
+            \_ ->
+                let
+                    twoDaysAgo =
+                        Date.add Date.Days -2 currentDate
+
+                    yesterday =
+                        Date.add Date.Days -1 currentDate
+                in
+                assemble "today"
+                    [ ( "twoDaysAgo", chwEncounter twoDaysAgo 1 DiagnosisFeverOfUnknownOrigin )
+                    , ( "yesterday", chwEncounter yesterday 1 DiagnosisMalariaUncomplicated )
+                    , ( "today", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( yesterday, DiagnosisMalariaUncomplicated )))
+        , test "a follow-up stays a follow-up, with the earlier diagnosis, while earlier measurements load" <|
+            \_ ->
+                assembleWithLoading [ "first" ]
+                    "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "two CHW encounters with the same date and sequence number are both initial" <|
+            \_ ->
+                let
+                    tied =
+                        [ first, ( "twin", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis ) ]
+                in
+                [ assemble "first" tied, assemble "twin" tied ]
+                    |> List.map (Maybe.map .initialEncounter)
+                    |> Expect.equal [ Just True, Just True ]
+        , test "previous encounters hold only those that came before" <|
+            \_ ->
+                assemble "middle"
+                    [ first
+                    , ( "middle", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis )
+                    , ( "last", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (.previousEncountersData >> List.map .id)
+                    |> Expect.equal (Just [ toEntityUuid "first" ])
+        ]
+
+
+
+-- FOLLOW-UP VISIT FIXTURES
+--
+-- These tests run a visit through generateAssembledData, as the screens do,
+-- so that a test covers what a health worker sees rather than one helper.
+-- An illness is a first visit dayBefore, stored as Simple Cold and Cough
+-- unless a test says otherwise, and a follow-up visit today, whose stored
+-- diagnosis is empty until the malaria test has been written to it.
+
+
+dayBefore : NominalDate
+dayBefore =
+    Date.add Date.Days -1 currentDate
+
+
+type alias IllnessVisit =
+    ( String, AcuteIllnessEncounterModel.AcuteIllnessEncounter, AcuteIllnessMeasurements )
+
+
+illnessEncounter :
+    AcuteIllnessEncounterType
+    -> NominalDate
+    -> AcuteIllnessDiagnosis
+    -> AcuteIllnessEncounterModel.AcuteIllnessEncounter
+illnessEncounter encounterType startDate diagnosis =
+    { dummyEncounter | encounterType = encounterType, startDate = startDate, diagnosis = diagnosis }
+
+
+{-| The illness holds exactly the given visits, each with its measurements
+loaded.
+-}
+illnessDb : Person -> List IllnessVisit -> ModelIndexedDb
+illnessDb person visits =
+    let
+        encounters =
+            List.map (\( id, encounter, _ ) -> ( toEntityUuid id, encounter )) visits
+                |> Dict.fromList
+    in
+    { emptyModelIndexedDb
+        | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encounters
+        , acuteIllnessMeasurements =
+            List.map (\( id, _, measurements ) -> ( toEntityUuid id, Success measurements )) visits
+                |> Dict.fromList
+        , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encounters)
+        , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
+        , people = Dict.singleton dummyParticipant.person (Success person)
+    }
+
+
+assembleVisit : Bool -> EverySet SiteFeature -> Person -> String -> List IllnessVisit -> Maybe AssembledData
+assembleVisit isChw features person visitId visits =
+    generateAssembledData currentDate features (toEntityUuid visitId) isChw (illnessDb person visits)
+        |> RemoteData.toMaybe
+
+
+firstVisit : AcuteIllnessDiagnosis -> IllnessVisit
+firstVisit diagnosis =
+    ( "first", illnessEncounter AcuteIllnessEncounterCHW dayBefore diagnosis, emptyAcuteIllnessMeasurements )
+
+
+{-| A visit between the first one and the follow-up, later in the same day as
+the first one.
+-}
+secondVisit : AcuteIllnessDiagnosis -> IllnessVisit
+secondVisit diagnosis =
+    let
+        encounter =
+            illnessEncounter AcuteIllnessEncounterCHW dayBefore diagnosis
+    in
+    ( "second", { encounter | sequenceNumber = 2 }, emptyAcuteIllnessMeasurements )
+
+
+followUpVisit : AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> IllnessVisit
+followUpVisit storedDiagnosis measurements =
+    ( "followUp", illnessEncounter AcuteIllnessEncounterCHW currentDate storedDiagnosis, measurements )
+
+
+{-| A CHW follow-up of an illness whose first visit found the given diagnosis.
+-}
+followUpOfIllness : Person -> AcuteIllnessDiagnosis -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Maybe AssembledData
+followUpOfIllness person earlierDiagnosis storedDiagnosis measurements =
+    assembleVisit True
+        EverySet.empty
+        person
+        "followUp"
+        [ firstVisit earlierDiagnosis, followUpVisit storedDiagnosis measurements ]
+
+
+coldFollowUp : Person -> AcuteIllnessMeasurements -> Maybe AssembledData
+coldFollowUp person measurements =
+    followUpOfIllness person DiagnosisSimpleColdAndCough NoAcuteIllnessDiagnosis measurements
+
+
+firstVisitOnly : Person -> AcuteIllnessMeasurements -> Maybe AssembledData
+firstVisitOnly person measurements =
+    assembleVisit True
+        EverySet.empty
+        person
+        "first"
+        [ ( "first", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, measurements ) ]
+
+
+{-| Everything that makes a follow-up visit complete, apart from Laboratory:
+no danger sign, a temperature that asks for the malaria test, and the
+child-only and nurse-only exams, which are simply not read for other patients.
+-}
+followUpMeasurements : AcuteIllnessMeasurements
+followUpMeasurements =
+    { emptyAcuteIllnessMeasurements
+        | dangerSigns = wrapMeasurement (EverySet.singleton NoAcuteIllnessDangerSign)
+        , muac = wrapMeasurement (MuacInCm 14)
+        , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+    }
+        |> withVitals (Just 38) Nothing Nothing Nothing
+        |> withCoreExam EverySet.empty EverySet.empty
+
+
+withDangerSigns : List AcuteIllnessDangerSign -> AcuteIllnessMeasurements -> AcuteIllnessMeasurements
+withDangerSigns signs measurements =
+    { measurements | dangerSigns = wrapMeasurement (EverySet.fromList signs) }
+
+
+withoutFever : AcuteIllnessMeasurements -> AcuteIllnessMeasurements
+withoutFever =
+    withVitals Nothing Nothing Nothing Nothing
+
+
+positiveFollowUp : AcuteIllnessMeasurements
+positiveFollowUp =
+    followUpMeasurements
+        |> withMalariaTesting RapidTestPositive
+
+
+diagnosisOf : Maybe AssembledData -> Maybe (Maybe AcuteIllnessDiagnosis)
+diagnosisOf =
+    Maybe.map (.diagnosis >> Maybe.map Tuple.second)
+
+
+chwNextSteps : Maybe AssembledData -> Maybe (List NextStepsTask)
+chwNextSteps =
+    Maybe.map (resolveNextStepsTasks currentDate True)
+
+
+{-| The inputs of the Medication Distribution form the visit shows, opened
+empty, as it is the first time a health worker reaches it.
+-}
+medicationFormOf : AssembledData -> List (Html Pages.AcuteIllness.Activity.Model.Msg)
+medicationFormOf assembled =
+    medicationDistributionFormInputsAndTasks English
+        currentDate
+        assembled.person
+        (Maybe.map Tuple.second assembled.diagnosis)
+        emptyModel.nextStepsData.medicationDistributionForm
+        |> Tuple.first
+
+
+expectVisit : (AssembledData -> Expect.Expectation) -> Maybe AssembledData -> Expect.Expectation
+expectVisit expectation assembled =
+    Maybe.map expectation assembled
+        |> Maybe.withDefault (Expect.fail "The visit did not assemble")
+
+
+{-| What the health worker's Save on the Follow Up form writes: the same
+message the Next Steps screen sends, carrying the visit's diagnosis and any
+Follow Up already saved on the visit.
+-}
+savedFollowUpDiagnoses : AssembledData -> List (Maybe AcuteIllnessDiagnosis)
+savedFollowUpDiagnoses assembled =
+    let
+        data =
+            emptyModel.nextStepsData
+
+        form =
+            data.followUpForm
+
+        model =
+            { emptyModel | nextStepsData = { data | followUpForm = { form | option = Just OneDay } } }
+
+        ( _, _, appMsgs ) =
+            update SiteRwanda
+                Nothing
+                assembled.id
+                emptyModelIndexedDb
+                (SaveFollowUp assembled.participant.person
+                    (Maybe.map Tuple.second assembled.diagnosis)
+                    assembled.measurements.followUp
+                    Nothing
+                )
+                model
+    in
+    List.filterMap
+        (\msg ->
+            case msg of
+                App.Model.MsgIndexedDb (Backend.Model.MsgAcuteIllnessEncounter _ (AcuteIllnessEncounterModel.SaveFollowUp _ _ value)) ->
+                    Just value.diagnosis
+
+                _ ->
+                    Nothing
+        )
+        appMsgs
+
+
+{-| The label the screens print for a diagnosis.
+-}
+diagnosisLabel : AcuteIllnessDiagnosis -> String
+diagnosisLabel diagnosis =
+    translate English (Translate.AcuteIllnessDiagnosis diagnosis)
+
+
+{-| The heading of the encounter page, as rendered for the visit.
+-}
+encounterHeaderOf : Person -> List IllnessVisit -> String -> Query.Single Pages.AcuteIllness.Encounter.Model.Msg
+encounterHeaderOf person visits visitId =
+    EncounterView.view English
+        currentDate
+        EverySet.empty
+        (toEntityUuid visitId)
+        True
+        (illnessDb person visits)
+        Pages.AcuteIllness.Encounter.Model.emptyModel
+        |> Query.fromHtml
+        |> Query.find [ class "head" ]
+
+
+{-| The popup the Next Steps page opens, which is told to show the diagnosis
+held by the visit.
+-}
+expectPopupNames : String -> AssembledData -> Expect.Expectation
+expectPopupNames expectedText assembled =
+    EncounterView.warningPopup English
+        currentDate
+        (Maybe.map Tuple.second assembled.diagnosis)
+        identity
+        assembled
+        |> Maybe.map (\popup -> Query.fromHtml popup |> Query.has [ text expectedText ])
+        |> Maybe.withDefault (Expect.fail "The diagnosis popup is not shown")
+
+
+
+-- FOLLOW-UP VISIT TESTS
+
+
+followUpMalariaTestTest : Test
+followUpMalariaTestTest =
+    describe "Acute Illness follow-up visit and its malaria test"
+        [ followUpPositiveNoDangerSignTest
+        , followUpPositiveDangerSignTest
+        , followUpPositiveUnderSixMonthsTest
+        , followUpSavedFollowUpTest
+        , followUpHeaderAndPopupTest
+        , followUpNegativeOrNoTestTest
+        , followUpCorrectedTestTest
+        , firstVisitUnchangedTest
+        , followUpPositiveAndPregnantTest
+        , followUpOtherShapesTest
+        ]
+
+
+followUpPositiveNoDangerSignTest : Test
+followUpPositiveNoDangerSignTest =
+    describe "follow-up, positive test, no danger sign, six months or older"
+        [ test "the visit's diagnosis is uncomplicated malaria" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "the visit's diagnosis is dated this visit, not the earlier illness" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( currentDate, DiagnosisMalariaUncomplicated )))
+        , test "the visit's diagnosis is uncomplicated malaria at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "Next Steps asks for Medication Distribution and Follow Up" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "Next Steps asks for Medication Distribution and Follow Up at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "the medication form offers Coartem" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 1)
+                        )
+        , test "the medication form offers Coartem at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 1)
+                        )
+        , test "the diagnosis does not depend on what the earlier illness was" <|
+            \_ ->
+                List.map
+                    (\earlierDiagnosis ->
+                        followUpOfIllness testPerson earlierDiagnosis NoAcuteIllnessDiagnosis positiveFollowUp
+                            |> diagnosisOf
+                    )
+                    [ NoAcuteIllnessDiagnosis
+                    , DiagnosisFeverOfUnknownOrigin
+                    , DiagnosisGastrointestinalInfectionUncomplicated
+                    , DiagnosisRespiratoryInfectionComplicated
+                    ]
+                    |> Expect.equal
+                        (List.repeat 4 (Just (Just DiagnosisMalariaUncomplicated)))
+        , test "with the condition not improving, the visit's diagnosis is the one the app stores" <|
+            \_ ->
+                -- Asserts the visit agrees with the diagnosis the app stores for these same
+                -- measurements, rather than naming the sign's meaning here.
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConditionNotImproving ])
+                    |> expectVisit
+                        (\assembled ->
+                            Maybe.map Tuple.second assembled.diagnosis
+                                |> Expect.equal
+                                    (subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled)
+                        )
+        , test "a nurse's subsequent visit gets uncomplicated malaria too" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurseSubsequent"
+                    [ ( "first", illnessEncounter AcuteIllnessEncounterNurse dayBefore DiagnosisSimpleColdAndCough, emptyAcuteIllnessMeasurements )
+                    , ( "nurseSubsequent", illnessEncounter AcuteIllnessEncounterNurseSubsequent currentDate NoAcuteIllnessDiagnosis, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a site with Tuberculosis Management gets uncomplicated malaria too" <|
+            \_ ->
+                assembleVisit True
+                    (EverySet.singleton FeatureTuberculosisManagement)
+                    testPerson
+                    "followUp"
+                    [ firstVisit DiagnosisSimpleColdAndCough, followUpVisit NoAcuteIllnessDiagnosis positiveFollowUp ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a third visit with a positive test is malaria, whichever visit came before" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "third"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , secondVisit NoAcuteIllnessDiagnosis
+                    , ( "third", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        ]
+
+
+followUpPositiveDangerSignTest : Test
+followUpPositiveDangerSignTest =
+    describe "follow-up, positive test, a danger sign"
+        [ test "the visit's diagnosis is complicated malaria" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaComplicated))
+        , test "any danger sign makes it complicated malaria" <|
+            \_ ->
+                List.map
+                    (\sign ->
+                        coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ sign ])
+                            |> diagnosisOf
+                    )
+                    [ DangerSignUnableDrinkSuck
+                    , DangerSignVomiting
+                    , DangerSignLethargyUnconsciousness
+                    , DangerSignRespiratoryDistress
+                    , DangerSignSpontaneousBleeding
+                    , DangerSignBloodyDiarrhea
+                    , DangerSignNewSkinRash
+                    ]
+                    |> Expect.equal (List.repeat 7 (Just (Just DiagnosisMalariaComplicated)))
+        , test "Next Steps asks for Send to Health Centre and Follow Up, not Medication Distribution" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "Next Steps is the same for a child with a danger sign" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 24) (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "the medication form does not offer Coartem" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 0)
+                        )
+        , test "a nurse's subsequent visit asks for Send to Health Centre and Follow Up" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurseSubsequent"
+                    [ ( "first", illnessEncounter AcuteIllnessEncounterNurse dayBefore DiagnosisSimpleColdAndCough, emptyAcuteIllnessMeasurements )
+                    , ( "nurseSubsequent", illnessEncounter AcuteIllnessEncounterNurseSubsequent currentDate NoAcuteIllnessDiagnosis, positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ] )
+                    ]
+                    |> Maybe.map (resolveNextStepsTasks currentDate False)
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        ]
+
+
+followUpPositiveUnderSixMonthsTest : Test
+followUpPositiveUnderSixMonthsTest =
+    describe "follow-up, positive test, no danger sign, under six months"
+        [ test "Next Steps asks for Send to Health Centre and Follow Up, not Medication Distribution" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 3) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "the same at five months, the last month under six" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 5) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        ]
+
+
+followUpSavedFollowUpTest : Test
+followUpSavedFollowUpTest =
+    describe "the Follow Up saved on a follow-up visit with a positive test"
+        [ test "carries the malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "carries the complicated malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaComplicated ]
+                        )
+        , test "carries the malaria diagnosis for a child under six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 3) positiveFollowUp
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "replaces a Follow Up already saved on the visit with the earlier illness" <|
+            \_ ->
+                let
+                    alreadySaved =
+                        { positiveFollowUp
+                            | followUp =
+                                wrapMeasurement
+                                    { options = EverySet.singleton OneDay
+                                    , resolutionDate = Nothing
+                                    , diagnosis = Just DiagnosisSimpleColdAndCough
+                                    }
+                        }
+                in
+                coldFollowUp testPerson alreadySaved
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "a follow-up with no positive test still saves the earlier illness" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisSimpleColdAndCough ]
+                        )
+        ]
+
+
+followUpHeaderAndPopupTest : Test
+followUpHeaderAndPopupTest =
+    let
+        visits measurements =
+            [ firstVisit DiagnosisSimpleColdAndCough, followUpVisit NoAcuteIllnessDiagnosis measurements ]
+
+        complicated =
+            positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ]
+    in
+    describe "the visit's header and the diagnosis popup"
+        [ test "the header names the malaria diagnosis" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits positiveFollowUp) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisMalariaUncomplicated) ]
+        , test "the header no longer names the earlier illness" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits positiveFollowUp) "followUp"
+                    |> Query.hasNot [ text (diagnosisLabel DiagnosisSimpleColdAndCough) ]
+        , test "the header names complicated malaria when there is a danger sign" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits complicated) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisMalariaComplicated) ]
+        , test "the diagnosis popup names the malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (expectPopupNames (translate English (Translate.AcuteIllnessDiagnosisWarning DiagnosisMalariaUncomplicated)))
+        , test "the diagnosis popup names complicated malaria when there is a danger sign" <|
+            \_ ->
+                coldFollowUp testPerson complicated
+                    |> expectVisit
+                        (expectPopupNames (translate English (Translate.AcuteIllnessDiagnosisWarning DiagnosisMalariaComplicated)))
+        , test "the header keeps the earlier illness with a negative test" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits (followUpMeasurements |> withMalariaTesting RapidTestNegative)) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisSimpleColdAndCough) ]
+        ]
+
+
+followUpNegativeOrNoTestTest : Test
+followUpNegativeOrNoTestTest =
+    describe "a follow-up visit with a negative malaria test, or none"
+        [ test "a negative test keeps the earlier illness's diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "no test keeps the earlier illness's diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever)
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "a test with no result keeps the earlier illness's diagnosis" <|
+            \_ ->
+                List.map
+                    (\result ->
+                        coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting result)
+                            |> diagnosisOf
+                    )
+                    [ RapidTestIndeterminate, RapidTestUnableToRun, RapidTestUnableToRunAndPregnant ]
+                    |> Expect.equal (List.repeat 3 (Just (Just DiagnosisSimpleColdAndCough)))
+        , test "a negative test with fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ])
+        , test "a negative test without fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever |> withMalariaTesting RapidTestNegative)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsHealthEducation ])
+        , test "no test and no fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsHealthEducation ])
+        , test "no test and a danger sign: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ])
+        , test "fever and the test not recorded yet: Next Steps stay closed" <|
+            \_ ->
+                coldFollowUp testPerson followUpMeasurements
+                    |> chwNextSteps
+                    |> Expect.equal (Just [])
+        , test "a negative test on an illness with no diagnosis yet leaves none" <|
+            \_ ->
+                followUpOfIllness testPerson NoAcuteIllnessDiagnosis NoAcuteIllnessDiagnosis (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "no test on an illness already diagnosed as malaria keeps malaria" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisMalariaUncomplicated NoAcuteIllnessDiagnosis (followUpMeasurements |> withoutFever)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a visit after a follow-up that found malaria keeps the malaria found there" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "third"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , secondVisit DiagnosisMalariaUncomplicated
+                    , ( "third", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, followUpMeasurements |> withoutFever )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a positive test on a later visit does not reach back to this one" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "followUp"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , followUpVisit NoAcuteIllnessDiagnosis (followUpMeasurements |> withoutFever)
+                    , ( "later", illnessEncounter AcuteIllnessEncounterCHW (Date.add Date.Days 1 currentDate) DiagnosisMalariaUncomplicated, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisSimpleColdAndCough))
+        ]
+
+
+followUpCorrectedTestTest : Test
+followUpCorrectedTestTest =
+    let
+        correctedToNegative =
+            followUpMeasurements |> withMalariaTesting RapidTestNegative
+    in
+    describe "a malaria test corrected on the same follow-up visit"
+        [ test "corrected from positive to negative brings back the earlier illness's diagnosis" <|
+            \_ ->
+                -- The encounter still holds the malaria diagnosis the positive test wrote.
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaUncomplicated correctedToNegative
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "corrected from positive to negative with complicated malaria still stored" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaComplicated correctedToNegative
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisSimpleColdAndCough))
+        , test "corrected to negative on an illness that had no diagnosis leaves none" <|
+            \_ ->
+                followUpOfIllness testPerson NoAcuteIllnessDiagnosis DiagnosisMalariaUncomplicated correctedToNegative
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "corrected to negative brings back the same Next Steps as a negative test" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaUncomplicated correctedToNegative
+                    |> chwNextSteps
+                    |> Expect.equal
+                        (coldFollowUp testPerson correctedToNegative
+                            |> chwNextSteps
+                        )
+        , test "a danger sign removed with the test still positive makes it uncomplicated malaria" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaComplicated positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        ]
+
+
+firstVisitUnchangedTest : Test
+firstVisitUnchangedTest =
+    let
+        firstVisitComplete =
+            gateBaseChw
+                |> withVitals (Just 38) Nothing Nothing Nothing
+
+        childFirstVisit =
+            { firstVisitComplete
+                | muac = wrapMeasurement (MuacInCm 14)
+                , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+            }
+
+        coldFirstVisit =
+            gateBaseChw
+                |> withSymptomsRespiratory Cough
+                |> withVitals Nothing (Just 25) Nothing Nothing
+    in
+    describe "a first visit gets the same diagnosis and Next Steps as today"
+        [ test "positive test, no danger sign: uncomplicated malaria" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "positive test, no danger sign: Next Steps" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "positive test, a danger sign at symptoms: complicated malaria" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withSymptomsGeneral SymptomsGeneralConvulsions |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaComplicated))
+        , test "positive test, a danger sign at symptoms: Next Steps" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withSymptomsGeneral SymptomsGeneralConvulsions |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "positive test, child under six months: Next Steps" <|
+            \_ ->
+                firstVisitOnly (personAgedMonths 3) (childFirstVisit |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "negative test: fever of unknown origin and Send to Health Centre" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestNegative)
+                    |> Maybe.map (\assembled -> ( assembled.diagnosis, resolveNextStepsTasks currentDate True assembled ))
+                    |> Expect.equal (Just ( Just ( currentDate, DiagnosisFeverOfUnknownOrigin ), [ NextStepsSendToHC ] ))
+        , test "no fever, a cough: simple cold and cough, with no Next Steps for an adult" <|
+            \_ ->
+                firstVisitOnly testPerson coldFirstVisit
+                    |> Maybe.map (\assembled -> ( assembled.diagnosis, resolveNextStepsTasks currentDate True assembled ))
+                    |> Expect.equal (Just ( Just ( currentDate, DiagnosisSimpleColdAndCough ), [] ))
+        , test "no fever, a cough, a child of two: Medication Distribution and Follow Up" <|
+            \_ ->
+                firstVisitOnly (personAgedMonths 24)
+                    { coldFirstVisit
+                        | muac = wrapMeasurement (MuacInCm 14)
+                        , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+                    }
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "symptoms not recorded yet: no diagnosis, though the test is positive" <|
+            \_ ->
+                firstVisitOnly testPerson (emptyAcuteIllnessMeasurements |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "a nurse's first encounter after a CHW visit is judged as a first visit" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurse"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , ( "nurse"
+                      , illnessEncounter AcuteIllnessEncounterNurse currentDate NoAcuteIllnessDiagnosis
+                      , gateBaseNurse |> withVitals (Just 38) Nothing Nothing Nothing |> withMalariaTesting RapidTestPositive
+                      )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, Maybe.map Tuple.second assembled.diagnosis ))
+                    |> Expect.equal (Just ( True, Just DiagnosisMalariaUncomplicated ))
+        , test "a nurse's first encounter does not fall back on the CHW visit's diagnosis" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurse"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , ( "nurse", illnessEncounter AcuteIllnessEncounterNurse currentDate NoAcuteIllnessDiagnosis, emptyAcuteIllnessMeasurements )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "a site with Tuberculosis Management: a long cough is a Tuberculosis suspect, even with malaria" <|
+            \_ ->
+                assembleVisit True
+                    (EverySet.singleton FeatureTuberculosisManagement)
+                    testPerson
+                    "first"
+                    [ ( "first"
+                      , illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis
+                      , gateBaseChw
+                            |> withVitals (Just 38) Nothing Nothing Nothing
+                            |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                            |> withMalariaTesting RapidTestPositive
+                      )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisTuberculosisSuspect))
+        ]
+
+
+followUpPositiveAndPregnantTest : Test
+followUpPositiveAndPregnantTest =
+    let
+        positiveAndPregnant =
+            followUpMeasurements |> withMalariaTesting RapidTestPositiveAndPregnant
+    in
+    describe "a follow-up visit with a positive-and-pregnant test"
+        [ test "the visit's diagnosis is malaria in pregnancy" <|
+            \_ ->
+                coldFollowUp testPerson positiveAndPregnant
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicatedAndPregnant))
+        , test "the visit's diagnosis is the one the app stores for the same test" <|
+            \_ ->
+                coldFollowUp testPerson positiveAndPregnant
+                    |> expectVisit
+                        (\assembled ->
+                            Maybe.map Tuple.second assembled.diagnosis
+                                |> Expect.equal
+                                    (subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled)
+                        )
+        ]
+
+
+followUpOtherShapesTest : Test
+followUpOtherShapesTest =
+    describe "other shapes of a follow-up visit's record"
+        [ test "the visit's diagnosis is the one the app stores, for each positive combination" <|
+            \_ ->
+                List.map
+                    (\measurements ->
+                        coldFollowUp testPerson measurements
+                            |> Maybe.map
+                                (\assembled ->
+                                    Maybe.map Tuple.second assembled.diagnosis
+                                        == subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled
+                                )
+                    )
+                    [ positiveFollowUp
+                    , positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ]
+                    , positiveFollowUp |> withDangerSigns [ DangerSignConditionNotImproving, DangerSignConvulsions ]
+                    ]
+                    |> Expect.equal (List.repeat 3 (Just True))
+        , test "a positive test recorded before the danger signs: Next Steps stay closed" <|
+            \_ ->
+                coldFollowUp testPerson { positiveFollowUp | dangerSigns = Nothing }
+                    |> chwNextSteps
+                    |> Expect.equal (Just [])
+        , test "a positive test with an empty set of danger signs counts as no danger sign" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [])
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a follow-up is not treated as a first visit by the assembled record" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just False)
+        ]
+
+
+
+-- YES/NO QUESTIONS WITH A FOLLOW-UP
+
+
+{-| The message the page sends when the label `answer` of the Yes/No input
+`inputClass` is tapped, read off the rendered inputs.
+-}
+tapYesNo : String -> String -> List (Html Msg) -> Result String Msg
+tapYesNo inputClass answer inputs =
+    div [] inputs
+        |> Query.fromHtml
+        |> Query.find [ class inputClass ]
+        |> Query.find [ tag "label", containing [ text answer ] ]
+        |> Event.simulate Event.click
+        |> Event.toResult
+
+
+{-| The page after `msgs` ran, in order, on a freshly opened activity whose
+encounter holds `measurements` as its saved records.
+-}
+reopenAndRun : AcuteIllnessMeasurements -> List Msg -> Pages.AcuteIllness.Activity.Model.Model
+reopenAndRun measurements msgs =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        db =
+            { emptyModelIndexedDb
+                | acuteIllnessMeasurements = Dict.singleton encounterId (Success measurements)
+            }
+    in
+    List.foldl
+        (\msg model ->
+            let
+                ( updatedModel, _, _ ) =
+                    update SiteRwanda Nothing encounterId db msg model
+            in
+            updatedModel
+        )
+        emptyModel
+        msgs
+
+
+{-| A task counts as complete when every one of its questions is answered.
+-}
+expectTaskComplete : Bool -> ( Int, Int ) -> Expect.Expectation
+expectTaskComplete complete ( completed, total ) =
+    if complete then
+        Expect.equal ( total, total ) ( completed, total )
+
+    else
+        completed |> Expect.lessThan total
+
+
+{-| Prior treatment asks "Did it help?" only after "took the medication: Yes".
+Each test reopens a saved record, taps the real Yes/No label, lets the page
+handle the message, and then reads what Save would store.
+-}
+priorTreatmentDidItHelpTest : Test
+priorTreatmentDidItHelpTest =
+    let
+        -- Reopens `saved`, taps `answer` on `inputClass`, and returns what Save would store and the task count.
+        change saved ( inputClass, answer ) expectation =
+            let
+                savedSet =
+                    EverySet.fromList saved
+
+                ( inputs, _ ) =
+                    treatmentReviewFormWithDefault emptyModel.priorTreatmentData.treatmentReviewForm (Just savedSet)
+                        |> treatmentReviewFormInputsAndTasks English
+            in
+            case tapYesNo inputClass answer inputs of
+                Ok msg ->
+                    let
+                        measurements =
+                            { emptyAcuteIllnessMeasurements | treatmentReview = wrapMeasurement savedSet }
+
+                        data =
+                            (reopenAndRun measurements [ msg ]).priorTreatmentData
+                    in
+                    expectation
+                        { stored =
+                            toTreatmentReviewValueWithDefault (Just savedSet) data.treatmentReviewForm
+                                |> Maybe.map (\value -> List.filter (\sign -> EverySet.member sign value) allSigns)
+                        , tasks = treatmentTasksCompletedFromTotal measurements data TreatmentReview
+                        }
+
+                Err error ->
+                    Expect.fail error
+
+        allSigns =
+            [ FeverPast6Hours
+            , FeverPast6HoursHelped
+            , MalariaToday
+            , MalariaTodayHelped
+            , MalariaWithinPastMonth
+            , MalariaWithinPastMonthHelped
+            , NoTreatmentReviewSigns
+            ]
+
+        storedIs expected result =
+            Expect.equal (Just expected) result.stored
+    in
+    describe "Acute Illness prior treatment: \"Did it help?\" when a saved answer is changed"
+        [ describe "Acute Illness prior treatment saved with \"took the medication: Yes, it helped: Yes\", changed to \"took the medication: No\" and saved: the record does not say it helped"
+            [ test "fever medication in the past 6 hours" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped ] ( "fever-past-6-hours", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "malaria medication today" <|
+                \_ ->
+                    change [ MalariaToday, MalariaTodayHelped ] ( "malaria-today", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "malaria medication within the past month" <|
+                \_ ->
+                    change [ MalariaWithinPastMonth, MalariaWithinPastMonthHelped ] ( "malaria-within-past-month", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "the other medications' answers are saved as they were" <|
+                \_ ->
+                    change
+                        [ FeverPast6Hours
+                        , FeverPast6HoursHelped
+                        , MalariaToday
+                        , MalariaTodayHelped
+                        , MalariaWithinPastMonth
+                        ]
+                        ( "fever-past-6-hours", "No" )
+                    <|
+                        storedIs [ MalariaToday, MalariaTodayHelped, MalariaWithinPastMonth ]
+            , test "\"Did it help?\" is no longer asked, so the task is complete" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped ]
+                        ( "fever-past-6-hours", "No" )
+                        (.tasks >> Expect.equal ( 3, 3 ))
+            ]
+        , describe "Prior treatment records the defect does not touch stay as they are"
+            [ test "saved \"took the medication: Yes, it helped: No\", changed to \"No\": the record does not say it helped" <|
+                \_ ->
+                    change [ FeverPast6Hours ] ( "fever-past-6-hours", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "saved \"took the medication: Yes, it helped: Yes\", another medication changed to \"No\": the record still says it helped" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped, MalariaToday ] ( "malaria-today", "No" ) <|
+                        storedIs [ FeverPast6Hours, FeverPast6HoursHelped ]
+            , test "saved \"took the medication: Yes, it helped: Yes\", reopened without changes: the same record is saved" <|
+                \_ ->
+                    toTreatmentReviewValueWithDefault
+                        (Just (EverySet.fromList [ FeverPast6Hours, FeverPast6HoursHelped ]))
+                        emptyModel.priorTreatmentData.treatmentReviewForm
+                        |> Maybe.map (\value -> List.filter (\sign -> EverySet.member sign value) allSigns)
+                        |> Expect.equal (Just [ FeverPast6Hours, FeverPast6HoursHelped ])
+            ]
+        ]
+
+
+{-| COVID testing asks why the test was not performed after "test performed:
+No". Each test reopens a saved record, taps the real Yes/No label, lets the
+page handle the messages, and reads the task count and what Save would store.
+
+The patient is a man, so that the pregnancy question never joins the task list.
+
+-}
+covidTestNotPerformedReasonTest : Test
+covidTestNotPerformedReasonTest =
+    let
+        person =
+            { testPerson | gender = Male }
+
+        measurementsWith saved =
+            { emptyAcuteIllnessMeasurements | covidTesting = wrapMeasurement saved }
+
+        result saved msgs =
+            let
+                data =
+                    (reopenAndRun (measurementsWith saved) msgs).laboratoryData
+            in
+            { stored = toCovidTestingValueWithDefault (Just saved) data.covidTestingForm
+            , tasks = laboratoryTasksCompletedFromTotal dummyDate person (measurementsWith saved) data LaboratoryCovidTesting
+            }
+
+        -- Reopens `saved`, taps `answer` on "Test performed?", then runs `msgs`.
+        change saved answer msgs expectation =
+            let
+                ( inputs, _ ) =
+                    covidTestingFormWithDefault emptyCovidTestingForm (Just saved)
+                        |> covidTestingFormInputsAndTasks English dummyDate person
+            in
+            case tapYesNo "test-performed" answer inputs of
+                Ok msg ->
+                    expectation (result saved (msg :: msgs))
+
+                Err error ->
+                    Expect.fail error
+
+        notPerformed note =
+            CovidTestingValue RapidTestUnableToRun note
+    in
+    describe "Acute Illness COVID test: the reason for not testing when a saved answer is changed"
+        [ describe "A COVID test saved as not performed with a reason, changed to performed and saved: the record holds no reason for not testing"
+            (List.map
+                (\( label, note ) ->
+                    test ("saved reason: " ++ label ++ ", result Negative") <|
+                        \_ ->
+                            change (notPerformed (Just note))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.stored >> Expect.equal (Just (CovidTestingValue RapidTestNegative Nothing)))
+                )
+                [ ( "administered previously", AdministeredPreviously )
+                , ( "lack of stock", NonAdministrationLackOfStock )
+                , ( "other", NonAdministrationOther )
+                , ( "patient declined", NonAdministrationPatientDeclined )
+                , ( "patient unable to afford", NonAdministrationPatientUnableToAfford )
+                ]
+                ++ [ test "result Positive" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive True ]
+                                (.stored >> Maybe.map .administrationNote >> Expect.equal (Just Nothing))
+                   , test "saved as not performed while pregnant, result Negative" <|
+                        \_ ->
+                            change (CovidTestingValue RapidTestUnableToRunAndPregnant (Just NonAdministrationPatientDeclined))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.stored >> Maybe.map .administrationNote >> Expect.equal (Just Nothing))
+                   , test "the task is complete once the result is answered" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.tasks >> expectTaskComplete True)
+                   , test "the task is not complete before the result is answered" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                []
+                                (.tasks >> expectTaskComplete False)
+                   ]
+            )
+        , describe "A COVID test saved as performed, changed to not performed: the reason is unanswered and the task is not complete until a reason is chosen"
+            [ test "saved Negative: the task is not complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "saved Positive: the task is not complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestPositive Nothing)
+                        "No"
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a reason is chosen the task is complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        [ SetCovidTestingAdministrationNote NonAdministrationLackOfStock ]
+                        (.tasks >> expectTaskComplete True)
+            , test "the chosen reason is what gets saved" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        [ SetCovidTestingAdministrationNote NonAdministrationLackOfStock ]
+                        (.stored >> Expect.equal (Just (notPerformed (Just NonAdministrationLackOfStock))))
+            ]
+        , describe "A COVID test saved as not performed with a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the task is complete" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) []).tasks
+                        |> expectTaskComplete True
+            , test "the saved reason is ticked" <|
+                \_ ->
+                    covidTestingFormWithDefault emptyCovidTestingForm (Just (notPerformed (Just NonAdministrationPatientDeclined)))
+                        |> covidTestingFormInputsAndTasks English dummyDate person
+                        |> Tuple.first
+                        |> div []
+                        |> Query.fromHtml
+                        |> Query.find [ class "why-not" ]
+                        |> Query.findAll [ tag "input", class "checked" ]
+                        |> Query.count (Expect.equal 1)
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) []).stored
+                        |> Expect.equal (Just (notPerformed (Just NonAdministrationPatientDeclined)))
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) [ SetCovidTestingAdministrationNote NonAdministrationOther ]).stored
+                        |> Expect.equal (Just (notPerformed (Just NonAdministrationOther)))
+            ]
+        , describe "An older COVID test saved as not performed with no reason, reopened: the reason is unanswered and the task is not complete"
+            [ test "the task is not complete" <|
+                \_ ->
+                    (result (notPerformed Nothing) []).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    result (notPerformed Nothing) [ SetCovidTestingAdministrationNote AdministeredPreviously ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just (notPerformed (Just AdministeredPreviously)))
+                            ]
+            ]
+        ]
+
+
+{-| The subsequent-visit treatment review, driven through the page: each test
+reopens a saved record, taps the real Yes/No label, lets the page handle the
+messages, and reads the task count and what Save would store.
+
+A stored "no reason" is `NoReasonForNotTakingSign`; stored "no number" is 0
+missed doses.
+
+-}
+ongoingTreatmentReviewFollowUpTest : Test
+ongoingTreatmentReviewFollowUpTest =
+    let
+        savedWith signs reason doses =
+            { signs = EverySet.fromList signs
+            , reasonForNotTaking = reason
+            , missedDoses = doses
+            , adverseEvents = EverySet.singleton NoAdverseEvent
+            }
+
+        -- Taken as prescribed, feeling better, no missed doses, no side effects.
+        savedAllGood =
+            savedWith [ FeelingBetter, TakenAsPrescribed ] NoReasonForNotTakingSign 0
+
+        savedNotTaken reason =
+            savedWith [ FeelingBetter ] reason 0
+
+        savedMissed doses =
+            savedWith [ FeelingBetter, MissedDoses, TakenAsPrescribed ] NoReasonForNotTakingSign doses
+
+        measurementsWith saved =
+            { emptyAcuteIllnessMeasurements | treatmentOngoing = wrapMeasurement saved }
+
+        result saved msgs =
+            let
+                data =
+                    (reopenAndRun (measurementsWith saved) msgs).ongoingTreatmentData
+            in
+            { stored =
+                toOngoingTreatmentReviewValueWithDefault (Just saved) data.treatmentReviewForm
+                    |> Maybe.map (\value -> ( value.reasonForNotTaking, value.missedDoses ))
+            , tasks = ongoingTreatmentTasksCompletedFromTotal (measurementsWith saved) data OngoingTreatmentReview
+            }
+
+        -- Reopens `saved`, taps `answer` on `inputClass`, then runs `msgs`.
+        change saved ( inputClass, answer ) msgs expectation =
+            let
+                ( inputs, _ ) =
+                    ongoingTreatmentReviewFormWithDefault emptyModel.ongoingTreatmentData.treatmentReviewForm (Just saved)
+                        |> treatmentReviewInputsAndTasks English
+                            SetOngoingTreatmentReviewBoolInput
+                            SetReasonForNotTaking
+                            SetTotalMissedDoses
+                            SetAdverseEvent
+            in
+            case tapYesNo inputClass answer inputs of
+                Ok msg ->
+                    expectation (result saved (msg :: msgs))
+
+                Err error ->
+                    Expect.fail error
+    in
+    describe "Acute Illness subsequent visit treatment review: follow-ups when a saved answer is changed"
+        [ describe "A treatment review saved with \"taken as prescribed: Yes\", changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    change savedAllGood
+                        ( "taken-as-prescribed", "No" )
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    change savedAllGood ( "taken-as-prescribed", "No" ) [ SetReasonForNotTaking NotTakingNoMoney ] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NotTakingNoMoney, 0 ))
+                            ]
+            ]
+        , describe "A treatment review saved with \"missed doses: No\", changed to \"Yes\": \"How many doses?\" is empty and the task is not complete until a number is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    change savedAllGood
+                        ( "missed-doses", "Yes" )
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a number is chosen the task is complete and the number is saved" <|
+                \_ ->
+                    change savedAllGood ( "missed-doses", "Yes" ) [ SetTotalMissedDoses "4" ] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 4 ))
+                            ]
+            ]
+        , describe "A treatment review whose follow-up is no longer asked saves no earlier answer"
+            [ test "saved \"taken as prescribed: No\" with a reason, changed to \"Yes\" and saved: the record holds no reason" <|
+                \_ ->
+                    change (savedNotTaken NotTakingNoMoney) ( "taken-as-prescribed", "Yes" ) [] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 0 ))
+                            ]
+            , test "saved \"missed doses: Yes\" with 5 doses, changed to \"No\" and saved: the record holds zero doses" <|
+                \_ ->
+                    change (savedMissed 5) ( "missed-doses", "No" ) [] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 0 ))
+                            ]
+            ]
+        , describe "A treatment review saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "saved reason: the task is complete and the same reason is saved" <|
+                \_ ->
+                    result (savedNotTaken NotTakingAdverseEvent) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NotTakingAdverseEvent, 0 ))
+                            ]
+            , test "saved 5 missed doses: the task is complete and the same number is saved" <|
+                \_ ->
+                    result (savedMissed 5) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 5 ))
+                            ]
+            ]
+        , describe "An older treatment review saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "saved \"taken as prescribed: No\" with no reason: the task is not complete" <|
+                \_ ->
+                    (result (savedNotTaken NoReasonForNotTakingSign) []).tasks
+                        |> expectTaskComplete False
+            , test "saved \"missed doses: Yes\" with zero doses: the task is not complete" <|
+                \_ ->
+                    (result (savedMissed 0) []).tasks
+                        |> expectTaskComplete False
+            ]
+        ]
+
+
+{-| Referral and health education in Next Steps, driven through the page: each
+test reopens a saved record, sends the page the Yes/No message its inputs
+send, and reads the task count and what Save would store.
+
+A stored "no reason" is `NoReasonForNonReferral` for a referral and
+`NoReasonForNotProvidingHealthEducation` for health education.
+
+-}
+nextStepsWhyNotTest : Test
+nextStepsWhyNotTest =
+    let
+        diagnosis =
+            Just DiagnosisMalariaUncomplicated
+
+        savedReferred =
+            { signs = EverySet.fromList [ HandReferrerForm, ReferToHealthCenter ]
+            , reasonForNotSendingToHC = NoReasonForNonReferral
+            }
+
+        savedNotReferred reason =
+            { signs = EverySet.singleton NoSendToHCSigns
+            , reasonForNotSendingToHC = reason
+            }
+
+        -- The referral task as a CHW (health centre) or a nurse (hospital) sees it, after `msgs`.
+        referral isChw saved msgs =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | sendToHC = wrapMeasurement saved }
+
+                data =
+                    (reopenAndRun measurements msgs).nextStepsData
+            in
+            { stored =
+                toSendToHCValueWithDefault (Just saved) data.sendToHCForm
+                    |> Maybe.map (\value -> ( EverySet.member ReferToHealthCenter value.signs, value.reasonForNotSendingToHC ))
+            , tasks = nextStepsTasksCompletedFromTotal dummyDate isChw testPerson diagnosis measurements data NextStepsSendToHC
+            }
+
+        savedEducated =
+            { signs = EverySet.singleton MalariaPrevention
+            , reasonForNotProvidingHealthEducation = NoReasonForNotProvidingHealthEducation
+            }
+
+        savedNotEducated reason =
+            { signs = EverySet.singleton NoHealthEducationSigns
+            , reasonForNotProvidingHealthEducation = reason
+            }
+
+        education saved msgs =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | healthEducation = wrapMeasurement saved }
+
+                data =
+                    (reopenAndRun measurements msgs).nextStepsData
+            in
+            { stored =
+                toHealthEducationValueWithDefault (Just saved) data.healthEducationForm
+                    |> Maybe.map (\value -> ( EverySet.member MalariaPrevention value.signs, value.reasonForNotProvidingHealthEducation ))
+            , tasks = nextStepsTasksCompletedFromTotal dummyDate True testPerson diagnosis measurements data NextStepsHealthEducation
+            }
+    in
+    describe "Acute Illness Next Steps: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "A referral saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "CHW, referral to the health centre: the task is not complete" <|
+                \_ ->
+                    (referral True savedReferred [ SetReferToHealthCenter False ]).tasks
+                        |> expectTaskComplete False
+            , test "nurse, referral to the hospital: the task is not complete" <|
+                \_ ->
+                    (referral False savedReferred [ SetReferToHealthCenter False ]).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    referral True savedReferred [ SetReferToHealthCenter False, SetReasonForNonReferral ClientRefused ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, ClientRefused ))
+                            ]
+            ]
+        , describe "Health education saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    (education savedEducated [ SetProvidedEducationForDiagnosis False ]).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    education savedEducated [ SetProvidedEducationForDiagnosis False, SetReasonForNotProvidingHealthEducation PatientRefused ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, PatientRefused ))
+                            ]
+            ]
+        , describe "A referral or health education saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            [ test "referral" <|
+                \_ ->
+                    referral True (savedNotReferred ClientRefused) [ SetReferToHealthCenter True ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( True, NoReasonForNonReferral ))
+                            ]
+            , test "health education" <|
+                \_ ->
+                    education (savedNotEducated PatientRefused) [ SetProvidedEducationForDiagnosis True ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( True, NoReasonForNotProvidingHealthEducation ))
+                            ]
+            ]
+        , describe "A form saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "referral: the task is complete and the same reason is saved" <|
+                \_ ->
+                    referral True (savedNotReferred ClientRefused) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, ClientRefused ))
+                            ]
+            , test "health education: the task is complete and the same reason is saved" <|
+                \_ ->
+                    education (savedNotEducated PatientRefused) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, PatientRefused ))
+                            ]
+            ]
+        , describe "An older record saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "referral: the task is not complete" <|
+                \_ ->
+                    (referral True (savedNotReferred NoReasonForNonReferral) []).tasks
+                        |> expectTaskComplete False
+            , test "health education: the task is not complete" <|
+                \_ ->
+                    (education (savedNotEducated NoReasonForNotProvidingHealthEducation) []).tasks
+                        |> expectTaskComplete False
+            ]
         ]

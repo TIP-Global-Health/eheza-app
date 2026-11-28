@@ -54,7 +54,7 @@ import Measurement.Utils
         )
 import Pages.NCD.Activity.Model exposing (Model, Msg(..))
 import Pages.NCD.Activity.Utils exposing (coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, familyHistoryFormWithDefault, medicationHistoryFormWithDefault, symptomReviewFormWithDefault, toCoMorbiditiesValueWithDefault, toDangerSignsValueWithDefault, toFamilyHistoryValueWithDefault, toHealthEducationValueWithDefault, toMedicationHistoryValueWithDefault, toSocialHistoryValueWithDefault, toSymptomReviewValueWithDefault)
-import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefaultInitialPhase, toMedicationDistributionValueWithDefault, toReferralValueWithDefaultInitialPhase)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
@@ -1839,7 +1839,7 @@ update currentDate id db msg model =
             let
                 updatedSigns =
                     -- Since we may have values from recurrent phase of encounter, we make
-                    -- sure to preserve them, before setting new value at inital phase.
+                    -- sure to preserve them, before setting new value at initial phase.
                     Maybe.map
                         (\signs ->
                             List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
@@ -1943,7 +1943,7 @@ update currentDate id db msg model =
                         |> Maybe.map
                             (.referral
                                 >> getMeasurementValueFunc
-                                >> referralFormWithDefault model.nextStepsData.referralForm
+                                >> referralFormWithDefaultInitialPhase model.nextStepsData.referralForm
                             )
                         |> Maybe.withDefault model.nextStepsData.referralForm
 
@@ -1979,7 +1979,7 @@ update currentDate id db msg model =
         SaveReferral personId saved nextTask ->
             ( model
             , Cmd.none
-            , saveMeasurementMsgs toReferralValueWithDefault
+            , saveMeasurementMsgs toReferralValueWithDefaultInitialPhase
                 model.nextStepsData.referralForm
                 saved
                 (Backend.NCDEncounter.Model.SaveReferral personId)

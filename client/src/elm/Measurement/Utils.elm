@@ -1,15 +1,17 @@
-module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, allVaccineTypesByGender, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearOrderedByValue, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, mergeVaccinationProgressDicts, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, reinforceAdherenceQuestion, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setHIVViralLoadUndetectable, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
+module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, allVaccineTypesByGender, ancVisitDateForMonth, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearOrderedByValue, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressDictByWellChild, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, mergeVaccinationProgressDicts, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyMonthOfDate, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, reinforceAdherenceQuestion, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setHIVViralLoadUndetectable, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByValue, testResultUpdateHIVTest, testResultUpdatePartnerHIVTest, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValue, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValue, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewLaboratoryResultNotPerformed, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, mapMeasurementData, muacIndicationForChild, muacValueForSite, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testPerformedByExecutionNote, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
+import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, malnutritionSignsForAssessment, mapMeasurementData, muacIndicationForChild, muacValueForSite, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testPerformedByExecutionNote, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getChildScoreboardEncountersForParticipant
+        ( generateIndividualWellChildMeasurementsForChild
+        , getChildScoreboardEncountersForParticipant
+        , getChildScoreboardEncountersForPerson
         , getWellChildEncountersForParticipant
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -18,6 +20,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -64,7 +67,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
+import Utils.NominalDate exposing (renderDate, sortEncounterTuplesDesc)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -971,21 +974,61 @@ toNutritionFollowUpValue form =
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
 fromHealthEducationValue saved =
-    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
-    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
+    let
+        educationForDiagnosis =
+            Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    in
+    { educationForDiagnosis = educationForDiagnosis
+    , reasonForNotProvidingHealthEducation =
+        Maybe.map2
+            (\provided value ->
+                savedFollowUp (not provided)
+                    NoReasonForNotProvidingHealthEducation
+                    value.reasonForNotProvidingHealthEducation
+            )
+            educationForDiagnosis
+            saved
+            |> Maybe.Extra.join
     }
 
 
 healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm
 healthEducationFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
-                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
-                }
-            )
+    let
+        fromSaved =
+            fromHealthEducationValue saved
+
+        educationForDiagnosis =
+            or form.educationForDiagnosis fromSaved.educationForDiagnosis
+    in
+    { educationForDiagnosis = educationForDiagnosis
+    , reasonForNotProvidingHealthEducation =
+        whenAnsweredNo educationForDiagnosis
+            (or form.reasonForNotProvidingHealthEducation fromSaved.reasonForNotProvidingHealthEducation)
+    }
+
+
+{-| The saved answer to a follow-up question, such as "Why not?". There is
+none when the question was not asked, or when the record stores the "no answer" value.
+-}
+savedFollowUp : Bool -> answer -> answer -> Maybe answer
+savedFollowUp asked noAnswer answer =
+    if asked && answer /= noAnswer then
+        Just answer
+
+    else
+        Nothing
+
+
+{-| "Why not?" is asked only after a No, so any other answer leaves it unanswered.
+-}
+whenAnsweredNo : Maybe Bool -> Maybe reason -> Maybe reason
+whenAnsweredNo answer reason =
+    if answer == Just False then
+        reason
+
+    else
+        Nothing
 
 
 toHealthEducationValueWithDefault : Maybe HealthEducationValue -> HealthEducationForm -> Maybe HealthEducationValue
@@ -1013,29 +1056,44 @@ toHealthEducationValue form =
 
 fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
+    let
+        referToHealthCenter =
+            Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    in
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , referToHealthCenter = referToHealthCenter
     , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
     , enrollToNutritionProgram = Maybe.map (.signs >> EverySet.member EnrollToNutritionProgram) saved
     , referToNutritionProgram = Maybe.map (.signs >> EverySet.member ReferToNutritionProgram) saved
-    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
+    , reasonForNotSendingToHC =
+        Maybe.map2
+            (\referred value ->
+                savedFollowUp (not referred) NoReasonForNonReferral value.reasonForNotSendingToHC
+            )
+            referToHealthCenter
+            saved
+            |> Maybe.Extra.join
     }
 
 
 sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
-                , referToNutritionProgram = or form.referToNutritionProgram (EverySet.member ReferToNutritionProgram value.signs |> Just)
-                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
-                }
-            )
+    let
+        fromSaved =
+            fromSendToHCValue saved
+
+        referToHealthCenter =
+            or form.referToHealthCenter fromSaved.referToHealthCenter
+    in
+    { handReferralForm = or form.handReferralForm fromSaved.handReferralForm
+    , referToHealthCenter = referToHealthCenter
+    , accompanyToHealthCenter = or form.accompanyToHealthCenter fromSaved.accompanyToHealthCenter
+    , enrollToNutritionProgram = or form.enrollToNutritionProgram fromSaved.enrollToNutritionProgram
+    , referToNutritionProgram = or form.referToNutritionProgram fromSaved.referToNutritionProgram
+    , reasonForNotSendingToHC =
+        whenAnsweredNo referToHealthCenter
+            (or form.reasonForNotSendingToHC fromSaved.reasonForNotSendingToHC)
+    }
 
 
 toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
@@ -1387,13 +1445,23 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         dosesFromCurrentEncounterData =
             config.dosesFromCurrentEncounterData
 
-        allDosesGivenData =
-            dosesFromPreviousEncountersData
-                ++ dosesFromCurrentEncounterData
+        -- Only a dose of this encounter can be given today. One recorded
+        -- as given previously is not, even when it is dated today.
+        administeredToday =
+            form.administrationNote == Just AdministeredToday
+
+        ( dosesGivenToday, dosesFromCurrentEncounterNotGivenToday ) =
+            List.partition
+                (\( _, date ) -> administeredToday && date == currentDate)
+                dosesFromCurrentEncounterData
+
+        doseGivenToday =
+            List.head dosesGivenToday
+                |> Maybe.map Tuple.first
 
         lastDoseData =
-            List.filter (\( _, date ) -> date /= currentDate)
-                allDosesGivenData
+            dosesFromPreviousEncountersData
+                ++ dosesFromCurrentEncounterNotGivenToday
                 |> List.reverse
                 |> List.head
 
@@ -1401,20 +1469,8 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             case form.viewMode of
                 ViewModeInitial ->
                     let
-                        noDoseGivenToday =
-                            List.filter
-                                (\( _, date ) ->
-                                    date == currentDate
-                                )
-                                dosesFromCurrentEncounterData
-                                |> List.isEmpty
-
                         doseAllowedForDeletion =
-                            List.filter
-                                (\( _, date ) ->
-                                    date /= currentDate
-                                )
-                                dosesFromCurrentEncounterData
+                            dosesFromCurrentEncounterNotGivenToday
                                 |> List.reverse
                                 |> List.head
                                 |> Maybe.map Tuple.first
@@ -1428,7 +1484,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                                 (\( dose, date ) ->
                                     let
                                         allowDelete =
-                                            noDoseGivenToday
+                                            isNothing doseGivenToday
                                                 && (doseAllowedForDeletion == Just dose)
                                     in
                                     viewHistoryEntry dose (Just date) False allowDelete
@@ -1490,16 +1546,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                 ViewModeInitial ->
                     let
                         allDosesGiven =
-                            List.map Tuple.first allDosesGivenData
-
-                        doseGivenToday =
-                            List.filter
-                                (\( _, date ) ->
-                                    date == currentDate
-                                )
-                                dosesFromCurrentEncounterData
-                                |> List.head
-                                |> Maybe.map Tuple.first
+                            List.map Tuple.first (dosesFromPreviousEncountersData ++ dosesFromCurrentEncounterData)
 
                         dosesMissing =
                             List.filter (\dose -> not <| List.member dose allDosesGiven)
@@ -2501,16 +2548,6 @@ partnerHIVTestFormWithDefault form =
                 immediateResultValue =
                     Maybe.map (EverySet.member PrerequisiteImmediateResult)
                         value.testPrerequisites
-
-                partnerTakingARVValue =
-                    Maybe.map (EverySet.member PartnerTakingARV)
-                        value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerSurpressedViralLoadValue =
-                    Maybe.map (EverySet.member PartnerSurpressedViralLoad)
-                        value.hivSigns
-                        |> Maybe.withDefault False
             in
             { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
             , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
@@ -2522,9 +2559,9 @@ partnerHIVTestFormWithDefault form =
             , executionDateDirty = form.executionDateDirty
             , testResult = maybeValueConsideringIsDirtyField form.testResultDirty form.testResult value.testResult
             , testResultDirty = form.testResultDirty
-            , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+            , partnerTakingARV = maybeValueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV (hivSignAnswer PartnerTakingARV value.hivSigns)
             , partnerTakingARVDirty = form.partnerTakingARVDirty
-            , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+            , partnerSurpressedViralLoad = maybeValueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad (hivSignAnswer PartnerSurpressedViralLoad value.hivSigns)
             , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
             }
         )
@@ -2533,20 +2570,20 @@ partnerHIVTestFormWithDefault form =
 toPartnerHIVTestValueWithDefault : Maybe PartnerHIVTestValue -> PartnerHIVTestForm -> Maybe PartnerHIVTestValue
 toPartnerHIVTestValueWithDefault saved form =
     partnerHIVTestFormWithDefault form saved
-        |> toPartnerHIVTestValue
+        |> toPartnerHIVTestValue saved
 
 
-toPartnerHIVTestValue : PartnerHIVTestForm -> Maybe PartnerHIVTestValue
-toPartnerHIVTestValue form =
+toPartnerHIVTestValue : Maybe PartnerHIVTestValue -> PartnerHIVTestForm -> Maybe PartnerHIVTestValue
+toPartnerHIVTestValue saved form =
     Maybe.map
         (\executionNote ->
             let
                 hivSigns =
-                    [ ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    hivSignsFromAnswers saved
+                        form.testResult
+                        [ ( PartnerTakingARV, form.partnerTakingARV )
+                        , ( PartnerSurpressedViralLoad, form.partnerSurpressedViralLoad )
+                        ]
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
@@ -2573,26 +2610,6 @@ hivTestUniversalFormWithDefault form =
                 immediateResultValue =
                     Maybe.map (EverySet.member PrerequisiteImmediateResult)
                         value.testPrerequisites
-
-                hivProgramHCValue =
-                    Maybe.map (EverySet.member HIVProgramHC)
-                        value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerHIVPositiveValue =
-                    Maybe.map (EverySet.member PartnerHIVPositive)
-                        value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerTakingARVValue =
-                    Maybe.map (EverySet.member PartnerTakingARV)
-                        value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerSurpressedViralLoadValue =
-                    Maybe.map (EverySet.member PartnerSurpressedViralLoad)
-                        value.hivSigns
-                        |> Maybe.withDefault False
             in
             { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
             , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
@@ -2604,13 +2621,13 @@ hivTestUniversalFormWithDefault form =
             , executionDateDirty = form.executionDateDirty
             , testResult = maybeValueConsideringIsDirtyField form.testResultDirty form.testResult value.testResult
             , testResultDirty = form.testResultDirty
-            , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
+            , hivProgramHC = maybeValueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC (hivSignAnswer HIVProgramHC value.hivSigns)
             , hivProgramHCDirty = form.hivProgramHCDirty
-            , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
+            , partnerHIVPositive = maybeValueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive (hivSignAnswer PartnerHIVPositive value.hivSigns)
             , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
-            , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+            , partnerTakingARV = maybeValueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV (hivSignAnswer PartnerTakingARV value.hivSigns)
             , partnerTakingARVDirty = form.partnerTakingARVDirty
-            , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+            , partnerSurpressedViralLoad = maybeValueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad (hivSignAnswer PartnerSurpressedViralLoad value.hivSigns)
             , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
             }
         )
@@ -2619,22 +2636,22 @@ hivTestUniversalFormWithDefault form =
 toHIVTestValueUniversalWithDefault : Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
 toHIVTestValueUniversalWithDefault saved form =
     hivTestUniversalFormWithDefault form saved
-        |> toHIVTestValueUniversal
+        |> toHIVTestValueUniversal saved
 
 
-toHIVTestValueUniversal : HIVTestUniversalForm -> Maybe HIVTestValue
-toHIVTestValueUniversal form =
+toHIVTestValueUniversal : Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueUniversal saved form =
     Maybe.map
         (\executionNote ->
             let
                 hivSigns =
-                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    hivSignsFromAnswers saved
+                        form.testResult
+                        [ ( HIVProgramHC, form.hivProgramHC )
+                        , ( PartnerHIVPositive, form.partnerHIVPositive )
+                        , ( PartnerTakingARV, form.partnerTakingARV )
+                        , ( PartnerSurpressedViralLoad, form.partnerSurpressedViralLoad )
+                        ]
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
@@ -3757,19 +3774,8 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed part
                             prerequisiteByImmediateResultInputsAndTasks language
                                 (configInitial.setHIVTestFormBoolInputMsg
                                     (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , testResult = Nothing
-                                            , testResultDirty = True
-                                            , hivProgramHC = Nothing
-                                            , hivProgramHCDirty = True
-                                            , partnerHIVPositive = Nothing
-                                            , partnerHIVPositiveDirty = True
-                                            , partnerTakingARV = Nothing
-                                            , partnerTakingARVDirty = True
-                                            , partnerSurpressedViralLoad = Nothing
-                                            , partnerSurpressedViralLoadDirty = True
-                                        }
+                                        testResultUpdateHIVTest Nothing
+                                            { form_ | immediateResult = Just value, testResultDirty = True }
                                     )
                                 )
                                 form.immediateResult
@@ -3853,21 +3859,13 @@ contentAndTasksLaboratoryResultConfirmation language config task form =
                     let
                         updateFunc =
                             \value form_ ->
-                                { form_
-                                    | runConfirmedByLabTech = Just value
-                                    , executionNote = resolveNote value
-                                    , executionNoteDirty = True
-                                    , testResult = Nothing
-                                    , testResultDirty = True
-                                    , hivProgramHC = Nothing
-                                    , hivProgramHCDirty = True
-                                    , partnerHIVPositive = Nothing
-                                    , partnerHIVPositiveDirty = True
-                                    , partnerTakingARV = Nothing
-                                    , partnerTakingARVDirty = True
-                                    , partnerSurpressedViralLoad = Nothing
-                                    , partnerSurpressedViralLoadDirty = True
-                                }
+                                testResultUpdateHIVTest Nothing
+                                    { form_
+                                        | runConfirmedByLabTech = Just value
+                                        , executionNote = resolveNote value
+                                        , executionNoteDirty = True
+                                        , testResultDirty = True
+                                    }
                     in
                     { setBoolInputMsg = config.setHIVTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setHIVTestExecutionNoteMsg
@@ -4677,11 +4675,8 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
                                     prerequisiteByImmediateResultInputsAndTasks language
                                         (configInitial.setPartnerHIVTestFormBoolInputMsg
                                             (\value form_ ->
-                                                { form_
-                                                    | immediateResult = Just value
-                                                    , testResult = Nothing
-                                                    , testResultDirty = True
-                                                }
+                                                testResultUpdatePartnerHIVTest Nothing
+                                                    { form_ | immediateResult = Just value, testResultDirty = True }
                                             )
                                         )
                                         form.immediateResult
@@ -6746,18 +6741,7 @@ knownAsPositiveUpdateHIVTest knownAsPositive form =
             updated =
                 knownAsPositiveUpdate knownAsPositive form
         in
-        { updated
-            | testResult = Nothing
-            , testResultDirty = True
-            , hivProgramHC = Nothing
-            , hivProgramHCDirty = True
-            , partnerHIVPositive = Nothing
-            , partnerHIVPositiveDirty = True
-            , partnerTakingARV = Nothing
-            , partnerTakingARVDirty = True
-            , partnerSurpressedViralLoad = Nothing
-            , partnerSurpressedViralLoadDirty = True
-        }
+        testResultUpdateHIVTest Nothing { updated | testResultDirty = True }
 
 
 {-| A partner known as positive is not tested, so the result is cleared with the
@@ -6774,14 +6758,77 @@ knownAsPositiveUpdatePartnerHIVTest knownAsPositive form =
             updated =
                 knownAsPositiveUpdate knownAsPositive form
         in
-        { updated
-            | testResult = Nothing
-            , testResultDirty = True
-            , partnerTakingARV = Nothing
-            , partnerTakingARVDirty = True
-            , partnerSurpressedViralLoad = Nothing
-            , partnerSurpressedViralLoadDirty = True
+        testResultUpdatePartnerHIVTest Nothing { updated | testResultDirty = True }
+
+
+{-| Sets the woman's HIV test result. The follow up questions depend on the
+result, so their answers are cleared to be asked afresh.
+-}
+testResultUpdateHIVTest :
+    Maybe TestResult
+    ->
+        { f
+            | testResult : Maybe TestResult
+            , hivProgramHC : Maybe Bool
+            , hivProgramHCDirty : Bool
+            , partnerHIVPositive : Maybe Bool
+            , partnerHIVPositiveDirty : Bool
+            , partnerTakingARV : Maybe Bool
+            , partnerTakingARVDirty : Bool
+            , partnerSurpressedViralLoad : Maybe Bool
+            , partnerSurpressedViralLoadDirty : Bool
         }
+    ->
+        { f
+            | testResult : Maybe TestResult
+            , hivProgramHC : Maybe Bool
+            , hivProgramHCDirty : Bool
+            , partnerHIVPositive : Maybe Bool
+            , partnerHIVPositiveDirty : Bool
+            , partnerTakingARV : Maybe Bool
+            , partnerTakingARVDirty : Bool
+            , partnerSurpressedViralLoad : Maybe Bool
+            , partnerSurpressedViralLoadDirty : Bool
+        }
+testResultUpdateHIVTest testResult form =
+    testResultUpdatePartnerHIVTest testResult
+        { form
+            | hivProgramHC = Nothing
+            , hivProgramHCDirty = True
+            , partnerHIVPositive = Nothing
+            , partnerHIVPositiveDirty = True
+        }
+
+
+{-| Sets the partner's HIV test result. The questions about the partner's ARVs
+follow from the result, so their answers are cleared to be asked afresh.
+-}
+testResultUpdatePartnerHIVTest :
+    Maybe TestResult
+    ->
+        { f
+            | testResult : Maybe TestResult
+            , partnerTakingARV : Maybe Bool
+            , partnerTakingARVDirty : Bool
+            , partnerSurpressedViralLoad : Maybe Bool
+            , partnerSurpressedViralLoadDirty : Bool
+        }
+    ->
+        { f
+            | testResult : Maybe TestResult
+            , partnerTakingARV : Maybe Bool
+            , partnerTakingARVDirty : Bool
+            , partnerSurpressedViralLoad : Maybe Bool
+            , partnerSurpressedViralLoadDirty : Bool
+        }
+testResultUpdatePartnerHIVTest testResult form =
+    { form
+        | testResult = testResult
+        , partnerTakingARV = Nothing
+        , partnerTakingARVDirty = True
+        , partnerSurpressedViralLoad = Nothing
+        , partnerSurpressedViralLoadDirty = True
+    }
 
 
 contentAndTasksLaboratoryUniversalTestKnownAsPositive :
@@ -8870,6 +8917,20 @@ resultFormHeaderSection language executionDate task =
         :: executionDateSection
 
 
+{-| Shows the nurse the lab technician's answer that a test will not be
+performed today, and why. The header names the test and date, when given.
+-}
+viewLaboratoryResultNotPerformed : Language -> Maybe ( LaboratoryTask, Maybe NominalDate ) -> TestExecutionNote -> Html msg
+viewLaboratoryResultNotPerformed language header reason =
+    div [ class "ui form laboratory not-performed" ] <|
+        unwrap [] (\( task, executionDate ) -> resultFormHeaderSection language executionDate task) header
+            ++ [ viewLabel language Translate.TestWillBePerformedTodayQuestion
+               , p [ class "test-performed" ] [ text <| translate language Translate.No ]
+               , viewLabel language Translate.WhyNot
+               , p [ class "why-not" ] [ text <| translate language <| Translate.TestExecutionNote reason ]
+               ]
+
+
 testPerformedByValue : Maybe { a | executionNote : TestExecutionNote } -> Bool
 testPerformedByValue =
     Maybe.map (.executionNote >> testPerformedByExecutionNote)
@@ -8885,6 +8946,51 @@ hivSignsAnswered signs =
     not <| EverySet.member PrenatalHIVSignPendingInput signs
 
 
+{-| The answer saved signs give to one follow up question. Signs pending for
+the nurse, or no signs at all, give no answer, so she is asked.
+-}
+hivSignAnswer : PrenatalHIVSign -> Maybe (EverySet PrenatalHIVSign) -> Maybe Bool
+hivSignAnswer sign =
+    Maybe.andThen
+        (\signs ->
+            if hivSignsAnswered signs then
+                Just <| EverySet.member sign signs
+
+            else
+                Nothing
+        )
+
+
+{-| The signs saved from the follow up answers. Signs pending for the nurse stay
+pending while the result is unchanged and no question is answered.
+-}
+hivSignsFromAnswers :
+    Maybe { v | testResult : Maybe TestResult, hivSigns : Maybe (EverySet PrenatalHIVSign) }
+    -> Maybe TestResult
+    -> List ( PrenatalHIVSign, Maybe Bool )
+    -> Maybe (EverySet PrenatalHIVSign)
+hivSignsFromAnswers saved testResult answers =
+    let
+        savedPending =
+            Maybe.map
+                (\value ->
+                    (value.testResult == testResult)
+                        && (Maybe.map (hivSignsAnswered >> not) value.hivSigns
+                                |> Maybe.withDefault False
+                           )
+                )
+                saved
+                |> Maybe.withDefault False
+    in
+    if savedPending && List.all (Tuple.second >> isNothing) answers then
+        Just <| EverySet.singleton PrenatalHIVSignPendingInput
+
+    else
+        List.map (\( sign, answer ) -> ifNullableTrue sign answer) answers
+            |> Maybe.Extra.combine
+            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+
+
 testNotPerformedByWhyNotAtExecutionNote : TestExecutionNote -> Bool
 testNotPerformedByWhyNotAtExecutionNote executionNote =
     List.member executionNote
@@ -8893,6 +8999,7 @@ testNotPerformedByWhyNotAtExecutionNote executionNote =
         , TestNoteNoEquipment
         , TestNoteBrokenEquipment
         , TestNoteNotIndicated
+        , TestNoteNotPresent
         ]
 
 
@@ -8980,6 +9087,32 @@ fromNCDAValue saved =
     , muacNotTaken = Maybe.map (.muac >> isNothing) saved
     , showsEdemaSigns = Maybe.map (.signs >> EverySet.member ShowsEdemaSigns) saved
     }
+
+
+{-| The ANC visit date a tap on pregnancy month `monthNumber` toggles: 14 days into
+that month. Nothing when the month already has a recorded visit, so the tap does nothing.
+-}
+ancVisitDateForMonth : NominalDate -> EverySet NominalDate -> Int -> Maybe NominalDate
+ancVisitDateForMonth pregnancyStartDate recordedVisitDates monthNumber =
+    let
+        monthHasRecordedVisit =
+            EverySet.toList recordedVisitDates
+                |> List.any (\date -> pregnancyMonthOfDate pregnancyStartDate date == monthNumber)
+    in
+    if monthHasRecordedVisit then
+        Nothing
+
+    else
+        Date.add Months (monthNumber - 1) pregnancyStartDate
+            |> Date.add Days 14
+            |> Just
+
+
+{-| The pregnancy month a date falls in, counting the month the pregnancy started as 1.
+-}
+pregnancyMonthOfDate : NominalDate -> NominalDate -> Int
+pregnancyMonthOfDate pregnancyStartDate date =
+    Date.diff Months pregnancyStartDate date + 1
 
 
 ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
@@ -9489,33 +9622,8 @@ resolveChildANCPregnancyData childId db =
 resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
 resoloveLastScheduledImmunizationVisitDate childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
         individualWellChildMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        getWellChildEncountersForParticipant
-                        .wellChildMeasurements
-                        Nothing
-                        participantId
-                        db
-                )
-                individualWellChildParticipantId
-                |> Maybe.withDefault []
+            generateIndividualWellChildMeasurementsForChild childId db
                 |> List.map (Tuple.second >> Tuple.second)
     in
     List.filterMap
@@ -9533,95 +9641,42 @@ resoloveLastScheduledImmunizationVisitDate childId db =
 isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
 isBehindOnVaccinationsByProgress currentDate site childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
+        wellChildParticipantsIds =
+            resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
     in
-    if isJust individualWellChildParticipantId then
-        behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db
+    if List.isEmpty wellChildParticipantsIds then
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (getChildScoreboardEncountersForPerson db childId)
+            (\id -> generateAssembledDataForChildScoreboard site id db)
 
     else
-        let
-            individualChildScoreboardParticipantId =
-                List.filter
-                    (\( _, participant ) ->
-                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                    )
-                    individualParticipants
-                    |> List.head
-                    |> Maybe.map Tuple.first
-        in
-        behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (List.concatMap (getWellChildEncountersForParticipant db) wellChildParticipantsIds)
+            (\id -> generateAssembledDataForWellChild site id db)
 
 
-behindOnVaccinationsByProgressFromWellChild : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db =
-    let
-        lastWellChildEncounterId =
-            Maybe.andThen
-                (getWellChildEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualWellChildParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForWellChild site id db
-                        |> RemoteData.toMaybe
-                )
-                lastWellChildEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
-        |> Maybe.withDefault False
-
-
-behindOnVaccinationsByProgressFromChildScoreboard : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db =
-    let
-        lastChildScoreboardEncounterId =
-            Maybe.andThen
-                (getChildScoreboardEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualChildScoreboardParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForChildScoreboard site id db
-                        |> RemoteData.toMaybe
-                )
-                lastChildScoreboardEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
+{-| Whether the child is behind on vaccinations, by the progress assembled
+for their most recent encounter of a programme.
+-}
+behindOnVaccinationsByLastEncounter :
+    NominalDate
+    -> Site
+    -> List ( encounterId, { encounter | startDate : NominalDate } )
+    -> (encounterId -> WebData { assembled | person : Person, vaccinationProgress : VaccinationProgressDict })
+    -> Bool
+behindOnVaccinationsByLastEncounter currentDate site encounters assembleFunc =
+    List.sortWith sortEncounterTuplesDesc encounters
+        |> List.head
+        |> Maybe.andThen (Tuple.first >> assembleFunc >> RemoteData.toMaybe)
+        |> Maybe.map
+            (\assembled ->
+                behindOnVaccinationsByProgress currentDate
+                    site
+                    assembled.person
+                    assembled.vaccinationProgress
+            )
         |> Maybe.withDefault False
 
 
@@ -10367,11 +10422,14 @@ filterNutritionAssessmentsFromNutritionValue dateMeasured value =
                 |> List.filterMap
                     (\assesment ->
                         case assesment of
+                            AssesmentMalnutritionSigns _ ->
+                                EverySet.toList value.signs
+                                    |> malnutritionSignsForAssessment
+                                    |> AssesmentMalnutritionSigns
+                                    |> Just
+
                             NoNutritionAssessment ->
                                 Nothing
-
-                            AssesmentMalnutritionSigns _ ->
-                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
 
                             _ ->
                                 Just assesment
@@ -10462,7 +10520,7 @@ generateAssembledDataForWellChild site id db =
                             getWellChildEncountersForParticipant
                             .wellChildMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10495,26 +10553,7 @@ generateVaccinationProgressDictsForWellChild site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByChildScoreboard =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualChildScoreboardParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
-                individualChildScoreboardParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByChildScoreboard site db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForWellChild site assembled.person previousMeasurements
@@ -10568,7 +10607,7 @@ generateAssembledDataForChildScoreboard site id db =
                             getChildScoreboardEncountersForParticipant
                             .childScoreboardMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10601,26 +10640,7 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByWellChild =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualWellChildParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByWellChild site assembled.person db)
-                individualWellChildParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByWellChild site assembled.person db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForChildScoreboard site previousMeasurements
@@ -10639,28 +10659,59 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
     )
 
 
-generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByWellChild site person db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+{-| Doses recorded at the child's Well Child encounters, across all of the
+child's Well Child participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByWellChild site person db childId =
+    generateVaccinationProgressDictForProgramme
+        getWellChildEncountersForParticipant
         .wellChildMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForWellChild site person)
+        Backend.IndividualEncounterParticipant.Model.WellChildEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForWellChild site person
+        childId
 
 
-generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByChildScoreboard site db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+{-| Doses recorded at the child's Child Scoreboard encounters, across all of
+the child's Child Scoreboard participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard site db childId =
+    generateVaccinationProgressDictForProgramme
+        getChildScoreboardEncountersForParticipant
         .childScoreboardMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForChildScoreboard site)
+        Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForChildScoreboard site
+        childId
+
+
+generateVaccinationProgressDictForProgramme :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> (List measurements -> VaccinationProgressDict)
+    -> Backend.IndividualEncounterParticipant.Model.IndividualEncounterType
+    -> ModelIndexedDb
+    -> PersonId
+    -> VaccinationProgressDict
+generateVaccinationProgressDictForProgramme encountersByParticipantFunc measurementsByEncounterFunc generateProgressFunc encounterType db childId =
+    let
+        participantsIds =
+            resolveIndividualParticipantsForPerson childId encounterType db
+    in
+    if List.isEmpty participantsIds then
+        Dict.empty
+
+    else
+        Backend.Measurement.Utils.generatePreviousMeasurements
+            encountersByParticipantFunc
+            measurementsByEncounterFunc
+            Nothing
+            participantsIds
+            db
+            |> getPreviousMeasurements
+            |> generateProgressFunc
 
 
 generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
@@ -10853,6 +10904,11 @@ toNutritionFeedingValueWithDefault saved form =
 toNutritionFeedingValue : NutritionFeedingForm -> Maybe NutritionFeedingValue
 toNutritionFeedingValue form =
     let
+        -- The water and sachets answers are kept only for RUTF that is received,
+        -- also when an edit brings back answers from the saved record.
+        rutfReceived =
+            form.receiveSupplement == Just True && form.supplementType == Just Rutf
+
         signs =
             [ ifNullableTrue ReceiveSupplement form.receiveSupplement
             , ifNullableTrue RationPresentAtHome form.rationPresentAtHome
@@ -10862,7 +10918,11 @@ toNutritionFeedingValue form =
             , ifNullableTrue RefusingToEat form.refusingToEat
             , ifNullableTrue FeedingSignBreastfeeding form.breastfeeding
             , ifNullableTrue CleanWaterAvailable form.cleanWaterAvailable
-            , ifNullableTrue EatenWithWater form.eatenWithWater
+            , if rutfReceived then
+                ifNullableTrue EatenWithWater form.eatenWithWater
+
+              else
+                Just EverySet.empty
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNutritionFeedingSigns)
@@ -10873,9 +10933,13 @@ toNutritionFeedingValue form =
                 |> Just
 
         sachetsPerDay =
-            form.sachetsPerDay
-                |> Maybe.withDefault 0
-                |> Just
+            if rutfReceived then
+                form.sachetsPerDay
+                    |> Maybe.withDefault 0
+                    |> Just
+
+            else
+                Just 0
     in
     Maybe.map NutritionFeedingValue signs
         |> andMap supplementType
@@ -10989,15 +11053,36 @@ ongoingTreatmentReviewFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
-                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
+                let
+                    takenAsPrescribed =
+                        EverySet.member TakenAsPrescribed value.signs
+
+                    missedDoses =
+                        EverySet.member MissedDoses value.signs
+
+                    sideEffects =
+                        EverySet.member SideEffects value.signs
+
+                    -- "Which ones?" is asked only when there were side effects, and "none" is not an answer to it.
+                    savedAdverseEvents =
+                        EverySet.toList value.adverseEvents
+                            |> List.filter ((/=) NoAdverseEvent)
+                            |> savedFollowUp sideEffects []
+                in
+                { takenAsPrescribed = or form.takenAsPrescribed (Just takenAsPrescribed)
+                , missedDoses = or form.missedDoses (Just missedDoses)
                 , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
-                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
-                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
+                , sideEffects = or form.sideEffects (Just sideEffects)
+                , reasonForNotTaking =
+                    savedFollowUp (not takenAsPrescribed) NoReasonForNotTakingSign value.reasonForNotTaking
+                        |> maybeValueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking
                 , reasonForNotTakingDirty = form.reasonForNotTakingDirty
-                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
+                , totalMissedDoses =
+                    -- "How many doses?" is asked only when doses were missed, and zero is not an answer to it.
+                    savedFollowUp missedDoses 0 value.missedDoses
+                        |> maybeValueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses
                 , totalMissedDosesDirty = form.totalMissedDosesDirty
-                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
+                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents savedAdverseEvents
                 , adverseEventsDirty = form.adverseEventsDirty
                 }
             )

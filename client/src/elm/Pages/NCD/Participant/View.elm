@@ -9,10 +9,10 @@ import Backend.IndividualEncounterParticipant.Model
         , IndividualParticipantInitiator(..)
         , emptyIndividualEncounterParticipant
         )
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveMainParticipant, resolveTodaysEncounterState)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
-import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -102,37 +102,15 @@ viewNCDAction language currentDate selectedHealthCenter id db sessions =
     let
         -- Person ncd session.
         maybeSessionId =
-            Dict.toList sessions
-                |> List.filter
-                    (\( _, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.NCDEncounter
-                    )
-                |> List.head
-                |> Maybe.map Tuple.first
+            resolveMainParticipant Backend.IndividualEncounterParticipant.Model.NCDEncounter sessions
 
         -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            Maybe.map
-                (getNCDEncountersForParticipant db
-                    >> (\list ->
-                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                            , List.filter
-                                (\( _, encounter ) ->
-                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                )
-                                list
-                                |> List.isEmpty
-                                |> not
-                            )
-                       )
-                )
-                maybeSessionId
-                |> Maybe.withDefault ( Nothing, False )
+            getNCDEncountersForPerson db id
+                |> resolveTodaysEncounterState currentDate
 
         action =
             Maybe.map navigateToEncounterAction maybeActiveEncounterId

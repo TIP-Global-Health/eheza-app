@@ -31,7 +31,7 @@ import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.NCD.RecurrentActivity.Utils exposing (laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefaultRecurrentPhase)
 import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -62,7 +62,7 @@ viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDR
 viewHeaderAndContent language currentDate site id activity model assembled =
     div [ class "page-activity ncd" ]
         [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity)
-        , viewContent language currentDate activity model assembled
+        , viewContent language currentDate site activity model assembled
         , viewModal <|
             if List.isEmpty model.measurementOutOfRangePopupState then
                 Nothing
@@ -90,9 +90,9 @@ viewHeader language goBackPage labelTransId =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+viewContent : Language -> NominalDate -> Site -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity model assembled =
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewActivity language activity assembled model
     )
         |> div [ class "ui unstackable items" ]
@@ -362,7 +362,7 @@ viewNextStepsContent language assembled data =
 
                 Just TaskReferral ->
                     getMeasurementValueFunc measurements.referral
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultRecurrentPhase data.referralForm
                         |> viewReferralForm language
                             NCDEncounterPhaseRecurrent
                             SetReferralBoolInput

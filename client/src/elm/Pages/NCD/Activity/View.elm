@@ -51,7 +51,7 @@ import Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsData, Ex
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
 import Pages.NCD.Activity.Utils exposing (coMorbiditiesFormInputsAndTasks, coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, expectLaboratoryTask, familyHistoryFormInputsAndTasks, familyHistoryFormWithDefault, generatePreviousLaboratoryTestsDatesDict, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryTaskCompleted, laboratoryTasks, medicalHistoryTasksCompletedFromTotal, medicationHistoryFormInputsAndTasks, medicationHistoryFormWithDefault, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, resolveNextStepsTasks, socialHistoryFormInputsAndTasks, socialHistoryFormWithDefault, symptomReviewFormWithDefault)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefaultInitialPhase)
 import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -120,7 +120,7 @@ viewHeader language id activity =
 viewContent : Language -> NominalDate -> Site -> NCDActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site activity model assembled =
     div [ class "ui unstackable items" ]
-        ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+        ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate site activity assembled model
         )
 
@@ -1107,7 +1107,7 @@ viewNextStepsContent language assembled data =
 
                 Just TaskReferral ->
                     getMeasurementValueFunc measurements.referral
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultInitialPhase data.referralForm
                         |> viewReferralForm language
                             NCDEncounterPhaseInitial
                             SetReferralBoolInput

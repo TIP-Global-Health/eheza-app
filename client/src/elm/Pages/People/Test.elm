@@ -1,6 +1,6 @@
 module Pages.People.Test exposing (all)
 
-import Backend.Entities exposing (SessionId)
+import Backend.Entities exposing (PersonId, SessionId)
 import Backend.Model exposing (MsgIndexedDb(..))
 import Backend.Person.Model exposing (Initiator(..))
 import Expect
@@ -13,6 +13,11 @@ import Test exposing (Test, describe, test)
 sessionId : SessionId
 sessionId =
     toEntityUuid "session-1"
+
+
+personId : PersonId
+personId =
+    toEntityUuid "person-1"
 
 
 fetchTest : Test
@@ -36,6 +41,14 @@ fetchTest =
                     |> Expect.all
                         [ List.member FetchHealthCenters >> Expect.equal True
                         , List.member FetchVillages >> Expect.equal True
+                        ]
+        , test "asks for the relationships of the person we add a relation to" <|
+            -- Without them, people already related to that person are listed.
+            \_ ->
+                fetch (Just personId) ParticipantDirectoryOrigin emptyModel
+                    |> Expect.all
+                        [ List.member (FetchPerson personId) >> Expect.equal True
+                        , List.member (FetchRelationshipsForPerson personId) >> Expect.equal True
                         ]
         ]
 

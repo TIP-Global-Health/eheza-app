@@ -1,29 +1,28 @@
 module Pages.People.View exposing (view)
 
 import AssocList as Dict
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, groupTakesChild, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewBySyncStatus)
+import Pages.Utils exposing (viewBySyncStatus, viewVillageLine)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -42,6 +41,7 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
+    -> Site
     -> HealthCenterId
     -> Maybe VillageId
     -> Bool
@@ -51,7 +51,7 @@ view :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate healthCenterId maybeVillageId isChw initiator relation syncManager db model =
+view language currentDate site healthCenterId maybeVillageId isChw initiator relation syncManager db model =
     let
         title =
             case relation of
@@ -69,7 +69,7 @@ view language currentDate healthCenterId maybeVillageId isChw initiator relation
             div
                 [ class "search-wrapper" ]
                 [ div [ class "ui full segment" ]
-                    [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
+                    [ viewSearchForm language currentDate site maybeVillageId isChw initiator relation model db ]
                 ]
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
@@ -129,8 +129,8 @@ viewHeader initiator relation title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
+viewSearchForm : Language -> NominalDate -> Site -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate site maybeVillageId isChw initiator relation model db =
     let
         searchForm =
             Components.PatientsSearchForm.View.view language model
@@ -188,13 +188,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                         case initiator of
                             GroupEncounterOrigin sessionId ->
                                 Maybe.map2
-                                    (\session birthDate ->
-                                        if List.member session.clinicType [ Sorwathe, Achi ] then
-                                            True
-
-                                        else
-                                            diffMonths birthDate currentDate < graduatingAgeInMonth
-                                    )
+                                    (\session birthDate -> groupTakesChild session.clinicType currentDate birthDate)
                                     (getSession sessionId db)
                                     filteredPerson.birthDate
                                     |> Maybe.withDefault True
@@ -257,7 +251,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate initiator relation)
+                |> Dict.map (viewParticipant language currentDate site initiator relation)
                 |> Dict.values
 
         searchHelper =
@@ -302,8 +296,8 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         ]
 
 
-viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate initiator relation id person =
+viewParticipant : Language -> NominalDate -> Site -> Initiator -> Maybe PersonId -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate site initiator relation id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -348,10 +342,7 @@ viewParticipant language currentDate initiator relation id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , action
                 ]

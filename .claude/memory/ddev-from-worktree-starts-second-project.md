@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 72dabdef-ded5-43f7-99cf-538fff348690
-  modified: 2026-10-09T12:53:19.476Z
+  modified: 2026-11-18T13:02:00.138Z
 ---
 
 ⛔ **Never run `ddev …` with a worktree as the working directory.** The main tree's project is
@@ -27,6 +27,8 @@ blocks Claude from running it, so the user had to.
   project's containers going up or down does not touch it.
 
 Related: [[worktree-per-item-for-parallel-sessions]], [[e2e-local-run-procedure]]
+
+⛔ **`playwright test` from a worktree does it too, even to check a skip.** `e2e/global-setup.ts` runs `cleanupStaleTestData()` via `ddev drush` with the worktree as cwd, before any test is skipped. On 2026-11-18 (B-603), `CI=1 playwright test <spec>` just to confirm a `test.skip(!!process.env.CI)` started `eheza-app`. `ddev delete -O -y eheza-app` was allowed this time. To check that a test is listed or skipped, use `--list`, which runs no global setup.
 
 ⛔ **`ddev snapshot restore` restarts the project and runs the post-start hooks too.** While `config.local.yaml` has the `drush site-install` hooks active (left on after a demo reinstall), a restore of a live-copy snapshot is wiped by a fresh demo install seconds later, and still reports success (2026-10-19, B-496 rehearsal, twice). Always `ddev snapshot restore --skip-hooks <name>`, then check `SELECT COUNT(*) FROM node` and uid 1's `created` before trusting it.
 

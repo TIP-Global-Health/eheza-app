@@ -13,7 +13,7 @@ import Backend.NutritionEncounter.Utils
         , getWellChildEncountersForParticipant
         )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson)
+import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import EverySet
 import Maybe.Extra
 import RemoteData
@@ -52,84 +52,56 @@ fetch id db =
 
 
 fetchForNutrition : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForNutrition id db =
-    let
-        participantId =
-            resolveIndividualParticipantForPerson id NutritionEncounter db
-
-        encountersIds =
-            Maybe.map (getNutritionEncountersForParticipant db) participantId
-                |> Maybe.withDefault []
-                |> List.map Tuple.first
-
-        -- We fetch all encounters.
-        fetchEncounters =
-            List.map FetchNutritionEncounter encountersIds
-
-        -- We fetch measurements of all encounters.
-        fetchMeasurements =
-            List.map FetchNutritionMeasurements encountersIds
-    in
-    Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchNutritionEncountersForParticipant participantId
-        ]
-        ++ fetchEncounters
-        ++ fetchMeasurements
+fetchForNutrition =
+    fetchForIndividualProgramme NutritionEncounter
+        getNutritionEncountersForParticipant
+        FetchNutritionEncountersForParticipant
+        FetchNutritionEncounter
+        FetchNutritionMeasurements
 
 
 fetchForWellChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForWellChild id db =
-    let
-        participantId =
-            resolveIndividualParticipantForPerson id WellChildEncounter db
-
-        encountersIds =
-            Maybe.map (getWellChildEncountersForParticipant db) participantId
-                |> Maybe.withDefault []
-                |> List.map Tuple.first
-
-        -- We fetch all encounters.
-        fetchEncounters =
-            List.map FetchWellChildEncounter encountersIds
-
-        -- We fetch measurements of all encounters.
-        fetchMeasurements =
-            List.map FetchWellChildMeasurements encountersIds
-    in
-    Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchWellChildEncountersForParticipant participantId
-        ]
-        ++ fetchEncounters
-        ++ fetchMeasurements
+fetchForWellChild =
+    fetchForIndividualProgramme WellChildEncounter
+        getWellChildEncountersForParticipant
+        FetchWellChildEncountersForParticipant
+        FetchWellChildEncounter
+        FetchWellChildMeasurements
 
 
 fetchForChildScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForChildScoreboard id db =
+fetchForChildScoreboard =
+    fetchForIndividualProgramme ChildScoreboardEncounter
+        getChildScoreboardEncountersForParticipant
+        FetchChildScoreboardEncountersForParticipant
+        FetchChildScoreboardEncounter
+        FetchChildScoreboardMeasurements
+
+
+{-| Every participant of given type that the person has, their encounters,
+and the measurements of those encounters.
+-}
+fetchForIndividualProgramme :
+    IndividualEncounterType
+    -> (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, encounter ))
+    -> (IndividualEncounterParticipantId -> MsgIndexedDb)
+    -> (encounterId -> MsgIndexedDb)
+    -> (encounterId -> MsgIndexedDb)
+    -> PersonId
+    -> ModelIndexedDb
+    -> List MsgIndexedDb
+fetchForIndividualProgramme encounterType encountersByParticipantFunc fetchEncountersForParticipantMsg fetchEncounterMsg fetchMeasurementsMsg id db =
     let
-        participantId =
-            resolveIndividualParticipantForPerson id ChildScoreboardEncounter db
+        participantsIds =
+            resolveIndividualParticipantsForPerson id encounterType db
 
         encountersIds =
-            Maybe.map (getChildScoreboardEncountersForParticipant db) participantId
-                |> Maybe.withDefault []
-                |> List.map Tuple.first
-
-        -- We fetch all encounters.
-        fetchEncounters =
-            List.map FetchChildScoreboardEncounter encountersIds
-
-        -- We fetch measurements of all encounters.
-        fetchMeasurements =
-            List.map FetchChildScoreboardMeasurements encountersIds
+            List.concatMap (encountersByParticipantFunc db >> List.map Tuple.first) participantsIds
     in
-    Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchChildScoreboardEncountersForParticipant participantId
-        ]
-        ++ fetchEncounters
-        ++ fetchMeasurements
+    List.map FetchIndividualEncounterParticipant participantsIds
+        ++ List.map fetchEncountersForParticipantMsg participantsIds
+        ++ List.map fetchEncounterMsg encountersIds
+        ++ List.map fetchMeasurementsMsg encountersIds
 
 
 fetchForNCDAScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
