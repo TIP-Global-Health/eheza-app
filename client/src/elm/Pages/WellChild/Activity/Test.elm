@@ -6,6 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , BirthDefect(..)
+        , DeliveryComplication(..)
         , ECDSign(..)
         , HeadCircumferenceInCm(..)
         , HeightInCm(..)
@@ -28,7 +30,8 @@ import Expect
 import Html exposing (div)
 import Measurement.Model exposing (ImmunisationTask(..), RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
 import Measurement.Utils exposing (toVaccinationValueWithDefault, vaccinationFormWithDefault)
-import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Pages.Utils exposing (maybeToBoolTask, resolveTasksCompletedFromTotal)
+import Pages.WellChild.Activity.Model exposing (Msg(..), PregnancySummaryForm, WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Types exposing (MedicationTask(..))
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
@@ -47,6 +50,7 @@ import Pages.WellChild.Activity.Utils
         , resolveNextDateForECDVisit
         , resolveNextDateForMedicationVisitUnderSixMonths
         , resolvePreviousMaybeValue
+        , toPregnancySummaryValueWithDefault
         )
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
@@ -69,6 +73,8 @@ all =
         , nextECDVisitWeekMilestonesTests
         , resolveNextDateForMedicationVisitUnderSixMonthsTests
         , pregnancySummaryFormWithDefaultTests
+        , pregnancySummaryChecklistTests
+        , pregnancySummaryOpenChecklistTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
         , dtpStandaloneSaveTests
@@ -1050,6 +1056,478 @@ pregnancySummaryFormWithDefaultTests =
                         (Just { savedWithoutSigns | birthLength = Just (HeightInCm 0.5), apgarFiveMin = Just 30000 })
                         |> pregnancySummaryMeasurementsOutOfRange SiteRwanda
                         |> Expect.equal [ MeasurementApgarFiveMinutes, MeasurementBirthLength ]
+            ]
+        ]
+
+
+{-| Once the nurse has answered Yes, an empty checklist stays an open task,
+even over a record saved with items ticked, and Save stores nothing for it.
+-}
+pregnancySummaryOpenChecklistTests : Test
+pregnancySummaryOpenChecklistTests =
+    let
+        savedYes =
+            { expectedDateConcluded = Date.fromCalendarDate 2026 Time.Jan 10
+            , deliveryComplications = EverySet.singleton ComplicationHiv
+            , signs = EverySet.singleton NoPregnancySummarySigns
+            , apgarOneMin = Nothing
+            , apgarFiveMin = Nothing
+            , birthWeight = Nothing
+            , birthLength = Nothing
+            , birthDefects = EverySet.singleton DefectClubFoot
+            }
+
+        complicationsYesNothingTicked =
+            { emptyPregnancySummaryForm | deliveryComplicationsPresent = Just True }
+
+        defectsYesNothingTicked =
+            { emptyPregnancySummaryForm | birthDefectsPresent = Just True }
+    in
+    describe "Pregnancy Summary, a Yes with nothing ticked"
+        [ test "unticking every saved complication leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault complicationsYesNothingTicked (Just savedYes)
+                    |> .deliveryComplications
+                    |> Expect.equal Nothing
+        , test "unticking every saved defect leaves the checklist open" <|
+            \_ ->
+                pregnancySummaryFormWithDefault defectsYesNothingTicked (Just savedYes)
+                    |> .birthDefects
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the complications checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) complicationsYesNothingTicked
+                    |> Expect.equal Nothing
+        , test "Save gives no value while the birth defects checklist is open" <|
+            \_ ->
+                toPregnancySummaryValueWithDefault (Just savedYes) defectsYesNothingTicked
+                    |> Expect.equal Nothing
+        ]
+
+
+{-| The delivery complications and birth defects questions of the Pregnancy
+Summary, each a Yes/No answer followed, on Yes, by a checklist.
+
+The scenarios drive the page through its own `update`, with the messages a tap
+sends, against an encounter holding the saved record (if any). Answering a
+question sets the answer and clears the checklist on the page's raw form;
+ticking a box is applied to the form resolved over the saved record. The tests
+then read the form back through `pregnancySummaryFormWithDefault`, as the page
+does to draw it and count its tasks, and take what Save writes from
+`toPregnancySummaryValueWithDefault`, as Save does.
+
+On the page, a checklist shown under a Yes is one task, complete when the
+resolved form holds a list for it (`Just _`) and open when it holds `Nothing`.
+Save is enabled only when every task is complete. The saved records below have
+every other question answered and every measurement filled in, so these two
+questions alone decide the task count and Save.
+
+A record stores "No" for complications as the set holding only
+`NoDeliveryComplications` (birth defects: `NoBirthDefects`). An empty set is
+read as "No" too, so it is tried as well.
+
+-}
+pregnancySummaryChecklistTests : Test
+pregnancySummaryChecklistTests =
+    describe "Pregnancy Summary, delivery complications and birth defects checklists"
+        [ pregnancySummaryChecklistTestsFor "Rwanda" SiteRwanda
+        , pregnancySummaryChecklistTestsFor "Burundi" SiteBurundi
+        ]
+
+
+pregnancySummaryChecklistTestsFor : String -> Site -> Test
+pregnancySummaryChecklistTestsFor siteName site =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Nov 26
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        -- Saved "No" to both questions.
+        savedNo =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.singleton NoDeliveryComplications
+                , birthDefects = EverySet.singleton NoBirthDefects
+            }
+
+        -- Saved with nothing stored for either question, which the form reads
+        -- as "No".
+        savedEmpty =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.empty
+                , birthDefects = EverySet.empty
+            }
+
+        -- Saved "Yes" to both questions, with two of each ticked.
+        savedYes =
+            { savedPregnancySummary
+                | deliveryComplications = EverySet.fromList [ ComplicationHiv, ComplicationPreeclampsia ]
+                , birthDefects = EverySet.fromList [ DefectCleftPalate, DefectClubFoot ]
+            }
+
+        dbWith saved =
+            { emptyModelIndexedDb
+                | wellChildMeasurements =
+                    Dict.singleton encounterId
+                        (Success { emptyWellChildMeasurements | pregnancySummary = Maybe.andThen (wrapMeasurement today) saved })
+            }
+
+        -- The page's raw form after the given taps, starting from a fresh page
+        -- over an encounter holding `saved`.
+        afterTaps saved msgs =
+            List.foldl
+                (\msg model ->
+                    let
+                        ( updated, _, _ ) =
+                            update today site encounterId (dbWith saved) msg model
+                    in
+                    updated
+                )
+                emptyModel
+                msgs
+                |> .pregnancySummaryForm
+
+        -- The form the page draws and counts tasks from.
+        resolvedAfter saved msgs =
+            pregnancySummaryFormWithDefault (afterTaps saved msgs) saved
+
+        -- What Save writes.
+        storedAfter saved msgs =
+            toPregnancySummaryValueWithDefault saved (afterTaps saved msgs)
+
+        -- The taps on the Yes/No questions, as the page sends them.
+        answerComplications answer =
+            SetPregnancySummaryBoolInput
+                (\value form ->
+                    { form
+                        | deliveryComplicationsPresent = Just value
+                        , deliveryComplications = Nothing
+                    }
+                )
+                answer
+
+        answerDefects answer =
+            SetPregnancySummaryBoolInput
+                (\value form ->
+                    { form
+                        | birthDefectsPresent = Just value
+                        , birthDefects = Nothing
+                    }
+                )
+                answer
+
+        -- The tasks of the two questions, as the page counts them: the answer,
+        -- and on Yes the checklist.
+        checklistTasksCount : PregnancySummaryForm -> ( Int, Int )
+        checklistTasksCount form =
+            let
+                section answer checklist =
+                    answer
+                        :: (if answer == Just True then
+                                [ maybeToBoolTask checklist ]
+
+                            else
+                                []
+                           )
+            in
+            section form.deliveryComplicationsPresent form.deliveryComplications
+                ++ section form.birthDefectsPresent form.birthDefects
+                |> resolveTasksCompletedFromTotal
+
+        saveEnabled form =
+            let
+                ( completed, total ) =
+                    checklistTasksCount form
+            in
+            completed == total
+
+        -- The complications (defects) held, in the order the type declares
+        -- them. Two sets holding the same ones then compare equal, whatever
+        -- order they were ticked in.
+        asComplications list =
+            List.filter (\complication -> List.member complication list)
+                [ ComplicationGestationalDiabetes
+                , ComplicationEmergencyCSection
+                , ComplicationPreeclampsia
+                , ComplicationMaternalHemorrhage
+                , ComplicationHiv
+                , ComplicationMaternalDeath
+                , ComplicationOther
+                , NoDeliveryComplications
+                ]
+
+        asDefects list =
+            List.filter (\defect -> List.member defect list)
+                [ DefectBirthInjury
+                , DefectCleftLipWithCleftPalate
+                , DefectCleftPalate
+                , DefectClubFoot
+                , DefectMacrocephaly
+                , DefectGastroschisis
+                , DefectHearingLoss
+                , DefectUndescendedTestes
+                , DefectHypospadias
+                , DefectInguinalHernia
+                , DefectMicrocephaly
+                , DefectNeuralTubes
+                , DefectDownSyndrome
+                , DefectCongenitalHeart
+                , DefectVentricalSeptal
+                , DefectPulmonaryValveAtresiaAndStenosis
+                , NoBirthDefects
+                ]
+
+        storedComplications value =
+            EverySet.toList value.deliveryComplications |> asComplications
+
+        storedDefects value =
+            EverySet.toList value.birthDefects |> asDefects
+
+        complicationsOf form =
+            ( form.deliveryComplicationsPresent, Maybe.map asComplications form.deliveryComplications )
+
+        defectsOf form =
+            ( form.birthDefectsPresent, Maybe.map asDefects form.birthDefects )
+
+        -- A new record also needs the date and the Apgar and length questions
+        -- answered before Save can write anything.
+        newRecordBasics =
+            [ SetExpectedDateConcluded (Date.fromCalendarDate 2026 Time.Nov 20)
+            , SetPregnancySummaryBoolInput (\value form -> { form | apgarScoresAvailable = Just value }) False
+            , SetPregnancySummaryBoolInput (\value form -> { form | birthLengthAvailable = Just value }) False
+            , answerComplications False
+            , answerDefects False
+            ]
+    in
+    describe siteName
+        [ describe "delivery complications, editing a Pregnancy Summary saved with No"
+            [ test "the saved No is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) []
+                        |> complicationsOf
+                        |> Expect.equal ( Just False, Just (asComplications [ NoDeliveryComplications ]) )
+            , test "switching it to Yes: the complications checklist shows as an open task" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> complicationsOf
+                        |> Expect.equal ( Just True, Nothing )
+            , test "while it is open, the task count shows it unfinished and Save stays disabled" <|
+                -- Complications: the Yes is answered, the checklist is open.
+                -- Birth defects: the saved No stands, with no checklist.
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 3 ), False )
+            , test "the checklist stays open until at least one complication is ticked, then counts as done" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True, SetDeliveryComplication ComplicationHiv ]
+                        |> (\form -> ( complicationsOf form, checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Just (asComplications [ ComplicationHiv ]) ), ( 3, 3 ), True )
+            , test "ticking a complication and saving stores Yes with that complication" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerComplications True, SetDeliveryComplication ComplicationHiv ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ ComplicationHiv ]))
+            , test "ticking two complications and saving stores both" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerComplications True
+                        , SetDeliveryComplication ComplicationHiv
+                        , SetDeliveryComplication ComplicationMaternalHemorrhage
+                        ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ ComplicationHiv, ComplicationMaternalHemorrhage ]))
+            , test "unticking the only ticked complication opens the checklist again" <|
+                \_ ->
+                    resolvedAfter (Just savedNo)
+                        [ answerComplications True
+                        , SetDeliveryComplication ComplicationHiv
+                        , SetDeliveryComplication ComplicationHiv
+                        ]
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching back to No closes the checklist and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerComplications True, answerComplications False ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ NoDeliveryComplications ]))
+            , test "the birth defects answer is left as saved" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True ]
+                        |> defectsOf
+                        |> Expect.equal ( Just False, Just (asDefects [ NoBirthDefects ]) )
+            ]
+        , describe "birth defects, editing a Pregnancy Summary saved with No"
+            [ test "the saved No is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) []
+                        |> defectsOf
+                        |> Expect.equal ( Just False, Just (asDefects [ NoBirthDefects ]) )
+            , test "switching it to Yes: the birth defects checklist shows as an open task" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> defectsOf
+                        |> Expect.equal ( Just True, Nothing )
+            , test "while it is open, the task count shows it unfinished and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 3 ), False )
+            , test "the checklist stays open until at least one defect is ticked, then counts as done" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True, SetBirthDefect DefectClubFoot ]
+                        |> (\form -> ( defectsOf form, checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Just (asDefects [ DefectClubFoot ]) ), ( 3, 3 ), True )
+            , test "ticking a defect and saving stores Yes with that defect" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerDefects True, SetBirthDefect DefectClubFoot ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ DefectClubFoot ]))
+            , test "ticking two defects and saving stores both" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerDefects True
+                        , SetBirthDefect DefectClubFoot
+                        , SetBirthDefect DefectHearingLoss
+                        ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ DefectClubFoot, DefectHearingLoss ]))
+            , test "unticking the only ticked defect opens the checklist again" <|
+                \_ ->
+                    resolvedAfter (Just savedNo)
+                        [ answerDefects True
+                        , SetBirthDefect DefectClubFoot
+                        , SetBirthDefect DefectClubFoot
+                        ]
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching back to No closes the checklist and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedNo) [ answerDefects True, answerDefects False ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ NoBirthDefects ]))
+            , test "the delivery complications answer is left as saved" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerDefects True ]
+                        |> complicationsOf
+                        |> Expect.equal ( Just False, Just (asComplications [ NoDeliveryComplications ]) )
+            ]
+        , describe "both, editing a Pregnancy Summary saved with No"
+            [ test "switching both to Yes opens both checklists, and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedNo) [ answerComplications True, answerDefects True ]
+                        |> (\form -> ( ( complicationsOf form, defectsOf form ), checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( ( Just True, Nothing ), ( Just True, Nothing ) ), ( 2, 4 ), False )
+            , test "ticking one of each and saving stores both answers as Yes with what was ticked" <|
+                \_ ->
+                    storedAfter (Just savedNo)
+                        [ answerComplications True
+                        , answerDefects True
+                        , SetDeliveryComplication ComplicationPreeclampsia
+                        , SetBirthDefect DefectCleftPalate
+                        ]
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ ComplicationPreeclampsia ], asDefects [ DefectCleftPalate ] ))
+            ]
+        , describe "editing a Pregnancy Summary that stores nothing for either question"
+            -- Nothing stored reads as "No" on the form, so switching it to
+            -- "Yes" must open the checklist just like a stored "No".
+            [ test "it is read as No" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) []
+                        |> (\form -> ( form.deliveryComplicationsPresent, form.birthDefectsPresent ))
+                        |> Expect.equal ( Just False, Just False )
+            , test "switching complications to Yes: the checklist shows as an open task and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) [ answerComplications True ]
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "switching birth defects to Yes: the checklist shows as an open task and Save stays disabled" <|
+                \_ ->
+                    resolvedAfter (Just savedEmpty) [ answerDefects True ]
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            ]
+        , describe "a Pregnancy Summary saved with complications and defects ticked"
+            [ test "reopens with the complications ticked" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> complicationsOf
+                        |> Expect.equal ( Just True, Just (asComplications [ ComplicationHiv, ComplicationPreeclampsia ]) )
+            , test "reopens with the defects ticked" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> defectsOf
+                        |> Expect.equal ( Just True, Just (asDefects [ DefectCleftPalate, DefectClubFoot ]) )
+            , test "reopens with every task complete" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) []
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 4, 4 ), True )
+            , test "saving it unchanged stores what was ticked" <|
+                \_ ->
+                    storedAfter (Just savedYes) []
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal (Just ( storedComplications savedYes, storedDefects savedYes ))
+            , test "ticking one more complication and saving stores all three" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ SetDeliveryComplication ComplicationMaternalDeath ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal
+                            (Just (asComplications [ ComplicationHiv, ComplicationMaternalDeath, ComplicationPreeclampsia ]))
+            , test "switching complications from Yes to No and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ answerComplications False ]
+                        |> Maybe.map storedComplications
+                        |> Expect.equal (Just (asComplications [ NoDeliveryComplications ]))
+            , test "switching birth defects from Yes to No and saving stores No" <|
+                \_ ->
+                    storedAfter (Just savedYes) [ answerDefects False ]
+                        |> Maybe.map storedDefects
+                        |> Expect.equal (Just (asDefects [ NoBirthDefects ]))
+            , test "after switching both to No, every task is complete" <|
+                \_ ->
+                    resolvedAfter (Just savedYes) [ answerComplications False, answerDefects False ]
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 2 ), True )
+            ]
+        , describe "a new Pregnancy Summary"
+            [ test "answering Yes to complications shows the checklist as an open task" <|
+                \_ ->
+                    resolvedAfter Nothing (newRecordBasics ++ [ answerComplications True ])
+                        |> (\form -> ( complicationsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "answering Yes to birth defects shows the checklist as an open task" <|
+                \_ ->
+                    resolvedAfter Nothing (newRecordBasics ++ [ answerDefects True ])
+                        |> (\form -> ( defectsOf form, saveEnabled form ))
+                        |> Expect.equal ( ( Just True, Nothing ), False )
+            , test "ticking a complication and a defect and saving stores both" <|
+                \_ ->
+                    storedAfter Nothing
+                        (newRecordBasics
+                            ++ [ answerComplications True
+                               , answerDefects True
+                               , SetDeliveryComplication ComplicationEmergencyCSection
+                               , SetBirthDefect DefectHypospadias
+                               ]
+                        )
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ ComplicationEmergencyCSection ], asDefects [ DefectHypospadias ] ))
+            , test "answering No to both and saving stores No to both" <|
+                \_ ->
+                    storedAfter Nothing newRecordBasics
+                        |> Maybe.map (\value -> ( storedComplications value, storedDefects value ))
+                        |> Expect.equal
+                            (Just ( asComplications [ NoDeliveryComplications ], asDefects [ NoBirthDefects ] ))
+            , test "answering No to both completes their tasks" <|
+                \_ ->
+                    resolvedAfter Nothing newRecordBasics
+                        |> (\form -> ( checklistTasksCount form, saveEnabled form ))
+                        |> Expect.equal ( ( 2, 2 ), True )
             ]
         ]
 
