@@ -1,0 +1,131 @@
+# Concept names dropped from eheza-concepts-master.csv to mirror
+# the hand-review of eheza-concepts-translate.csv (the labels master).
+# These names correspond to translation_ids in labels-master-drop-tids.txt
+# that have no surviving english match in the current labels master.
+#
+# Future rebuilds of the struct master MUST drop any row whose `name`
+# matches (case+whitespace-insensitive) any entry in this file.
+#
+# To regenerate: cross-reference labels-master-drop-tids.txt against the
+# original english value each tid carried (look up in Translate.elm), then
+# subtract any english still present in the current eheza-concepts-translate.csv.
+#
+# One name per line, alphabetically sorted (case-insensitive). Lines
+# starting with `#` are comments.
+
++1
++2
++3
++4
+0
+0-0.2
+1
+1 Day
+1 hour - 2 hours
+1 Month
+1 Week
+10
+100
+12 months
+14 weeks
+15
+15 months
+18 months
+2
+2 hours - 1 day
+2 Months
+2 Weeks
+2 years
+3
+3 Days
+3 Months
+3 years
+30 min - 1 hour
+4
+4 years
+4.0
+4.5
+40
+5
+5.0
+6 months
+6 weeks
+6.0
+6.5
+7.0
+7.5
+8
+8.0
+8.5
+80
+9 months
+<20 copies
+A
+AB
+Achi
+Antenatal Care, Postnatal Care & Danger Signs in Pregnancy
+B
+BUFMAR (Le Bureau des Formations Médicales agréées du Rwanda)
+Call 114
+Candidiasis Continued
+Childhood illnesses (Prevention, danger signs & emergency case management)
+Don't know
+End Date
+Family Planning & Sexual and reproductive health
+Fbf
+First Antenatal Visit
+Gender equality, Gender-Based Violence (GBV) & Behavior change
+General
+Gonorrhea Continued
+Immunizations
+Indeterminate
+Issued
+Large
+Large (+++)
+Last Menstrual Period
+Less than 18 month ago
+Less than 30 min
+Level of stunting using child length mat
+Malaria with Anemia Continued
+Malnutrition (The prevention and fight against diseases caused by malnutrition)
+Medication not Changed
+Medium (++)
+Meds already taken today
+Meds unavailable
+Moderate
+MOH (Ministry of Health)
+More than 10 years ago
+More than 5 years ago
+No
+No ambulance available
+Non-Communicable Diseases(Diabetes, Hypertension & Asthma)
+None
+None of these
+Normal
+Normal (intrauterine)
+O
+Ongera intungamubiri at the village level / CHW
+Pmtct
+Positive and Pregnant
+Pregnancy (1-9)
+RBC (Rwanda Biomedical Center)
+Red
+Result
+RWANDA MEDICAL SUPPLY (RMS)-Central Level
+RWANDA MEDICAL SUPPLY (RMS)-District Level
+Second Antenatal Visit
+Small
+Small (+)
+Sorwathe
+Start Date
+Third Antenatal Visit
+Too Sick
+Topics
+Trichomonas or Bacterial Vaginosis Continued
+Ubudehe
+Unable to run and Pregnant
+Update
+Urinary Tract Infection Continued
+vaginally every night x 3 night
+vaginally one time
+Yes
