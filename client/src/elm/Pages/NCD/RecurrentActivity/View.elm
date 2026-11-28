@@ -31,7 +31,7 @@ import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.NCD.RecurrentActivity.Utils exposing (laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefaultRecurrentPhase)
 import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -362,7 +362,7 @@ viewNextStepsContent language assembled data =
 
                 Just TaskReferral ->
                     getMeasurementValueFunc measurements.referral
-                        |> referralFormWithDefault data.referralForm
+                        |> referralFormWithDefaultRecurrentPhase data.referralForm
                         |> viewReferralForm language
                             NCDEncounterPhaseRecurrent
                             SetReferralBoolInput

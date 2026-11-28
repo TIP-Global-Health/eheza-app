@@ -20,7 +20,7 @@ import Measurement.Utils
         )
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..))
 import Pages.NCD.RecurrentActivity.Utils exposing (resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
-import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefaultRecurrentPhase, toMedicationDistributionValueWithDefault, toReferralValueWithDefaultRecurrentPhase)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
@@ -624,7 +624,7 @@ update currentDate id db msg model =
                         |> Maybe.map
                             (.referral
                                 >> getMeasurementValueFunc
-                                >> referralFormWithDefault model.nextStepsData.referralForm
+                                >> referralFormWithDefaultRecurrentPhase model.nextStepsData.referralForm
                             )
                         |> Maybe.withDefault model.nextStepsData.referralForm
 
@@ -660,7 +660,7 @@ update currentDate id db msg model =
         SaveReferral personId saved nextTask ->
             ( model
             , Cmd.none
-            , saveMeasurementMsgs toReferralValueWithDefault
+            , saveMeasurementMsgs toReferralValueWithDefaultRecurrentPhase
                 model.nextStepsData.referralForm
                 saved
                 (Backend.NCDEncounter.Model.SaveReferral personId)

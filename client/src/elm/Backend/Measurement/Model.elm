@@ -2851,6 +2851,10 @@ type alias NCDReferral =
 type alias ReferralValue =
     { referralSigns : EverySet ReferToFacilitySign
     , nonReferralReasons : Maybe (EverySet NonReferralSign)
+
+    -- The part of the visit that last answered the hospital referral.
+    -- Nothing on records saved before it was stored.
+    , hospitalReferralPhase : Maybe PhaseRecorded
     }
 
 

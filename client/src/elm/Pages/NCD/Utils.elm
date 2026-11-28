@@ -1,9 +1,9 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralFormWithDefaultInitialPhase, referralFormWithDefaultRecurrentPhase, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefaultInitialPhase, toReferralValueWithDefaultRecurrentPhase, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, testPerformedByExecutionNote)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, hospitalReferralAnswer, hospitalReferralAnsweredAtInitialPhase, hospitalReferralPhaseAfterInitialSave, hospitalReferralPhaseAfterRecurrentSave, keepHospitalNonReferralReasons, savedHospitalReferralPhase, testPerformedByExecutionNote, withoutHospitalNonReferralReasons)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm)
+import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm, emptyReferralForm)
 import Pages.Utils
     exposing
         ( filterPreviousEncountersDataToDate
@@ -501,10 +501,102 @@ referralFormWithDefault form saved =
             )
 
 
-toReferralValueWithDefault : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
-toReferralValueWithDefault saved form =
-    referralFormWithDefault form saved
+referralFormWithDefaultInitialPhase : ReferralForm -> Maybe ReferralValue -> ReferralForm
+referralFormWithDefaultInitialPhase =
+    referralFormWithDefault
+
+
+{-| On the lab results part, a hospital answer given in the first part is not
+offered: the hospital question opens unanswered.
+-}
+referralFormWithDefaultRecurrentPhase : ReferralForm -> Maybe ReferralValue -> ReferralForm
+referralFormWithDefaultRecurrentPhase form saved =
+    let
+        seeded =
+            referralFormWithDefault form saved
+    in
+    if hospitalReferralAnsweredAtInitialPhase saved then
+        { seeded
+            | referToHospital = form.referToHospital
+            , referralFormHospital = form.referralFormHospital
+            , nonReferralReasons =
+                or form.nonReferralReasons
+                    (Maybe.andThen .nonReferralReasons saved
+                        |> withoutHospitalNonReferralReasons
+                    )
+        }
+
+    else
+        seeded
+
+
+ncdHospitalReferralAnswer : ReferralValue -> ( Bool, Bool, EverySet NonReferralSign )
+ncdHospitalReferralAnswer value =
+    hospitalReferralAnswer value.referralSigns value.nonReferralReasons
+
+
+toReferralValueWithDefaultInitialPhase : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
+toReferralValueWithDefaultInitialPhase saved form =
+    referralFormWithDefaultInitialPhase form saved
         |> toReferralValue
+        |> Maybe.map
+            (\value ->
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterInitialSave (savedHospitalReferralPhase saved)
+                            (Maybe.map ncdHospitalReferralAnswer saved)
+                            (ncdHospitalReferralAnswer value)
+                }
+            )
+
+
+{-| When the lab results part leaves the hospital question unanswered, the
+first part's hospital answer is kept.
+-}
+toReferralValueWithDefaultRecurrentPhase : Maybe ReferralValue -> ReferralForm -> Maybe ReferralValue
+toReferralValueWithDefaultRecurrentPhase saved form =
+    let
+        savedPhase =
+            savedHospitalReferralPhase saved
+
+        answeredAtInitialPhase =
+            savedPhase == Just PhaseInitial
+
+        filled =
+            referralFormWithDefaultRecurrentPhase form saved
+
+        -- With the first part's answer stored, the question opens unanswered,
+        -- so an answer here is the nurse's own.
+        enteredHere =
+            isJust filled.referToHospital
+
+        toSave =
+            if enteredHere || not answeredAtInitialPhase then
+                filled
+
+            else
+                let
+                    atInitialPhase =
+                        referralFormWithDefault emptyReferralForm saved
+                in
+                { filled
+                    | referToHospital = atInitialPhase.referToHospital
+                    , referralFormHospital = atInitialPhase.referralFormHospital
+                    , nonReferralReasons =
+                        keepHospitalNonReferralReasons atInitialPhase.nonReferralReasons filled.nonReferralReasons
+                }
+    in
+    toReferralValue toSave
+        |> Maybe.map
+            (\value ->
+                { value
+                    | hospitalReferralPhase =
+                        hospitalReferralPhaseAfterRecurrentSave savedPhase
+                            (Maybe.map ncdHospitalReferralAnswer saved)
+                            (ncdHospitalReferralAnswer value)
+                            enteredHere
+                }
+            )
 
 
 toReferralValue : ReferralForm -> Maybe ReferralValue
@@ -524,6 +616,7 @@ toReferralValue form =
         (\signs ->
             { referralSigns = signs
             , nonReferralReasons = form.nonReferralReasons
+            , hospitalReferralPhase = Nothing
             }
         )
         referralSigns
@@ -1105,15 +1198,27 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
 
 
-{-| The Referral task is done when the facility this phase refers to was
-referred to, or a reason was set for not referring there.
+{-| Done when this phase's facility was referred to, or a reason for not
+referring was set. The lab results part needs its own hospital answer.
 -}
 referralTaskCompleted : NCDEncounterPhase -> AssembledData -> Bool
 referralTaskCompleted phase assembled =
     getMeasurementValueFunc assembled.measurements.referral
         |> Maybe.map
             (\value ->
-                Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons (referralFacility phase assembled)
+                let
+                    facility =
+                        referralFacility phase assembled
+
+                    -- The lab results part must answer the hospital question
+                    -- itself, even when the first part already did.
+                    hospitalAnsweredAtInitialPhase =
+                        (phase == NCDEncounterPhaseRecurrent)
+                            && (facility == FacilityHospital)
+                            && hospitalReferralAnsweredAtInitialPhase (Just value)
+                in
+                Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons facility
+                    && not hospitalAnsweredAtInitialPhase
             )
         |> Maybe.withDefault False
 

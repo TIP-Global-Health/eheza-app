@@ -5286,6 +5286,7 @@ decodeReferralValue =
     succeed ReferralValue
         |> required "referrals" (decodeEverySet decodeReferToFacilitySign)
         |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeNonReferralSign)) Nothing
+        |> optional "phase_recorded" (nullable decodePhaseRecorded) Nothing
 
 
 decodeNCDSocialHistory : Decoder NCDSocialHistory
