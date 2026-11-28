@@ -956,12 +956,26 @@ export async function setDate(page: Page, date: Date, triggerSelector = '.date-i
     .selectOption(monthValue);
   await page.waitForTimeout(WAIT.elmRerender);
 
+  // The grid also shows the neighbouring months' days: dimmed when in range,
+  // disabled when outside the picker's range. A disabled cell ignores the click.
   const day = date.getUTCDate();
+  const dayPattern = new RegExp(`^${day}$`);
   const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
+    'div.calendar table tbody td:not(.date-selector--dimmed):not(.date-selector--disabled)',
+    { hasText: dayPattern },
   );
+  const wanted = date.toISOString().slice(0, 10);
+  if ((await dayCell.count()) === 0) {
+    throw new Error(`setDate: ${wanted} is outside the date picker's range`);
+  }
   await dayCell.first().click();
+
+  const selected = page.locator('div.calendar table tbody td.date-selector--selected', {
+    hasText: dayPattern,
+  });
+  await selected.waitFor({ timeout: 3000 }).catch(() => {
+    throw new Error(`setDate: the date picker did not select ${wanted}`);
+  });
 
   await click(
     page.locator('.ui.active.modal.calendar-popup div.ui.button'),

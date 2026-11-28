@@ -205,16 +205,29 @@ export async function navigateToParticipantPage(
 
 /**
  * Complete PregnancyDating: set LMP date, confirm confidence.
+ * With { notConfidentReason: 'Irregular Menses' }: answer "not confident"
+ * and tick that reason, which makes the nurse's Next Steps ask about an
+ * ultrasound referral.
  * Creates: last_menstrual_period
  */
-export async function completePregnancyDating(page: Page, lmpDate: Date) {
+export async function completePregnancyDating(
+  page: Page,
+  lmpDate: Date,
+  options?: { notConfidentReason?: string },
+) {
   await openActivity(page, 'prenatal', 'pregnancy-dating');
 
   // Click the LMP date input to open calendar.
   await setDate(page, lmpDate, '.form-input.date');
 
-  // LMP Date Confident? → Yes
-  await answerYesNo(page, 'is-confident', 'Yes');
+  const notConfidentReason = options?.notConfidentReason;
+  if (notConfidentReason) {
+    await answerYesNo(page, 'is-confident', 'No');
+    await page.waitForTimeout(WAIT.formInteraction);
+    await selectCheckbox(page, notConfidentReason);
+  } else {
+    await answerYesNo(page, 'is-confident', 'Yes');
+  }
 
   // If late ANC (past first trimester), a "Why not first trimester?" checkbox
   // group appears. Select a reason if visible.
@@ -1319,13 +1332,7 @@ export async function completeLabResults(
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
 
-    // 1. "Will this test be performed today?" → Yes. Only a lab technician is
-    // asked this, and answering it records the run as confirmed by them.
-    const testPerformed = page.locator('.form-input.yes-no.test-performed');
-    if (await testPerformed.isVisible().catch(() => false)) {
-      await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-      await page.waitForTimeout(WAIT.elmRerender);
-    }
+    await confirmTestPerformed(page);
 
     // Matched loosely: a tab is labelled by its test, and some carry the
     // method too - the syphilis tab reads "Syphilis - RPR".
@@ -1437,6 +1444,82 @@ export async function completeLabResults(
 }
 
 /**
+ * Enter one test's result on the open recurrent Laboratory activity (the
+ * nurse's lab results, or the lab technician's), then save that test.
+ *
+ * `result` gives the form's fields in order: a dropdown takes the option
+ * with that exact text, a number input takes the number. Examples:
+ * `enterLabResult(page, 'Hepatitis B', 'Positive')`,
+ * `enterLabResult(page, 'Blood Group', ['A', '+'])`.
+ */
+export async function enterLabResult(
+  page: Page,
+  testLabel: string,
+  result: string | string[],
+): Promise<void> {
+  await click(page.locator('.link-section', { hasText: testLabel }).first(), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await confirmTestPerformed(page);
+  await fillLabResultFields(page, testLabel, [result].flat());
+  await saveLabResultForm(page, testLabel);
+  await dismissWarningPopup(page);
+}
+
+/**
+ * "Will this test be performed today?" → Yes. Only a lab technician is asked
+ * this, and answering it records the run as confirmed by them.
+ */
+async function confirmTestPerformed(page: Page): Promise<void> {
+  const testPerformed = page.locator('.form-input.yes-no.test-performed');
+  if (await testPerformed.isVisible().catch(() => false)) {
+    await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
+}
+
+/**
+ * Fill the open result form's dropdowns and number inputs in page order.
+ * Fields are looked up again for each value, because a value can reveal the
+ * next field.
+ */
+async function fillLabResultFields(page: Page, testLabel: string, values: string[]): Promise<void> {
+  const fields = page.locator(
+    'div.page-activity select:visible, div.page-activity input[type="number"]:visible',
+  );
+  for (let k = 0; k < values.length; k++) {
+    if ((await fields.count()) <= k) {
+      throw new Error(`${testLabel}: the result form has no field for value ${k + 1} ("${values[k]}")`);
+    }
+    const field = fields.nth(k);
+    if ((await field.evaluate(el => el.tagName)) === 'SELECT') {
+      await field.selectOption({ label: values[k] });
+    } else {
+      await field.fill(values[k]);
+    }
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+}
+
+/**
+ * Elm renders an incomplete form's Save without the "active" class and
+ * without an onClick, so a click would do nothing. Say so instead.
+ */
+async function saveLabResultForm(page: Page, testLabel: string): Promise<void> {
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 10000 });
+  if (!(await saveBtn.evaluate(el => el.classList.contains('active')))) {
+    const counter = await page.locator('.tasks-count').textContent().catch(() => null);
+    throw new Error(
+      `${testLabel}: the result form still has unanswered questions` +
+        (counter ? ` (${counter.trim()})` : '') +
+        ', so its Save button is inactive',
+    );
+  }
+  await click(saveBtn, page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
  * Dismiss the warning popup that may open with Next Steps
  * (e.g., "Depression not Likely").
  */
@@ -1448,11 +1531,92 @@ export async function dismissWarningPopup(page: Page) {
   }
 }
 
+/** One answer per "Have you referred the patient to …?" question. */
+export type ReferralAnswer = 'Yes' | 'No';
+
+/**
+ * Answer the open Referral form's "Have you referred the patient to …?"
+ * questions, in the order the form shows them (the hospital comes first).
+ *
+ * A Yes answers the questions it reveals with Yes (referral form handed,
+ * accompanied). A No ticks `reason`, "Client refused" unless given.
+ * Throws when the form asks more or fewer questions than there are answers.
+ */
+export async function answerReferral(
+  page: Page,
+  answers: ReferralAnswer[],
+  options?: { reason?: string },
+): Promise<void> {
+  const form = page.locator('.ui.form.referral');
+  await form.waitFor({ timeout: 10000 });
+  const questions = form.locator('.form-input.yes-no.referral');
+  const questionCount = await questions.count();
+  if (questionCount !== answers.length) {
+    throw new Error(
+      `Referral form asks ${questionCount} referral question(s), ` +
+        `but ${answers.length} answer(s) were given`,
+    );
+  }
+
+  const reason = options?.reason ?? 'Client refused';
+  for (let i = 0; i < answers.length; i++) {
+    const question = questions.nth(i);
+    await click(question.locator('label', { hasText: answers[i] }), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    // The inputs an answer reveals sit right after its question.
+    if (answers[i] === 'Yes') {
+      await click(followingInput(question, 'hand-referral-form').locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      // Only some places ask about accompanying; an accompany question past the
+      // next place's question belongs to that place.
+      const accompany = followingInput(question, 'accompany-to-hc');
+      if (await accompany.count() > 0 && (await precedesNextPlace(accompany, questions, i))) {
+        await click(accompany.locator('label', { hasText: 'Yes' }), page);
+        await page.waitForTimeout(WAIT.formInteraction);
+      }
+    } else {
+      await click(
+        question.locator(
+          `xpath=following::div[contains(concat(' ', normalize-space(@class), ' '), ' checkbox ')]` +
+            `[.//label[normalize-space()='${reason}']][1]//label`,
+        ),
+        page,
+      );
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+  }
+}
+
+/** The first `.form-input.<cls>` after `from` in the page. */
+function followingInput(from: Locator, cls: string): Locator {
+  return from.locator(
+    `xpath=following::div[contains(concat(' ', normalize-space(@class), ' '), ' form-input ')]` +
+      `[contains(concat(' ', normalize-space(@class), ' '), ' ${cls} ')][1]`,
+  );
+}
+
+/** True when `input` comes before the referral question after question `index`. */
+async function precedesNextPlace(input: Locator, questions: Locator, index: number): Promise<boolean> {
+  if (index + 1 >= (await questions.count())) return true;
+  const nextQuestion = await questions.nth(index + 1).elementHandle();
+  return input.evaluate(
+    (el, next) => !!next && (el.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+    nextQuestion,
+  );
+}
+
 /**
  * Complete NextSteps: iterate through visible sub-task tabs.
+ * With { referral: ['No', 'Yes'] }: answer the Referral form with
+ * answerReferral instead of Yes everywhere.
  * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
  */
-export async function completeNextSteps(page: Page): Promise<string[]> {
+export async function completeNextSteps(
+  page: Page,
+  options?: { referral?: ReferralAnswer[] },
+): Promise<string[]> {
   // For CHW encounters with no danger signs, the icon changes to
   // "appointment-confirmation" instead of "next-steps".
   // For subsequent encounters with no diagnoses, NextSteps may not appear at all.
@@ -1507,6 +1671,9 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
           await click(firstOption, page);
         }
       } else if (step.name === 'sendToHC') {
+        if (options?.referral) {
+          await answerReferral(page, options.referral);
+        }
         // Referral form — answer Yes/No fields sequentially.
         // Some fields appear conditionally after answering "Yes" to previous ones.
         for (let round = 0; round < 5; round++) {
@@ -1599,11 +1766,15 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
  * Each task is its own tab with its own Save button, and the button only
  * carries an onClick once every question the task asks is answered. Answering
  * "Yes" everywhere keeps the encounter on the path where a medication is
- * handed over and nothing is refused.
+ * handed over and nothing is refused. With { referral: ['No'] }, the Referral
+ * form is answered with answerReferral instead.
  *
  * Returns the labels of the tasks that were saved.
  */
-export async function completeRecurrentNextSteps(page: Page): Promise<string[]> {
+export async function completeRecurrentNextSteps(
+  page: Page,
+  options?: { referral?: ReferralAnswer[] },
+): Promise<string[]> {
   await openActivity(page, 'prenatal', 'next-steps');
   await dismissWarningPopup(page);
 
@@ -1629,6 +1800,10 @@ export async function completeRecurrentNextSteps(page: Page): Promise<string[]> 
     }
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    if (options?.referral && (await page.locator('.ui.form.referral').isVisible().catch(() => false))) {
+      await answerReferral(page, options.referral);
+    }
 
     // Answering one question can reveal another, so keep going until a pass
     // leaves nothing unanswered.
